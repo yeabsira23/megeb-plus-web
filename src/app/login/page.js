@@ -89,24 +89,14 @@ export default function LoginPage() {
           <div className="absolute top-[34%] left-[12%] w-px h-16 bg-[#DCC48E]/40" />
 
         </div>
-
-        {/* BRAND */}
-        <div className="relative z-10">
-          <div className="flex items-center gap-2.5">
-
-            <div className="w-9 h-9 rounded-full bg-[#DCC48E] flex items-center justify-center">
-              <span className="font-display text-[#2D312E] text-base font-semibold">
-                ም
-              </span>
-            </div>
-
-            <span className="font-display text-white text-xl tracking-tight">
-              Megeb+
-            </span>
-
-          </div>
-        </div>
-
+{/* BRAND */}
+<div className="inline-flex items-center">
+  <div className="bg-[#E9F0EC] px-7 py-3 rounded-full border border-[#CCD6C4] shadow-sm">
+    <span className="font-display text-[#3D5A4C] text-3xl font-bold tracking-tight">
+      Megeb<span className="text-[#4E876E]">+</span>
+    </span>
+  </div>
+</div>
         {/* TEXT */}
         <div className="relative z-10 max-w-sm">
 
@@ -358,9 +348,6 @@ export default function LoginPage() {
            </a>
            </p>
         </div>
-
-
-
 
 
         </div>
