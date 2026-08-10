@@ -189,16 +189,15 @@ export default function LoginPage() {
 
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2 mb-10">
+<div className="inline-flex items-center">
+  <div className="bg-[#E9F0EC] px-7 py-3 rounded-full border border-[#CCD6C4] shadow-sm">
+    <span className="font-display text-[#3D5A4C] text-3xl font-bold tracking-tight">
+      Megeb<span className="text-[#4E876E]">+</span>
+    </span>
+  </div>
+</div>
 
-            <div className="w-8 h-8 rounded-full bg-[#3D5A4C] flex items-center justify-center">
-              <span className="font-display text-white text-sm font-semibold">
-                ም
-              </span>
-            </div>
-
-            <span className="font-display text-[#2D312E] text-xl">
-              Megeb+
-            </span>
+          
 
           </div>
 
