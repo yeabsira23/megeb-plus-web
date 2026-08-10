@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import axios from 'axios'
 
 export default function LoginPage() {
   const [phone, setPhone] = useState('');
@@ -22,13 +23,26 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Backend developers will connect the API here later.
-      await new Promise((resolve) => setTimeout(resolve, 900));
-    } catch (err) {
-      setError(err.message || 'Something went wrong. Try again.');
-    } finally {
-      setLoading(false);
+  const response = await axios.post(
+    'http://127.0.0.1:8000/api/auth/login/',
+    {
+      phone,
+      password,
     }
+  );
+
+  localStorage.setItem('access', response.data.access);
+  localStorage.setItem('refresh', response.data.refresh);
+
+  window.location.href = '/dashboard';
+} catch (err) {
+  setError(
+    err.response?.data?.detail ||
+    'Login failed. Check your credentials.'
+  );
+} finally {
+  setLoading(false);
+}
   }
 
   return (
