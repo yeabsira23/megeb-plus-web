@@ -284,7 +284,7 @@ export default function LoginPage() {
                     </label>
 
                     <a
-                      href="/portal/forgot-password"
+                     href="/forgot-password"
                       className="font-body text-[12.5px] font-medium text-[#4E876E] hover:text-[#3D5A4C]"
                     >
                       Forgot password?
