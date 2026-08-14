@@ -1,20 +1,20 @@
-'use client';
+                         'use client';
 
-import { useState } from 'react';
-import { Phone, Check, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { useState, FormEvent } from 'react';
+import { Mail, Check, ArrowLeft, ShieldCheck } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
-  const [phone, setPhone] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError('');
 
-    if (!phone) {
-      setError('Enter your phone number to continue.');
+    if (!email) {
+      setError('Enter your email to continue.');
       return;
     }
 
@@ -93,13 +93,15 @@ export default function ForgotPasswordPage() {
         </div>
 
         {/* BRAND */}
-        <div className="inline-flex items-center relative z-10">
-          <div className="bg-[#E9F0EC] px-7 py-3 rounded-full border border-[#CCD6C4] shadow-sm">
-            <span className="font-display text-[#3D5A4C] text-3xl font-bold tracking-tight">
-              Megeb<span className="text-[#4E876E]">+</span>
-            </span>
-          </div>
-        </div>
+        <div className="flex items-center">
+      <span className="font-display text-[38px] font-bold tracking-tight text-[#DCC48E]">
+        Megeb
+       </span>
+
+       <span className="ml-1 font-display text-[44px] font-black leading-none text-[#DCC48E]">
+         +
+       </span>
+      </div>
 
         {/* LEFT TEXT */}
         <div className="relative z-10 max-w-sm">
@@ -120,7 +122,6 @@ export default function ForgotPasswordPage() {
           </p>
 
         </div>
-
         {/* DECORATIVE SECURITY ICON */}
         <div className="absolute right-[14%] top-[45%]">
 
@@ -170,13 +171,15 @@ export default function ForgotPasswordPage() {
         <div className="w-full max-w-[400px]">
 
           {/* MOBILE LOGO */}
-          <div className="lg:hidden flex items-center mb-10">
-            <div className="bg-[#E9F0EC] px-7 py-3 rounded-full border border-[#CCD6C4] shadow-sm">
-              <span className="font-display text-[#3D5A4C] text-3xl font-bold tracking-tight">
-                Megeb<span className="text-[#4E876E]">+</span>
-              </span>
-            </div>
-          </div>
+           <div className="flex items-center md:hidden">
+  <span className="font-display text-[28px] font-bold tracking-tight text-[#DCC48E]">
+    Megeb
+  </span>
+
+  <span className="ml-1 font-display text-[34px] font-black leading-none text-[#DCC48E]">
+    +
+  </span>
+</div>
 
           {/* CARD */}
           <div className="bg-white rounded-2xl shadow-[0_24px_48px_-12px_rgba(61,90,76,0.18)] border border-[#2D312E]/[0.06] overflow-hidden">
@@ -197,8 +200,7 @@ export default function ForgotPasswordPage() {
                   </h2>
 
                   <p className="font-body text-[#2D312E]/50 text-[13.5px] mb-7 leading-5">
-                    Enter your phone number and we'll help you reset your
-                    password.
+                    Enter your email and we'll help you reset your password.
                   </p>
 
                   <form
@@ -207,31 +209,31 @@ export default function ForgotPasswordPage() {
                     noValidate
                   >
 
-                    {/* PHONE */}
+                    {/* EMAIL */}
                     <div>
 
                       <label
-                        htmlFor="phone"
+                        htmlFor="email"
                         className="font-body block text-[12.5px] font-semibold text-[#2D312E]/75 mb-1.5"
                       >
-                        Phone number
+                        Email
                       </label>
 
                       <div className="relative">
 
-                        <Phone
+                        <Mail
                           size={17}
                           strokeWidth={2}
                           className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4E876E]"
                         />
 
                         <input
-                          id="phone"
-                          type="tel"
-                          autoComplete="tel"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          placeholder="+251 9XX XXX XXX"
+                          id="email"
+                          type="email"
+                          autoComplete="email"
+                         value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="you@example.com"
                           className="font-body w-full rounded-xl border border-[#2D312E]/12 bg-[#FAF9F6]/60 pl-10 pr-3.5 text-[14.5px] text-[#2D312E] placeholder:text-[#2D312E]/30 outline-none transition focus:bg-white focus:border-[#3D5A4C] focus:ring-4 focus:ring-[#3D5A4C]/10"
                           style={{
                             paddingTop: '11px',
@@ -280,13 +282,13 @@ export default function ForgotPasswordPage() {
                   </p>
 
                   <h2 className="font-display text-[#2D312E] text-[26px] mb-2">
-                    Check your phone
+                    Check your email
                   </h2>
 
                   <p className="font-body text-[#2D312E]/50 text-[13.5px] leading-5">
                     If an account exists for{' '}
                     <span className="font-semibold text-[#2D312E]/70">
-                      {phone}
+                      {email}
                     </span>
                     , you'll receive instructions to reset your password.
                   </p>
@@ -297,7 +299,7 @@ export default function ForgotPasswordPage() {
               <div className="mt-7 pt-5 border-t border-[#2D312E]/[0.07]">
 
                 <a
-                  href="/login"
+                  href="/auth/login"
                   className="font-body flex items-center justify-center gap-1.5 text-[12.5px] font-semibold text-[#4E876E] hover:text-[#3D5A4C] transition"
                 >
                   <ArrowLeft size={15} />
