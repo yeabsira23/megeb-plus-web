@@ -1,41 +1,110 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { clearSession } from '@/app/lib/api';
 import {
   LayoutDashboard,
   Users,
   Stethoscope,
   UtensilsCrossed,
+  Store,
   CalendarCheck,
   CreditCard,
   BarChart3,
   ClipboardList,
   Settings,
   LogOut,
+  LucideIcon,
 } from 'lucide-react';
 
-const MENU_ITEMS = [
+/* TYPES */
+
+type MenuItem = {
+  name: string;
+  icon: LucideIcon;
+  path: string;
+  badgeKey?: 'pendingVerifications' | 'pendingVendors';
+};
+
+const MENU_ITEMS: MenuItem[] = [
   { name: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
   { name: 'Users', icon: Users, path: '/admin/users' },
-  { name: 'Nutritionists', icon: Stethoscope, path: '/admin/nutritionists', badge: 3 },
+  { name: 'Nutritionists', icon: Stethoscope, path: '/admin/nutritionists', badgeKey: 'pendingVerifications' },
   { name: 'Food Database', icon: UtensilsCrossed, path: '/admin/food' },
+  { name: 'Food Vendors', icon: Store, path: '/admin/food-vendors', badgeKey: 'pendingVendors' },
   { name: 'Appointments', icon: CalendarCheck, path: '/admin/appointments' },
   { name: 'Payments', icon: CreditCard, path: '/admin/payments' },
   { name: 'Reports & Analytics', icon: BarChart3, path: '/admin/reports' },
-  { name: 'Audit Logs', icon: ClipboardList, path: '/admin/logs' },
+
   { name: 'Settings', icon: Settings, path: '/admin/settings' },
 ];
+
+/* HOOK: sidebar badge counts from the backend */
+
+function useSidebarBadges() {
+  const [pendingVerifications, setPendingVerifications] = useState<number | null>(null);
+  const [pendingVendors, setPendingVendors] = useState<number | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchBadgeCounts() {
+      try {
+        // Backend API will be connected here later.
+        // Example:
+        // const nutritionists = await apiFetch<{ count: number }>('/admin/verification-requests/count?status=pending');
+        // const vendors = await apiFetch<{ count: number }>('/admin/food-vendors/count?status=pending');
+        // if (isMounted) { setPendingVerifications(nutritionists.count); setPendingVendors(vendors.count); }
+
+        if (isMounted) {
+          setPendingVerifications(null);
+          setPendingVendors(null);
+        }
+      } catch (err) {
+        console.error('Unable to load sidebar badge counts:', err);
+        if (isMounted) {
+          setPendingVerifications(null);
+          setPendingVendors(null);
+        }
+      }
+    }
+
+    fetchBadgeCounts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return { pendingVerifications, pendingVendors };
+}
+
+/* COMPONENT */
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { pendingVerifications, pendingVendors } = useSidebarBadges();
 
-  function logout() {
-    localStorage.removeItem('access');
-    localStorage.removeItem('refresh');
-    localStorage.removeItem('user');
-    router.push('/portal/login');
+  const badgeValues: Record<NonNullable<MenuItem['badgeKey']>, number | null> = {
+    pendingVerifications,
+    pendingVendors,
+  };
+
+  async function logout() {
+    try {
+      // Backend API will be connected here later, e.g. to invalidate the
+      // refresh token server-side:
+      // const refresh = localStorage.getItem('refresh');
+      // await apiFetch('/auth/logout', { method: 'POST', data: { refresh } });
+    } catch (err) {
+      console.error('Logout request failed, clearing session locally anyway:', err);
+    } finally {
+      clearSession();
+      router.push('/auth/login');
+    }
   }
 
   return (
@@ -58,9 +127,11 @@ export default function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 px-3">
-          {MENU_ITEMS.map(({ name, icon: Icon, path, badge }) => {
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3">
+          {MENU_ITEMS.map(({ name, icon: Icon, path, badgeKey }) => {
             const isActive = pathname === path;
+            const badge = badgeKey ? badgeValues[badgeKey] : null;
+
             return (
               <Link
                 key={name}
@@ -73,7 +144,7 @@ export default function Sidebar() {
               >
                 <Icon className="h-[18px] w-5 shrink-0" strokeWidth={1.75} />
                 <span className="text-[13px]">{name}</span>
-                {badge !== undefined && (
+                {badge !== null && badge !== undefined && badge > 0 && (
                   <span className="ml-auto rounded-full bg-[#DCC48E] px-2 py-0.5 text-[10px] font-bold text-[#2D312E]">
                     {badge}
                   </span>
@@ -86,6 +157,7 @@ export default function Sidebar() {
         {/* Logout */}
         <div className="border-t border-[#2D312E]/[0.06] p-4">
           <button
+            type="button"
             onClick={logout}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[13px] text-red-500 hover:bg-red-50"
           >

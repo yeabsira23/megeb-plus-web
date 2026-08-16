@@ -1,9 +1,18 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Stethoscope, UtensilsCrossed, Users, BarChart3 } from 'lucide-react';
+import { Stethoscope, UtensilsCrossed, Users, BarChart3, LucideIcon } from 'lucide-react';
 
-const ACTIONS = [
+/* TYPES */
+
+type QuickAction = {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  path: string;
+};
+
+const ACTIONS: QuickAction[] = [
   {
     icon: Stethoscope,
     title: 'Verify nutritionist',
@@ -30,6 +39,8 @@ const ACTIONS = [
   },
 ];
 
+/* COMPONENT */
+
 export default function QuickActions() {
   const router = useRouter();
 
@@ -47,6 +58,7 @@ export default function QuickActions() {
         {ACTIONS.map(({ icon: Icon, title, description, path }) => (
           <button
             key={title}
+            type="button"
             onClick={() => router.push(path)}
             className="flex items-center gap-3 rounded-xl border border-[#2D312E]/[0.06] p-3 text-left transition hover:bg-[#FAF9F6]"
           >

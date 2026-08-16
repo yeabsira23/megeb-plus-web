@@ -1,31 +1,43 @@
+ 'use client';
 
-'use client';
-
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
+import axios from 'axios';
+import { User, Lock, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [identifier, setIdentifier] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError('');
 
-    if (!phone || !password) {
-      setError('Enter your phone number and password to continue.');
+    if (!identifier || !password) {
+      setError('Enter your email or username and password to continue.');
       return;
     }
 
     setLoading(true);
 
     try {
-      // Backend developers will connect the API here later.
-      await new Promise((resolve) => setTimeout(resolve, 900));
+      const response = await axios.post(
+        'http://127.0.0.1:8000/api/auth/login/',
+        { identifier, password }
+      );
+
+      localStorage.setItem('access', response.data.access);
+      localStorage.setItem('refresh', response.data.refresh);
+
+      window.location.href = '/dashboard';
     } catch (err) {
-      setError(err.message || 'Something went wrong. Try again.');
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.detail || 'Login failed. Check your credentials.');
+      } else {
+        setError('Login failed. Check your credentials.');
+      }
     } finally {
       setLoading(false);
     }
@@ -89,14 +101,18 @@ export default function LoginPage() {
           <div className="absolute top-[34%] left-[12%] w-px h-16 bg-[#DCC48E]/40" />
 
         </div>
-{/* BRAND */}
-<div className="inline-flex items-center">
-  <div className="bg-[#E9F0EC] px-7 py-3 rounded-full border border-[#CCD6C4] shadow-sm">
-    <span className="font-display text-[#3D5A4C] text-3xl font-bold tracking-tight">
-      Megeb<span className="text-[#4E876E]">+</span>
-    </span>
-  </div>
-</div>
+
+        {/* BRAND */}
+      <div className="flex items-center">
+      <span className="font-display text-[38px] font-bold tracking-tight text-[#DCC48E]">
+        Megeb
+       </span>
+
+       <span className="ml-1 font-display text-[44px] font-black leading-none text-[#DCC48E]">
+         +
+       </span>
+      </div>
+
         {/* TEXT */}
         <div className="relative z-10 max-w-sm">
 
@@ -105,8 +121,7 @@ export default function LoginPage() {
           <p className="font-body text-[11px] tracking-[0.22em] uppercase text-[#CCD6C4] mb-4">
             Staff Portal
           </p>
-
-          <h1 className="font-display text-white text-[42px] leading-[1.12]">
+              <h1 className="font-display text-white text-[42px] leading-[1.12]">
             Welcome back.
           </h1>
 
@@ -188,20 +203,15 @@ export default function LoginPage() {
         <div className="w-full max-w-[400px]">
 
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-2 mb-10">
+          <div className="flex items-center md:hidden">
+  <span className="font-display text-[28px] font-bold tracking-tight text-[#DCC48E]">
+    Megeb
+  </span>
 
-            <div className="w-8 h-8 rounded-full bg-[#3D5A4C] flex items-center justify-center">
-              <span className="font-display text-white text-sm font-semibold">
-                ም
-              </span>
-            </div>
-
-            <span className="font-display text-[#2D312E] text-xl">
-              Megeb+
-            </span>
-
-          </div>
-
+  <span className="ml-1 font-display text-[34px] font-black leading-none text-[#DCC48E]">
+    +
+  </span>
+</div>
           {/* LOGIN CARD */}
           <div className="bg-white rounded-2xl shadow-[0_24px_48px_-12px_rgba(61,90,76,0.18)] border border-[#2D312E]/[0.06] overflow-hidden">
 
@@ -217,36 +227,37 @@ export default function LoginPage() {
               <h2 className="font-display text-[#2D312E] text-[26px] mb-1">
                 Sign in
               </h2>
-
               <p className="font-body text-[#2D312E]/50 text-[13.5px] mb-7">
                 Enter your credentials to continue.
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-4">
 
-                {/* PHONE */}
+                {/* EMAIL OR USERNAME */}
                 <div>
 
                   <label
-                    htmlFor="phone"
+                    htmlFor="identifier"
                     className="font-body block text-[12.5px] font-semibold text-[#2D312E]/75 mb-1.5"
                   >
-                    Phone number
+                    Email or username
                   </label>
 
                   <div className="relative">
 
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4E876E]">
-                      <PhoneIcon />
-                    </span>
+                    <User
+                      size={17}
+                      strokeWidth={2}
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4E876E]"
+                    />
 
                     <input
-                      id="phone"
-                      type="tel"
-                      autoComplete="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+251 9XX XXX XXX"
+                      id="identifier"
+                      type="text"
+                      autoComplete="username"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      placeholder="you@example.com or username"
                       className="font-body w-full rounded-xl border border-[#2D312E]/12 bg-[#FAF9F6]/60 pl-10 pr-3.5 text-[14.5px] text-[#2D312E] placeholder:text-[#2D312E]/30 outline-none transition focus:bg-white focus:border-[#3D5A4C] focus:ring-4 focus:ring-[#3D5A4C]/10"
                       style={{
                         paddingTop: '11px',
@@ -271,7 +282,7 @@ export default function LoginPage() {
                     </label>
 
                     <a
-                      href="/portal/forgot-password"
+                      href="/auth/forgot-password"
                       className="font-body text-[12.5px] font-medium text-[#4E876E] hover:text-[#3D5A4C]"
                     >
                       Forgot password?
@@ -281,9 +292,11 @@ export default function LoginPage() {
 
                   <div className="relative">
 
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4E876E]">
-                      <LockIcon />
-                    </span>
+                    <Lock
+                      size={17}
+                      strokeWidth={2}
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4E876E]"
+                    />
 
                     <input
                       id="password"
@@ -292,7 +305,7 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="font-body w-full rounded-xl border border-[#2D312E]/12 bg-[#FAF9F6]/60 pl-10 pr-16 text-[14.5px] text-[#2D312E] placeholder:text-[#2D312E]/30 outline-none transition focus:bg-white focus:border-[#3D5A4C] focus:ring-4 focus:ring-[#3D5A4C]/10"
+                      className="font-body w-full rounded-xl border border-[#2D312E]/12 bg-[#FAF9F6]/60 pl-10 pr-11 text-[14.5px] text-[#2D312E] placeholder:text-[#2D312E]/30 outline-none transition focus:bg-white focus:border-[#3D5A4C] focus:ring-4 focus:ring-[#3D5A4C]/10"
                       style={{
                         paddingTop: '11px',
                         paddingBottom: '11px',
@@ -302,16 +315,16 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[12.5px] font-semibold text-[#4E876E]"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4E876E]"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
-                      {showPassword ? 'Hide' : 'Show'}
+                      {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                     </button>
 
                   </div>
 
                 </div>
-
-                {/* ERROR */}
+              {/* ERROR */}
                 {error && (
                   <p
                     role="alert"
@@ -335,20 +348,18 @@ export default function LoginPage() {
             </div>
           </div>
 
-      
-              {/* Nutritionist application */}
-        <div className="mt-6 pt-5 border-t border-[#2D312E]/[0.07] text-center">
-             <p className="font-body text-[12.5px] text-[#2D312E]/50">
-            Are you a nutritionist?{' '}
-          <a
-              href="/portal/nutritionist/apply"
-      className="font-semibold text-[#4E876E] hover:text-[#3D5A4C] transition"
-           >
-      Apply to join Megeb+ →
-           </a>
-           </p>
-        </div>
-
+          {/* Nutritionist application */}
+          <div className="mt-6 pt-5 border-t border-[#2D312E]/[0.07] text-center">
+            <p className="font-body text-[12.5px] text-[#2D312E]/50">
+              Are you a nutritionist?{' '}
+              <a
+                href="/nutritionist/apply"
+                className="font-semibold text-[#4E876E] hover:text-[#3D5A4C] transition"
+              >
+                Apply to join Megeb+ →
+              </a>
+            </p>
+          </div>
 
         </div>
 
@@ -357,41 +368,3 @@ export default function LoginPage() {
     </main>
   );
 }
-
-/* PHONE ICON */
-function PhoneIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-    </svg>
-  );
-}
-
-/* LOCK ICON */
-function LockIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-  );
-}
-
