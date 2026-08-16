@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import axios from "axios";
 import {
   ArrowLeft,
   ArrowRight,
@@ -11,6 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
+  Eye,
+  EyeOff,
   FileCheck2,
   FileText,
   GraduationCap,
@@ -46,7 +49,17 @@ type FormData = {
   fieldOfStudy: string;
   graduationYear: string;
 
+  password: string;
+  confirmPassword: string;
+
   declaration: boolean;
+};
+
+type FilesState = {
+  license_document: File | null;
+  credential_document: File | null;
+  insurance_document: File | null;
+  degree_document: File | null;
 };
 
 const initialFormData: FormData = {
@@ -75,8 +88,20 @@ const initialFormData: FormData = {
   fieldOfStudy: "",
   graduationYear: "",
 
+  password: "",
+  confirmPassword: "",
+
   declaration: false,
 };
+
+const initialFiles: FilesState = {
+  license_document: null,
+  credential_document: null,
+  insurance_document: null,
+  degree_document: null,
+};
+
+const API_URL = "http://127.0.0.1:8000";
 
 const steps = [
   {
@@ -104,7 +129,10 @@ const steps = [
 export default function NutritionistApplication() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [files, setFiles] = useState<FilesState>(initialFiles);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -117,6 +145,13 @@ export default function NutritionistApplication() {
         type === "checkbox"
           ? (e.target as HTMLInputElement).checked
           : value,
+    }));
+  };
+
+  const handleFileChange = (name: keyof FilesState, file: File | null) => {
+    setFiles((previous) => ({
+      ...previous,
+      [name]: file,
     }));
   };
 
@@ -134,15 +169,117 @@ export default function NutritionistApplication() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setSubmitError("");
 
     if (!formData.declaration) {
+      setSubmitError("Please confirm the declaration before submitting.");
       return;
     }
 
-    // Backend API will be connected here later.
-    setSubmitted(true);
+    if (formData.password !== formData.confirmPassword) {
+      setSubmitError("Passwords do not match.");
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setSubmitError("Password must be at least 8 characters.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    const fd = new FormData();
+
+    fd.append("full_name", formData.fullName);
+    fd.append("email", formData.email);
+    fd.append("phone", formData.phone);
+    fd.append("role", "nutritionist");
+    fd.append("password", formData.password);
+    fd.append("confirm_password", formData.confirmPassword);
+
+    fd.append(
+      "application_data",
+      JSON.stringify({
+        currentRole: formData.currentRole,
+        yearsOfExperience: formData.yearsOfExperience,
+        specialization: formData.specialization,
+        licenseNumber: formData.licenseNumber,
+        licenseState: formData.licenseState,
+        licenseExpiration: formData.licenseExpiration,
+        credentialType: formData.credentialType,
+        credentialNumber: formData.credentialNumber,
+        insuranceProvider: formData.insuranceProvider,
+        policyNumber: formData.policyNumber,
+        insuranceExpiration: formData.insuranceExpiration,
+        coverageLimit: formData.coverageLimit,
+        degree: formData.degree,
+        institution: formData.institution,
+        fieldOfStudy: formData.fieldOfStudy,
+        graduationYear: formData.graduationYear,
+      })
+    );
+
+    if (files.license_document) {
+      fd.append("license_document", files.license_document);
+    }
+
+    if (files.credential_document) {
+      fd.append("credential_document", files.credential_document);
+    }
+
+    if (files.insurance_document) {
+      fd.append("insurance_document", files.insurance_document);
+    }
+
+    if (files.degree_document) {
+      fd.append("degree_document", files.degree_document);
+    }
+
+    try {
+      await axios.post(`${API_URL}/api/auth/apply-staff/`, fd, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        timeout: 20000,
+      });
+
+      setSubmitted(true);
+    } catch (err) {
+      console.error("APPLICATION ERROR:", err);
+
+      if (axios.isAxiosError(err)) {
+        if (err.code === "ERR_NETWORK") {
+          setSubmitError(
+            "Cannot connect to the backend. Make sure Django is running at http://127.0.0.1:8000/"
+          );
+        } else if (err.response?.data) {
+          const data = err.response.data;
+          const messages: string[] = [];
+
+          Object.entries(data).forEach(([field, value]) => {
+            if (Array.isArray(value)) {
+              messages.push(`${field}: ${value.join(", ")}`);
+            } else {
+              messages.push(`${field}: ${String(value)}`);
+            }
+          });
+
+          setSubmitError(
+            messages.length > 0
+              ? messages.join(" | ")
+              : "Submission failed. Please check your information."
+          );
+        } else {
+          setSubmitError("Submission failed. Please try again.");
+        }
+      } else {
+        setSubmitError("Submission failed. Please try again.");
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -152,12 +289,11 @@ export default function NutritionistApplication() {
   return (
     <main className="min-h-screen bg-[#FAF9F6]">
       {/* HEADER */}
-      
 
       <header className="border-b border-[#2D312E]/[0.07] bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
-
           {/* Megeb+ Logo */}
+
           <div className="flex items-center">
             <span className="font-display text-[28px] font-bold tracking-tight text-[#DCC48E]">
               Megeb
@@ -169,6 +305,7 @@ export default function NutritionistApplication() {
           </div>
 
           {/* Back to Login */}
+
           <a
             href="/auth/login"
             className="font-body inline-flex items-center gap-2 text-[13px] font-semibold text-[#2D312E]/65 transition hover:text-[#4E876E]"
@@ -178,8 +315,9 @@ export default function NutritionistApplication() {
           </a>
         </div>
       </header>
+
       {/* HERO */}
-    
+
       <section
         className="relative overflow-hidden"
         style={{
@@ -188,6 +326,7 @@ export default function NutritionistApplication() {
         }}
       >
         {/* Decorative background */}
+
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div
             className="absolute -right-32 -top-40 h-[420px] w-[420px] rounded-full"
@@ -234,7 +373,9 @@ export default function NutritionistApplication() {
           </div>
         </div>
       </section>
-      {/* PROGRESS*/}
+
+      {/* PROGRESS */}
+
       <section className="border-b border-[#2D312E]/[0.07] bg-white">
         <div className="mx-auto max-w-5xl px-5 py-5 lg:px-8">
           <div className="flex items-center justify-center">
@@ -246,8 +387,8 @@ export default function NutritionistApplication() {
               return (
                 <div key={step.number} className="flex items-center">
                   <div className="flex flex-col items-center">
-
                     {/* Step Circle */}
+
                     <div
                       className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 ${
                         completed
@@ -265,6 +406,7 @@ export default function NutritionistApplication() {
                     </div>
 
                     {/* Step Label */}
+
                     <div className="mt-2 hidden text-center sm:block">
                       <p
                         className={`font-body text-[10px] font-bold uppercase tracking-[0.12em] ${
@@ -289,6 +431,7 @@ export default function NutritionistApplication() {
                   </div>
 
                   {/* Connecting Line */}
+
                   {index < steps.length - 1 && (
                     <div className="mx-2 h-[2px] w-8 sm:mx-4 sm:w-16">
                       <div
@@ -306,20 +449,19 @@ export default function NutritionistApplication() {
           </div>
 
           {/* Mobile Step Label */}
+
           <p className="font-body mt-3 text-center text-[11px] font-semibold text-[#2D312E]/45 sm:hidden">
             Step {currentStep} of 4 · {steps[currentStep - 1].label}
           </p>
         </div>
       </section>
 
-    
-      {/* FORM  */}
+      {/* FORM */}
 
       <div className="mx-auto max-w-5xl px-5 py-8 lg:px-8 lg:py-12">
         <form onSubmit={handleSubmit}>
-
           {/* STEP 1 — PERSONAL */}
-          
+
           {currentStep === 1 && (
             <FormSection
               number="01"
@@ -356,11 +498,32 @@ export default function NutritionistApplication() {
                   placeholder="+251 ..."
                   required
                 />
+
+                <Input
+                  label="Password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="At least 8 characters"
+                  required
+                />
+
+                <Input
+                  label="Confirm Password"
+                  name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Re-enter your password"
+                  required
+                />
               </div>
             </FormSection>
           )}
 
-          {/* STEP 2 — PROFESSIONAL*/}
+          {/* STEP 2 — PROFESSIONAL */}
+
           {currentStep === 2 && (
             <FormSection
               number="02"
@@ -403,11 +566,10 @@ export default function NutritionistApplication() {
             </FormSection>
           )}
 
-          {/* STEP 3 — CREDENTIALS  */}
-  
+          {/* STEP 3 — CREDENTIALS */}
+
           {currentStep === 3 && (
             <div className="space-y-6">
-
               <div className="mb-2">
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
@@ -428,6 +590,7 @@ export default function NutritionistApplication() {
               </div>
 
               {/* State License */}
+
               <CredentialCard
                 icon={<IdCard size={20} />}
                 title="State License (LDN/CD)"
@@ -464,11 +627,14 @@ export default function NutritionistApplication() {
                   <FileUpload
                     label="State License"
                     helperText="PDF, JPG or PNG · Max 10MB"
+                    name="license_document"
+                    onChange={handleFileChange}
                   />
                 </div>
               </CredentialCard>
 
               {/* National Credential */}
+
               <CredentialCard
                 icon={<Award size={20} />}
                 title="National Credential (RDN/CNS)"
@@ -510,12 +676,15 @@ export default function NutritionistApplication() {
                     <FileUpload
                       label="National Credential"
                       helperText="Verified via CDR / BCNS portal"
+                      name="credential_document"
+                      onChange={handleFileChange}
                     />
                   </div>
                 </div>
               </CredentialCard>
 
               {/* Insurance */}
+
               <CredentialCard
                 icon={<FileCheck2 size={20} />}
                 title="Certificate of Insurance (COI)"
@@ -562,12 +731,15 @@ export default function NutritionistApplication() {
                     <FileUpload
                       label="Certificate of Insurance"
                       helperText="Upload your current COI"
+                      name="insurance_document"
+                      onChange={handleFileChange}
                     />
                   </div>
                 </div>
               </CredentialCard>
 
               {/* Degree */}
+
               <CredentialCard
                 icon={<GraduationCap size={20} />}
                 title="Degree / Transcript"
@@ -615,18 +787,20 @@ export default function NutritionistApplication() {
                     <FileUpload
                       label="Degree / Transcript"
                       helperText="Upload your degree or official transcript"
+                      name="degree_document"
+                      onChange={handleFileChange}
                     />
                   </div>
                 </div>
               </CredentialCard>
             </div>
           )}
-          {/* STEP 4 — REVIEW & SUBMIT  */}
+
+          {/* STEP 4 — REVIEW & SUBMIT */}
+
           {currentStep === 4 && (
             <div className="space-y-6">
-
               <section className="overflow-hidden rounded-2xl border border-[#2D312E]/[0.07] bg-white shadow-[0_15px_35px_-18px_rgba(45,49,46,0.25)]">
-
                 <div className="border-b border-[#2D312E]/[0.06] bg-[#E9F0EC]/50 px-6 py-6 sm:px-7">
                   <div className="flex items-start gap-4">
                     <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-[#3D5A4C] text-white">
@@ -694,8 +868,8 @@ export default function NutritionistApplication() {
               </section>
 
               {/* Declaration */}
-              <section className="overflow-hidden rounded-2xl border border-[#2D312E]/[0.07] bg-white shadow-sm">
 
+              <section className="overflow-hidden rounded-2xl border border-[#2D312E]/[0.07] bg-white shadow-sm">
                 <div className="border-b border-[#2D312E]/[0.06] bg-[#FAF9F6] px-6 py-5 sm:px-7">
                   <h3 className="font-display text-[19px] text-[#2D312E]">
                     Declaration
@@ -708,7 +882,6 @@ export default function NutritionistApplication() {
 
                 <div className="p-6 sm:p-7">
                   <label className="flex cursor-pointer items-start gap-4">
-
                     <span className="relative mt-0.5 flex-shrink-0">
                       <input
                         type="checkbox"
@@ -734,15 +907,14 @@ export default function NutritionistApplication() {
                       Megeb+ may verify my credentials before approving my
                       application.
                     </span>
-
                   </label>
                 </div>
               </section>
 
               {/* What happens next */}
+
               <section className="rounded-2xl border border-[#DCC48E]/30 bg-[#DCC48E]/10 p-5 sm:p-6">
                 <div className="flex items-start gap-3">
-
                   <ShieldCheck
                     size={20}
                     className="mt-0.5 flex-shrink-0 text-[#4E876E]"
@@ -754,26 +926,37 @@ export default function NutritionistApplication() {
                     </h3>
 
                     <p className="font-body mt-1 text-[12.5px] leading-5 text-[#2D312E]/60">
-                      Your application will be reviewed by the Megeb+ team.
-                      If your credentials are approved, you will receive
-                      instructions to set up your nutritionist account.
+                      Your application will be reviewed by the Megeb+ team. If
+                      approved, you'll receive an email confirming your account
+                      is active — you can then log in right away using the
+                      email and password you set here.
                     </p>
                   </div>
-
                 </div>
               </section>
+
+              {/* SUBMIT ERROR */}
+
+              {submitError && (
+                <p
+                  role="alert"
+                  className="font-body rounded-lg border border-[#EB5757]/20 bg-[#EB5757]/8 px-4 py-3 text-[13px] text-[#EB5757]"
+                >
+                  {submitError}
+                </p>
+              )}
             </div>
           )}
 
           {/* BUTTONS */}
-        
-          <div className="mt-7 flex items-center justify-between gap-4">
 
+          <div className="mt-7 flex items-center justify-between gap-4">
             {currentStep > 1 ? (
               <button
                 type="button"
                 onClick={previousStep}
-                className="font-body inline-flex items-center gap-2 rounded-xl border border-[#2D312E]/15 bg-white px-5 py-3 text-[13px] font-semibold text-[#2D312E]/70 transition hover:border-[#3D5A4C]/30 hover:text-[#3D5A4C]"
+                disabled={submitting}
+                className="font-body inline-flex items-center gap-2 rounded-xl border border-[#2D312E]/15 bg-white px-5 py-3 text-[13px] font-semibold text-[#2D312E]/70 transition hover:border-[#3D5A4C]/30 hover:text-[#3D5A4C] disabled:opacity-60"
               >
                 <ChevronLeft size={17} />
                 Back
@@ -798,14 +981,17 @@ export default function NutritionistApplication() {
             ) : (
               <button
                 type="submit"
-                className="font-body group inline-flex items-center gap-2 rounded-xl bg-[#3D5A4C] px-6 py-3 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#4E876E] hover:shadow-md"
+                disabled={submitting}
+                className="font-body group inline-flex items-center gap-2 rounded-xl bg-[#3D5A4C] px-6 py-3 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#4E876E] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Submit Application
+                {submitting ? "Submitting…" : "Submit Application"}
 
-                <ArrowRight
-                  size={17}
-                  className="transition-transform group-hover:translate-x-0.5"
-                />
+                {!submitting && (
+                  <ArrowRight
+                    size={17}
+                    className="transition-transform group-hover:translate-x-0.5"
+                  />
+                )}
               </button>
             )}
           </div>
@@ -819,6 +1005,7 @@ export default function NutritionistApplication() {
     </main>
   );
 }
+
 /* FORM SECTION */
 
 function FormSection({
@@ -836,17 +1023,14 @@ function FormSection({
 }) {
   return (
     <section className="overflow-hidden rounded-2xl border border-[#2D312E]/[0.07] bg-white shadow-[0_15px_35px_-18px_rgba(45,49,46,0.25)]">
-
       <div className="border-b border-[#2D312E]/[0.06] px-6 py-6 sm:px-7">
         <div className="flex items-start gap-4">
-
           <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
             {icon}
           </div>
 
           <div>
             <div className="flex items-center gap-2">
-
               <span className="font-body text-[10px] font-bold tracking-[0.15em] text-[#DCC48E]">
                 STEP {number}
               </span>
@@ -856,7 +1040,6 @@ function FormSection({
               <span className="font-body text-[10px] font-semibold uppercase tracking-[0.1em] text-[#4E876E]">
                 Required
               </span>
-
             </div>
 
             <h2 className="font-display mt-1 text-[23px] text-[#2D312E]">
@@ -867,18 +1050,15 @@ function FormSection({
               {description}
             </p>
           </div>
-
         </div>
       </div>
 
-      <div className="p-6 sm:p-7">
-        {children}
-      </div>
-
+      <div className="p-6 sm:p-7">{children}</div>
     </section>
   );
 }
-/* CREDENTIAL CARD  */
+
+/* CREDENTIAL CARD */
 
 function CredentialCard({
   icon,
@@ -893,13 +1073,9 @@ function CredentialCard({
 }) {
   return (
     <section className="overflow-hidden rounded-2xl border border-[#2D312E]/[0.07] bg-white shadow-sm transition hover:shadow-md">
-
       <div className="border-b border-[#2D312E]/[0.06] bg-[#FAF9F6]/50 px-6 py-5 sm:px-7">
-
         <div className="flex items-start justify-between gap-4">
-
           <div className="flex items-start gap-4">
-
             <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
               {icon}
             </div>
@@ -913,24 +1089,20 @@ function CredentialCard({
                 {description}
               </p>
             </div>
-
           </div>
 
           <span className="hidden flex-shrink-0 rounded-full bg-[#E9F0EC] px-3 py-1 font-body text-[9px] font-bold uppercase tracking-[0.1em] text-[#3D5A4C] sm:block">
             Required
           </span>
-
         </div>
       </div>
 
-      <div className="p-6 sm:p-7">
-        {children}
-      </div>
-
+      <div className="p-6 sm:p-7">{children}</div>
     </section>
   );
 }
-/* INPUT*/
+
+/* INPUT */
 
 type InputProps = {
   label: string;
@@ -955,9 +1127,13 @@ function Input({
   required = false,
   min,
 }: InputProps) {
+  const [showPassword, setShowPassword] = useState(false);
+
+  const isPassword = type === "password";
+  const inputType = isPassword && showPassword ? "text" : type;
+
   return (
     <div>
-
       <label
         htmlFor={name}
         className="font-body mb-2 block text-[12px] font-semibold text-[#2D312E]/75"
@@ -965,27 +1141,48 @@ function Input({
         {label}
 
         {required && (
-          <span className="ml-1 text-[#4E876E]">
-            *
-          </span>
+          <span className="ml-1 text-[#4E876E]">*</span>
         )}
       </label>
 
-      <input
-        id={name}
-        type={type}
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        required={required}
-        min={min}
-        className="font-body w-full rounded-xl border border-[#2D312E]/12 bg-[#FAF9F6]/60 px-4 py-3 text-[13.5px] text-[#2D312E] outline-none transition placeholder:text-[#2D312E]/30 hover:border-[#2D312E]/20 focus:border-[#3D5A4C] focus:bg-white focus:ring-4 focus:ring-[#3D5A4C]/10"
-      />
+      <div className="relative">
+        <input
+          id={name}
+          type={inputType}
+          name={name}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          required={required}
+          min={min}
+          className={`font-body w-full rounded-xl border border-[#2D312E]/12 bg-[#FAF9F6]/60 px-4 py-3 text-[13.5px] text-[#2D312E] outline-none transition placeholder:text-[#2D312E]/30 hover:border-[#2D312E]/20 focus:border-[#3D5A4C] focus:bg-white focus:ring-4 focus:ring-[#3D5A4C]/10 ${
+            isPassword ? "pr-12" : ""
+          }`}
+        />
 
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() =>
+              setShowPassword((previous) => !previous)
+            }
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[#2D312E]/40 transition hover:text-[#3D5A4C] focus:outline-none"
+            aria-label={
+              showPassword ? "Hide password" : "Show password"
+            }
+          >
+            {showPassword ? (
+              <EyeOff size={18} />
+            ) : (
+              <Eye size={18} />
+            )}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
+
 /* SELECT */
 
 function SelectInput({
@@ -1007,7 +1204,6 @@ function SelectInput({
 }) {
   return (
     <div>
-
       <label
         htmlFor={name}
         className="font-body mb-2 block text-[12px] font-semibold text-[#2D312E]/75"
@@ -1015,9 +1211,7 @@ function SelectInput({
         {label}
 
         {required && (
-          <span className="ml-1 text-[#4E876E]">
-            *
-          </span>
+          <span className="ml-1 text-[#4E876E]">*</span>
         )}
       </label>
 
@@ -1030,15 +1224,11 @@ function SelectInput({
         className="font-body w-full rounded-xl border border-[#2D312E]/12 bg-[#FAF9F6]/60 px-4 py-3 text-[13.5px] text-[#2D312E] outline-none transition hover:border-[#2D312E]/20 focus:border-[#3D5A4C] focus:bg-white focus:ring-4 focus:ring-[#3D5A4C]/10"
       >
         {options.map((option) => (
-          <option
-            key={option.value}
-            value={option.value}
-          >
+          <option key={option.value} value={option.value}>
             {option.label}
           </option>
         ))}
       </select>
-
     </div>
   );
 }
@@ -1048,23 +1238,35 @@ function SelectInput({
 function FileUpload({
   label,
   helperText,
+  name,
+  onChange,
 }: {
   label: string;
   helperText: string;
+  name: string;
+  onChange: (name: keyof FilesState, file: File | null) => void;
 }) {
+  const [fileName, setFileName] = useState("");
+
+  const handleFileInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0] ?? null;
+
+    setFileName(file ? file.name : "");
+
+    onChange(name as keyof FilesState, file);
+  };
+
   return (
     <div>
-
       <label className="font-body mb-2 block text-[12px] font-semibold text-[#2D312E]/75">
         Upload {label}
 
-        <span className="ml-1 text-[#4E876E]">
-          *
-        </span>
+        <span className="ml-1 text-[#4E876E]">*</span>
       </label>
 
       <label className="group flex min-h-[78px] cursor-pointer items-center gap-3 rounded-xl border border-dashed border-[#2D312E]/20 bg-[#FAF9F6]/60 px-4 py-3.5 transition hover:border-[#4E876E] hover:bg-[#E9F0EC]/40">
-
         <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#4E876E]">
           <Upload
             size={18}
@@ -1073,8 +1275,8 @@ function FileUpload({
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="font-body text-[12.5px] font-semibold text-[#2D312E]/75">
-            Choose a file
+          <p className="font-body truncate text-[12.5px] font-semibold text-[#2D312E]/75">
+            {fileName || "Choose a file"}
           </p>
 
           <p className="font-body mt-0.5 truncate text-[10.5px] text-[#2D312E]/40">
@@ -1089,16 +1291,19 @@ function FileUpload({
 
         <input
           type="file"
+          name={name}
           className="hidden"
           accept=".pdf,.jpg,.jpeg,.png"
+          onChange={handleFileInputChange}
           required
         />
-
       </label>
     </div>
   );
 }
+
 /* REVIEW ROW */
+
 function ReviewRow({
   icon,
   title,
@@ -1110,13 +1315,11 @@ function ReviewRow({
 }) {
   return (
     <div className="flex gap-4 px-6 py-5 sm:px-7">
-
       <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[#E9F0EC] text-[#4E876E]">
         {icon}
       </div>
 
       <div className="min-w-0">
-
         <h3 className="font-body text-[12px] font-bold text-[#2D312E]">
           {title}
         </h3>
@@ -1131,20 +1334,19 @@ function ReviewRow({
             </p>
           ))}
         </div>
-
       </div>
     </div>
   );
 }
-/* SUCCESS SCREEN  */
+
+/* SUCCESS SCREEN */
 
 function ApplicationSubmitted() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#FAF9F6] px-5 py-10">
-
       <div className="w-full max-w-lg overflow-hidden rounded-3xl border border-[#2D312E]/[0.07] bg-white shadow-[0_25px_60px_-20px_rgba(45,49,46,0.25)]">
-
         {/* Success Header */}
+
         <div
           className="relative overflow-hidden px-6 py-10 text-center"
           style={{
@@ -1155,7 +1357,6 @@ function ApplicationSubmitted() {
           <div className="absolute -right-20 -top-20 h-48 w-48 rounded-full border border-[#DCC48E]/15" />
 
           <div className="relative">
-
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#DCC48E]">
               <CheckCircle2
                 size={42}
@@ -1171,15 +1372,13 @@ function ApplicationSubmitted() {
             <p className="font-body mt-3 text-[13px] leading-6 text-white/60">
               Thank you for applying to become a Megeb+ nutritionist.
             </p>
-
           </div>
         </div>
 
         {/* Success Content */}
+
         <div className="p-7 text-center sm:p-9">
-
           <div className="rounded-2xl border border-[#CCD6C4] bg-[#E9F0EC] p-5">
-
             <p className="font-body text-[9px] font-bold uppercase tracking-[0.16em] text-[#4E876E]">
               Application Status
             </p>
@@ -1192,21 +1391,19 @@ function ApplicationSubmitted() {
               Our team will review your credentials and contact you once a
               decision has been made.
             </p>
-
           </div>
 
           <div className="mt-5 flex items-start gap-3 rounded-xl bg-[#FAF9F6] p-4 text-left">
-
             <FileText
               size={18}
               className="mt-0.5 flex-shrink-0 text-[#4E876E]"
             />
 
             <p className="font-body text-[12px] leading-5 text-[#2D312E]/55">
-              If your application is approved, you will receive instructions
-              to set up your Megeb+ nutritionist account.
+              If your application is approved, you'll get an email letting you
+              know — then you can log in right away with the email and password
+              you just set.
             </p>
-
           </div>
 
           <a
@@ -1216,7 +1413,6 @@ function ApplicationSubmitted() {
             Back to Login
             <ArrowRight size={16} />
           </a>
-
         </div>
       </div>
     </main>
