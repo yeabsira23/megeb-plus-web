@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [email, setEmail] = useState("");
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -25,7 +26,8 @@ export default function LoginPage() {
     try {
       const response = await axios.post(
         'http://127.0.0.1:8000/api/auth/login/',
-        { identifier, password }
+        
+        {  email: identifier, password }
       );
 
       localStorage.setItem('access', response.data.access);
