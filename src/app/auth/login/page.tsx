@@ -1,15 +1,19 @@
- 'use client';
+'use client';
 
 import { useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const [identifier, setIdentifier] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [email, setEmail] = useState("");
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -25,16 +29,29 @@ export default function LoginPage() {
     try {
       const response = await axios.post(
         'http://127.0.0.1:8000/api/auth/login/',
-        { identifier, password }
+        {
+          email: identifier,
+          password,
+        }
       );
 
       localStorage.setItem('access', response.data.access);
       localStorage.setItem('refresh', response.data.refresh);
 
-      window.location.href = '/dashboard';
+      // Redirect based on user role
+      if (response.data.role === 'admin') {
+        router.push('/admin/dashboard');
+      } else if (response.data.role === 'nutritionist') {
+        router.push('/nutritionist/dashboard');
+      } else {
+        setError('Unknown user role.');
+      }
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.detail || 'Login failed. Check your credentials.');
+        setError(
+          err.response?.data?.detail ||
+            'Login failed. Check your credentials.'
+        );
       } else {
         setError('Login failed. Check your credentials.');
       }
@@ -103,15 +120,15 @@ export default function LoginPage() {
         </div>
 
         {/* BRAND */}
-      <div className="flex items-center">
-      <span className="font-display text-[38px] font-bold tracking-tight text-[#DCC48E]">
-        Megeb
-       </span>
+        <div className="flex items-center">
+          <span className="font-display text-[38px] font-bold tracking-tight text-[#DCC48E]">
+            Megeb
+          </span>
 
-       <span className="ml-1 font-display text-[44px] font-black leading-none text-[#DCC48E]">
-         +
-       </span>
-      </div>
+          <span className="ml-1 font-display text-[44px] font-black leading-none text-[#DCC48E]">
+            +
+          </span>
+        </div>
 
         {/* TEXT */}
         <div className="relative z-10 max-w-sm">
@@ -121,7 +138,8 @@ export default function LoginPage() {
           <p className="font-body text-[11px] tracking-[0.22em] uppercase text-[#CCD6C4] mb-4">
             Staff Portal
           </p>
-              <h1 className="font-display text-white text-[42px] leading-[1.12]">
+
+          <h1 className="font-display text-white text-[42px] leading-[1.12]">
             Welcome back.
           </h1>
 
@@ -204,14 +222,15 @@ export default function LoginPage() {
 
           {/* Mobile logo */}
           <div className="flex items-center md:hidden">
-  <span className="font-display text-[28px] font-bold tracking-tight text-[#DCC48E]">
-    Megeb
-  </span>
+            <span className="font-display text-[28px] font-bold tracking-tight text-[#DCC48E]">
+              Megeb
+            </span>
 
-  <span className="ml-1 font-display text-[34px] font-black leading-none text-[#DCC48E]">
-    +
-  </span>
-</div>
+            <span className="ml-1 font-display text-[34px] font-black leading-none text-[#DCC48E]">
+              +
+            </span>
+          </div>
+
           {/* LOGIN CARD */}
           <div className="bg-white rounded-2xl shadow-[0_24px_48px_-12px_rgba(61,90,76,0.18)] border border-[#2D312E]/[0.06] overflow-hidden">
 
@@ -227,6 +246,7 @@ export default function LoginPage() {
               <h2 className="font-display text-[#2D312E] text-[26px] mb-1">
                 Sign in
               </h2>
+
               <p className="font-body text-[#2D312E]/50 text-[13.5px] mb-7">
                 Enter your credentials to continue.
               </p>
@@ -316,15 +336,22 @@ export default function LoginPage() {
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4E876E]"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      aria-label={
+                        showPassword ? 'Hide password' : 'Show password'
+                      }
                     >
-                      {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                      {showPassword ? (
+                        <EyeOff size={17} />
+                      ) : (
+                        <Eye size={17} />
+                      )}
                     </button>
 
                   </div>
 
                 </div>
-              {/* ERROR */}
+
+                {/* ERROR */}
                 {error && (
                   <p
                     role="alert"
