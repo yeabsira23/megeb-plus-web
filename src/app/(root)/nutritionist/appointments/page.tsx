@@ -14,6 +14,7 @@ import {
 
 import Sidebar from "@/app/components/nutritionist/Sidebar";
 import Topbar from "@/app/components/nutritionist/Topbar";
+import Link from "next/link";
 
 type AppointmentStatus = "Confirmed" | "Pending" | "Cancelled";
 
@@ -192,13 +193,13 @@ export default function AppointmentsPage() {
               </p>
             </div>
 
-            <button
-              type="button"
-              className="flex w-fit items-center gap-2 rounded-xl bg-[#3D5A4C] px-5 py-3 font-body text-[12px] font-semibold text-white transition hover:bg-[#2D312E]"
-            >
-              <CalendarDays size={18} />
-              New Appointment
-            </button>
+           <Link
+  href="/nutritionist/appointments/new"
+  className="flex w-fit items-center gap-2 rounded-xl bg-[#3D5A4C] px-5 py-3 font-body text-[12px] font-semibold text-white transition hover:bg-[#2D312E]"
+>
+  <CalendarDays size={18} />
+  New Appointment
+</Link>
           </div>
 
           {/* ================= SUMMARY CARDS ================= */}
