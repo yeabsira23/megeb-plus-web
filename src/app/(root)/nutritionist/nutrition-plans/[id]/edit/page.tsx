@@ -18,12 +18,6 @@ import {
 import Sidebar from "@/app/components/nutritionist/Sidebar";
 import Topbar from "@/app/components/nutritionist/Topbar";
 
-type Client = {
-  id: string;
-  name: string;
-  age: number;
-};
-
 type NutritionPlan = {
   id: string;
   clientId: string;
@@ -38,29 +32,6 @@ type NutritionPlan = {
   mealPlan: string;
   notes: string;
 };
-
-const TEMPORARY_CLIENTS: Client[] = [
-  {
-    id: "1",
-    name: "Hana Tesfaye",
-    age: 28,
-  },
-  {
-    id: "2",
-    name: "Selam Alemu",
-    age: 34,
-  },
-  {
-    id: "3",
-    name: "Meron Kebede",
-    age: 25,
-  },
-  {
-    id: "4",
-    name: "Liya Michael",
-    age: 31,
-  },
-];
 
 const GOALS = [
   "Weight Management",
@@ -95,7 +66,6 @@ Dinner: Grilled fish with vegetables and whole grains`,
     id: "NP-002",
     clientId: "2",
     clientName: "Selam Alemu",
-   
     planName: "Balanced Nutrition Plan",
     goal: "Balanced Nutrition",
     startDate: "2026-08-05",
@@ -197,7 +167,7 @@ export default function EditNutritionPlanPage() {
   const [success, setSuccess] = useState(false);
   const [notFound, setNotFound] = useState(false);
 
-  const [clientId, setClientId] = useState("");
+  const [clientName, setClientName] = useState("");
   const [planName, setPlanName] = useState("");
   const [goal, setGoal] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -207,10 +177,6 @@ export default function EditNutritionPlanPage() {
   const [allergies, setAllergies] = useState("");
   const [mealPlan, setMealPlan] = useState("");
   const [notes, setNotes] = useState("");
-
-  const selectedClient = TEMPORARY_CLIENTS.find(
-    (client) => client.id === clientId
-  );
 
   useEffect(() => {
     let isMounted = true;
@@ -242,7 +208,7 @@ export default function EditNutritionPlanPage() {
           return;
         }
 
-        setClientId(plan.clientId);
+        setClientName(plan.clientName);
         setPlanName(plan.planName);
         setGoal(plan.goal);
         setStartDate(plan.startDate);
@@ -282,7 +248,6 @@ export default function EditNutritionPlanPage() {
      * await apiFetch(`/nutritionist/nutrition-plans/${planId}`, {
      *   method: "PUT",
      *   body: JSON.stringify({
-     *     client: clientId,
      *     planName,
      *     goal,
      *     startDate,
@@ -309,9 +274,7 @@ export default function EditNutritionPlanPage() {
   if (isLoading) {
     return (
       <main className="min-h-screen bg-[#FAF9F6] text-[#2D312E]">
-        <MobileHeader
-          setSidebarOpen={setSidebarOpen}
-        />
+        <MobileHeader setSidebarOpen={setSidebarOpen} />
 
         <Sidebar
           sidebarOpen={sidebarOpen}
@@ -324,10 +287,7 @@ export default function EditNutritionPlanPage() {
           <div className="flex min-h-[70vh] items-center justify-center px-5">
             <div className="text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
-                <Loader2
-                  size={21}
-                  className="animate-spin"
-                />
+                <Loader2 size={21} className="animate-spin" />
               </div>
 
               <h2 className="font-display mt-4 text-[20px]">
@@ -347,9 +307,7 @@ export default function EditNutritionPlanPage() {
   if (notFound) {
     return (
       <main className="min-h-screen bg-[#FAF9F6] text-[#2D312E]">
-        <MobileHeader
-          setSidebarOpen={setSidebarOpen}
-        />
+        <MobileHeader setSidebarOpen={setSidebarOpen} />
 
         <Sidebar
           sidebarOpen={sidebarOpen}
@@ -390,18 +348,13 @@ export default function EditNutritionPlanPage() {
 
   return (
     <main className="min-h-screen bg-[#FAF9F6] text-[#2D312E]">
-      {/* Mobile Header */}
-      <MobileHeader
-        setSidebarOpen={setSidebarOpen}
-      />
+      <MobileHeader setSidebarOpen={setSidebarOpen} />
 
-      {/* Sidebar */}
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
       />
 
-      {/* Main Content */}
       <div className="lg:pl-[250px]">
         <Topbar />
 
@@ -454,67 +407,6 @@ export default function EditNutritionPlanPage() {
             onSubmit={handleSubmit}
             className="rounded-2xl border border-[#2D312E]/[0.07] bg-white shadow-sm"
           >
-            {/* Client Information */}
-            <div className="border-b border-[#2D312E]/[0.06] p-5 sm:p-6">
-              <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
-                  <UserRound size={17} />
-                </div>
-
-                <div>
-                  <h2 className="font-display text-[19px]">
-                    Client Information
-                  </h2>
-
-                  <p className="font-body text-[10px] text-[#2D312E]/40">
-                    Select the client this plan is for.
-                  </p>
-                </div>
-              </div>
-
-              <label className="block">
-                <span className="font-body text-[10px] font-bold uppercase tracking-wider text-[#2D312E]/40">
-                  Client
-                </span>
-
-                <select
-                  required
-                  value={clientId}
-                  onChange={(e) => setClientId(e.target.value)}
-                  className="mt-2 w-full rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] px-4 py-3 font-body text-[11px] text-[#2D312E] outline-none transition focus:border-[#4E876E]/50 focus:ring-2 focus:ring-[#4E876E]/10"
-                >
-                  <option value="">Select a client</option>
-
-                  {TEMPORARY_CLIENTS.map((client) => (
-                    <option
-                      key={client.id}
-                      value={client.id}
-                    >
-                      {client.name} — {client.age} years old
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              {selectedClient && (
-                <div className="mt-3 flex items-center gap-3 rounded-xl bg-[#E9F0EC]/60 p-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#3D5A4C]">
-                    <UserRound size={15} />
-                  </div>
-
-                  <div>
-                    <p className="font-body text-[10px] font-bold text-[#3D5A4C]">
-                      {selectedClient.name}
-                    </p>
-
-                    <p className="font-body mt-0.5 text-[9px] text-[#3D5A4C]/50">
-                      Client #{selectedClient.id}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
             {/* Plan Details */}
             <div className="border-b border-[#2D312E]/[0.06] p-5 sm:p-6">
               <div className="mb-5 flex items-center gap-3">
@@ -534,6 +426,23 @@ export default function EditNutritionPlanPage() {
               </div>
 
               <div className="grid gap-5 sm:grid-cols-2">
+                {/* Client Name */}
+                <label className="block sm:col-span-2">
+                  <span className="font-body text-[10px] font-bold uppercase tracking-wider text-[#2D312E]/40">
+                    Client Name
+                  </span>
+
+                  <div className="mt-2 flex items-center gap-3 rounded-xl border border-[#2D312E]/[0.08] bg-[#F3F5F2] px-4 py-3">
+                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
+                      <UserRound size={15} />
+                    </div>
+
+                    <span className="font-body text-[11px] font-semibold text-[#2D312E]">
+                      {clientName}
+                    </span>
+                  </div>
+                </label>
+
                 {/* Plan Name */}
                 <label className="block sm:col-span-2">
                   <span className="font-body text-[10px] font-bold uppercase tracking-wider text-[#2D312E]/40">
@@ -544,9 +453,7 @@ export default function EditNutritionPlanPage() {
                     required
                     type="text"
                     value={planName}
-                    onChange={(e) =>
-                      setPlanName(e.target.value)
-                    }
+                    onChange={(e) => setPlanName(e.target.value)}
                     placeholder="e.g. Healthy Weight Management Plan"
                     className="mt-2 w-full rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] px-4 py-3 font-body text-[11px] text-[#2D312E] outline-none placeholder:text-[#2D312E]/30 focus:border-[#4E876E]/50 focus:ring-2 focus:ring-[#4E876E]/10"
                   />
@@ -567,10 +474,7 @@ export default function EditNutritionPlanPage() {
                     <option value="">Select a goal</option>
 
                     {GOALS.map((item) => (
-                      <option
-                        key={item}
-                        value={item}
-                      >
+                      <option key={item} value={item}>
                         {item}
                       </option>
                     ))}
@@ -593,9 +497,7 @@ export default function EditNutritionPlanPage() {
                       required
                       type="date"
                       value={startDate}
-                      onChange={(e) =>
-                        setStartDate(e.target.value)
-                      }
+                      onChange={(e) => setStartDate(e.target.value)}
                       className="w-full rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] px-4 py-3 pl-11 font-body text-[11px] text-[#2D312E] outline-none focus:border-[#4E876E]/50 focus:ring-2 focus:ring-[#4E876E]/10"
                     />
                   </div>
@@ -617,9 +519,7 @@ export default function EditNutritionPlanPage() {
                       required
                       type="date"
                       value={endDate}
-                      onChange={(e) =>
-                        setEndDate(e.target.value)
-                      }
+                      onChange={(e) => setEndDate(e.target.value)}
                       className="w-full rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] px-4 py-3 pl-11 font-body text-[11px] text-[#2D312E] outline-none focus:border-[#4E876E]/50 focus:ring-2 focus:ring-[#4E876E]/10"
                     />
                   </div>
@@ -637,9 +537,7 @@ export default function EditNutritionPlanPage() {
                       type="number"
                       min="1"
                       value={calories}
-                      onChange={(e) =>
-                        setCalories(e.target.value)
-                      }
+                      onChange={(e) => setCalories(e.target.value)}
                       placeholder="e.g. 1800"
                       className="w-full rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] px-4 py-3 pr-20 font-body text-[11px] text-[#2D312E] outline-none placeholder:text-[#2D312E]/30 focus:border-[#4E876E]/50 focus:ring-2 focus:ring-[#4E876E]/10"
                     />
@@ -679,9 +577,7 @@ export default function EditNutritionPlanPage() {
 
                   <textarea
                     value={preferences}
-                    onChange={(e) =>
-                      setPreferences(e.target.value)
-                    }
+                    onChange={(e) => setPreferences(e.target.value)}
                     placeholder="e.g. Vegetarian, high-protein, low-sodium..."
                     rows={3}
                     className="mt-2 w-full resize-none rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] px-4 py-3 font-body text-[11px] leading-5 text-[#2D312E] outline-none placeholder:text-[#2D312E]/30 focus:border-[#4E876E]/50 focus:ring-2 focus:ring-[#4E876E]/10"
@@ -696,9 +592,7 @@ export default function EditNutritionPlanPage() {
 
                   <textarea
                     value={allergies}
-                    onChange={(e) =>
-                      setAllergies(e.target.value)
-                    }
+                    onChange={(e) => setAllergies(e.target.value)}
                     placeholder="List any food allergies, intolerances, or restrictions..."
                     rows={3}
                     className="mt-2 w-full resize-none rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] px-4 py-3 font-body text-[11px] leading-5 text-[#2D312E] outline-none placeholder:text-[#2D312E]/30 focus:border-[#4E876E]/50 focus:ring-2 focus:ring-[#4E876E]/10"
@@ -733,9 +627,7 @@ export default function EditNutritionPlanPage() {
                 <textarea
                   required
                   value={mealPlan}
-                  onChange={(e) =>
-                    setMealPlan(e.target.value)
-                  }
+                  onChange={(e) => setMealPlan(e.target.value)}
                   placeholder={`Breakfast: Oatmeal with fruit and yogurt
 Lunch: Grilled chicken, rice and vegetables
 Snack: Fresh fruit and nuts
@@ -788,9 +680,7 @@ Dinner: Fish with vegetables and whole grains`}
                 >
                   <ClipboardList size={15} />
 
-                  {isSubmitting
-                    ? "Saving..."
-                    : "Save Changes"}
+                  {isSubmitting ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </div>
