@@ -1,16 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   ClipboardList,
   Plus,
   Search,
   UserRound,
   CalendarDays,
-  MoreHorizontal,
   CheckCircle2,
   Clock,
   FileText,
+  Pencil,
 } from "lucide-react";
 
 import Sidebar from "@/app/components/nutritionist/Sidebar";
@@ -43,7 +44,7 @@ function useNutritionPlans() {
 
       try {
         /*
-         * Backend API will be connected here.
+         * Backend API will be connected here later.
          *
          * Example:
          *
@@ -56,9 +57,66 @@ function useNutritionPlans() {
          * }
          */
 
-        // Temporary empty data until backend endpoint is confirmed.
+        // Temporary mock data until the backend endpoint is connected.
+        const mockPlans: NutritionPlan[] = [
+          {
+            id: "NP-001",
+            clientName: "Hana Tesfaye",
+            planName: "Healthy Weight Management",
+            goal: "Weight Management",
+            startDate: "Aug 12, 2026",
+            endDate: "Sep 12, 2026",
+            status: "Active",
+          },
+          {
+            id: "NP-002",
+            clientName: "Selam Alemu",
+            planName: "Balanced Nutrition Plan",
+            goal: "Balanced Nutrition",
+            startDate: "Aug 5, 2026",
+            endDate: "Sep 5, 2026",
+            status: "Active",
+          },
+          {
+            id: "NP-003",
+            clientName: "Meron Kebede",
+            planName: "Energy & Wellness Plan",
+            goal: "Improved Energy",
+            startDate: "Jul 20, 2026",
+            endDate: "Aug 20, 2026",
+            status: "Completed",
+          },
+          {
+            id: "NP-004",
+            clientName: "Liya Michael",
+            planName: "Healthy Weight Gain Plan",
+            goal: "Healthy Weight Gain",
+            startDate: "Aug 18, 2026",
+            endDate: "Oct 18, 2026",
+            status: "Draft",
+          },
+          {
+            id: "NP-005",
+            clientName: "Rahel Abraham",
+            planName: "Heart Healthy Nutrition",
+            goal: "Heart Health",
+            startDate: "Aug 10, 2026",
+            endDate: "Sep 10, 2026",
+            status: "Active",
+          },
+          {
+            id: "NP-006",
+            clientName: "Marta Yohannes",
+            planName: "General Wellness Plan",
+            goal: "General Wellness",
+            startDate: "Jul 1, 2026",
+            endDate: "Aug 1, 2026",
+            status: "Completed",
+          },
+        ];
+
         if (isMounted) {
-          setPlans([]);
+          setPlans(mockPlans);
         }
       } catch (err) {
         console.error("Unable to load nutrition plans:", err);
@@ -84,7 +142,6 @@ function useNutritionPlans() {
     plans,
     isLoading,
     error,
-    setPlans,
   };
 }
 
@@ -96,10 +153,12 @@ export default function NutritionPlansPage() {
   const [statusFilter, setStatusFilter] = useState("All plans");
 
   const filteredPlans = plans.filter((plan) => {
+    const searchQuery = query.toLowerCase();
+
     const matchesSearch =
-      plan.clientName.toLowerCase().includes(query.toLowerCase()) ||
-      plan.planName.toLowerCase().includes(query.toLowerCase()) ||
-      plan.goal.toLowerCase().includes(query.toLowerCase());
+      plan.clientName.toLowerCase().includes(searchQuery) ||
+      plan.planName.toLowerCase().includes(searchQuery) ||
+      plan.goal.toLowerCase().includes(searchQuery);
 
     const matchesStatus =
       statusFilter === "All plans" || plan.status === statusFilter;
@@ -139,12 +198,13 @@ export default function NutritionPlansPage() {
           type="button"
           onClick={() => setSidebarOpen(true)}
           className="rounded-xl p-2 text-[#3D5A4C] hover:bg-[#E9F0EC]"
+          aria-label="Open menu"
         >
           <ClipboardList size={22} />
         </button>
       </div>
 
-      {/* Reusable Sidebar */}
+      {/* Sidebar */}
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
@@ -152,10 +212,8 @@ export default function NutritionPlansPage() {
 
       {/* Main Content */}
       <div className="lg:pl-[250px]">
-        {/* Reusable Topbar */}
         <Topbar />
 
-        {/* Page Content */}
         <div className="mx-auto max-w-7xl px-5 py-7 sm:px-7 lg:px-8 lg:py-9">
           {/* Page Header */}
           <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
@@ -169,17 +227,19 @@ export default function NutritionPlansPage() {
               </h1>
 
               <p className="font-body mt-1 text-[12px] text-[#2D312E]/45">
-                Create and manage personalized nutrition plans for your clients.
+                Create and manage personalized nutrition plans for your
+                clients.
               </p>
             </div>
 
-            <button
-              type="button"
+            {/* Create Plan */}
+            <Link
+              href="/nutritionist/nutrition-plans/new"
               className="flex w-fit items-center gap-2 rounded-xl bg-[#3D5A4C] px-5 py-3 font-body text-[12px] font-semibold text-white transition hover:bg-[#2D312E]"
             >
               <Plus size={18} />
               Create Plan
-            </button>
+            </Link>
           </div>
 
           {/* Summary Cards */}
@@ -224,7 +284,7 @@ export default function NutritionPlansPage() {
                   </h2>
 
                   <p className="font-body mt-1 text-[11px] text-[#2D312E]/40">
-                    Manage your clients' personalized nutrition plans.
+                    Manage your clients&apos; personalized nutrition plans.
                   </p>
                 </div>
 
@@ -312,10 +372,7 @@ export default function NutritionPlansPage() {
                     </tr>
                   ) : filteredPlans.length === 0 ? (
                     <tr>
-                      <td
-                        colSpan={6}
-                        className="px-6 py-10 text-center"
-                      >
+                      <td colSpan={6} className="px-6 py-10 text-center">
                         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
                           <ClipboardList size={21} />
                         </div>
@@ -325,8 +382,7 @@ export default function NutritionPlansPage() {
                         </p>
 
                         <p className="font-body mt-1 text-[11px] text-[#2D312E]/40">
-                          Your nutrition plans will appear here once they are
-                          created.
+                          Try changing your search or filter.
                         </p>
                       </td>
                     </tr>
@@ -396,12 +452,13 @@ export default function NutritionPlansPage() {
 
                         {/* Action */}
                         <td className="px-6 py-5">
-                          <button
-                            type="button"
-                            className="rounded-lg p-2 text-[#2D312E]/40 transition hover:bg-[#E9F0EC] hover:text-[#3D5A4C]"
+                          <Link
+                            href={`/nutritionist/nutrition-plans/${plan.id}/edit`}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-[#CCD6C4] px-3 py-2 font-body text-[10px] font-bold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
                           >
-                            <MoreHorizontal size={19} />
-                          </button>
+                            <Pencil size={13} />
+                            Edit
+                          </Link>
                         </td>
                       </tr>
                     ))
@@ -427,8 +484,7 @@ export default function NutritionPlansPage() {
                   </p>
 
                   <p className="font-body mt-1 text-[11px] text-[#2D312E]/40">
-                    Your nutrition plans will appear here once they are
-                    created.
+                    Try changing your search or filter.
                   </p>
                 </div>
               ) : (
@@ -454,12 +510,14 @@ export default function NutritionPlansPage() {
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        className="text-[#2D312E]/35"
+                      <Link
+                        href={`/nutritionist/nutrition-plans/${plan.id}/edit`}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#CCD6C4] px-3 py-2 font-body text-[10px] font-bold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
+                        aria-label={`Edit ${plan.planName}`}
                       >
-                        <MoreHorizontal size={20} />
-                      </button>
+                        <Pencil size={13} />
+                        Edit
+                      </Link>
                     </div>
 
                     <div className="space-y-3">
