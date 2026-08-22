@@ -5,18 +5,21 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock,
-  MapPin,
   MoreHorizontal,
   Search,
   UserRound,
-  Video,
 } from "lucide-react";
+
+import Link from "next/link";
 
 import Sidebar from "@/app/components/nutritionist/Sidebar";
 import Topbar from "@/app/components/nutritionist/Topbar";
-import Link from "next/link";
 
-type AppointmentStatus = "Confirmed" | "Pending" | "Cancelled";
+type AppointmentStatus =
+  | "Confirmed"
+  | "Pending"
+  | "Completed"
+  | "Cancelled";
 
 type Appointment = {
   id: string;
@@ -24,17 +27,42 @@ type Appointment = {
   type: string;
   date: string;
   time: string;
-  mode: "Online" | "In Person";
   status: AppointmentStatus;
 };
 
 /*
+ * MOCK APPOINTMENT DATA
+ *
+ * Temporary data for frontend development.
+ * This will be replaced with the backend API later.
+ */
+
+const MOCK_APPOINTMENTS: Appointment[] = [
+  {
+    id: "1",
+    name: "Hana Tesfaye",
+    type: "Initial Consultation",
+    date: "Aug 25, 2026",
+    time: "10:00 AM",
+    status: "Confirmed",
+  },
+  {
+    id: "2",
+    name: "Selam Alemu",
+    type: "Follow-up Consultation",
+    date: "Aug 27, 2026",
+    time: "2:00 PM",
+    status: "Pending",
+  },
+];
+
+/*
  * APPOINTMENT DATA
  *
- * This is currently using temporary empty data.
+ * Currently using mock data.
  *
- * When the backend gives you the real endpoint, you will replace
- * the temporary section inside useAppointments() with apiFetch().
+ * When the backend endpoint is ready, replace the
+ * temporary data inside fetchAppointments() with apiFetch().
  */
 
 function useAppointments() {
@@ -64,9 +92,9 @@ function useAppointments() {
          * }
          */
 
-        // Temporary data until backend endpoint is available.
+        // Temporary mock data
         if (isMounted) {
-          setAppointments([]);
+          setAppointments(MOCK_APPOINTMENTS);
         }
       } catch (err) {
         console.error("Unable to load appointments:", err);
@@ -104,10 +132,11 @@ export default function AppointmentsPage() {
     useState("All appointments");
 
   /*
-   * Search + status filtering
+   * SEARCH + STATUS FILTER
    */
+
   const filteredAppointments = appointments.filter((appointment) => {
-    const searchText = query.toLowerCase();
+    const searchText = query.toLowerCase().trim();
 
     const matchesSearch =
       appointment.name.toLowerCase().includes(searchText) ||
@@ -121,8 +150,9 @@ export default function AppointmentsPage() {
   });
 
   /*
-   * Summary numbers
+   * SUMMARY NUMBERS
    */
+
   const totalAppointments = appointments.length;
 
   const upcomingAppointments = appointments.filter(
@@ -132,7 +162,7 @@ export default function AppointmentsPage() {
   ).length;
 
   const completedAppointments = appointments.filter(
-    (appointment) => appointment.status === "Confirmed"
+    (appointment) => appointment.status === "Completed"
   ).length;
 
   const pendingAppointments = appointments.filter(
@@ -145,6 +175,7 @@ export default function AppointmentsPage() {
 
       <div className="flex items-center justify-between border-b border-[#2D312E]/[0.07] bg-white px-5 py-4 lg:hidden">
         {/* Logo */}
+
         <div className="flex items-center">
           <span className="font-display text-[27px] font-bold tracking-tight text-[#DCC48E]">
             Megeb
@@ -156,13 +187,14 @@ export default function AppointmentsPage() {
         </div>
 
         {/* Menu */}
+
         <button
           type="button"
           onClick={() => setSidebarOpen(true)}
           className="rounded-xl p-2 text-[#3D5A4C] hover:bg-[#E9F0EC]"
           aria-label="Open menu"
         >
-          <CalendarDays size={22} />
+          <MoreHorizontal size={22} />
         </button>
       </div>
 
@@ -179,7 +211,6 @@ export default function AppointmentsPage() {
         <Topbar />
 
         <div className="mx-auto max-w-7xl px-5 py-7 sm:px-7 lg:px-8 lg:py-9">
-
           {/* ================= PAGE HEADER ================= */}
 
           <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
@@ -193,13 +224,13 @@ export default function AppointmentsPage() {
               </p>
             </div>
 
-           <Link
-  href="/nutritionist/appointments/new"
-  className="flex w-fit items-center gap-2 rounded-xl bg-[#3D5A4C] px-5 py-3 font-body text-[12px] font-semibold text-white transition hover:bg-[#2D312E]"
->
-  <CalendarDays size={18} />
-  New Appointment
-</Link>
+            <Link
+              href="/nutritionist/appointments/new"
+              className="flex w-fit items-center gap-2 rounded-xl bg-[#3D5A4C] px-5 py-3 font-body text-[12px] font-semibold text-white transition hover:bg-[#2D312E]"
+            >
+              <CalendarDays size={18} />
+              New Appointment
+            </Link>
           </div>
 
           {/* ================= SUMMARY CARDS ================= */}
@@ -237,26 +268,23 @@ export default function AppointmentsPage() {
           {/* ================= APPOINTMENTS ================= */}
 
           <section className="overflow-hidden rounded-2xl border border-[#2D312E]/[0.07] bg-white shadow-sm">
-
             {/* Section Header */}
 
             <div className="border-b border-[#2D312E]/[0.06] px-6 py-5">
               <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-
                 <div>
                   <h2 className="font-display text-[20px] text-[#2D312E]">
                     Upcoming Appointments
                   </h2>
 
                   <p className="font-body mt-1 text-[11px] text-[#2D312E]/40">
-                    Your scheduled consultations.
+                    Your scheduled online consultations.
                   </p>
                 </div>
 
                 {/* Search + Filter */}
 
                 <div className="flex flex-col gap-2 sm:flex-row">
-
                   {/* Search */}
 
                   <div className="relative">
@@ -284,6 +312,7 @@ export default function AppointmentsPage() {
                     <option>All appointments</option>
                     <option>Confirmed</option>
                     <option>Pending</option>
+                    <option>Completed</option>
                     <option>Cancelled</option>
                   </select>
                 </div>
@@ -304,10 +333,8 @@ export default function AppointmentsPage() {
 
             <div className="hidden overflow-x-auto md:block">
               <table className="w-full">
-
                 <thead>
                   <tr className="border-b border-[#2D312E]/[0.06] bg-[#FAF9F6] text-left">
-
                     <th className="px-6 py-4 font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/40">
                       Client
                     </th>
@@ -321,49 +348,39 @@ export default function AppointmentsPage() {
                     </th>
 
                     <th className="px-6 py-4 font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/40">
-                      Mode
-                    </th>
-
-                    <th className="px-6 py-4 font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/40">
                       Status
                     </th>
 
                     <th className="px-6 py-4 font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/40">
                       Action
                     </th>
-
                   </tr>
                 </thead>
 
                 <tbody>
-
                   {/* Loading */}
 
                   {isLoading ? (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={5}
                         className="px-6 py-10 text-center font-body text-[12px] text-[#2D312E]/40"
                       >
                         Loading appointments…
                       </td>
                     </tr>
-
                   ) : filteredAppointments.length === 0 ? (
-
                     /* Empty */
 
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={5}
                         className="px-6 py-10 text-center font-body text-[12px] text-[#2D312E]/40"
                       >
                         No appointments found.
                       </td>
                     </tr>
-
                   ) : (
-
                     /* Appointments */
 
                     filteredAppointments.map((appointment) => (
@@ -371,12 +388,10 @@ export default function AppointmentsPage() {
                         key={appointment.id}
                         className="border-b border-[#2D312E]/[0.05] last:border-0 hover:bg-[#FAF9F6]/60"
                       >
-
                         {/* Client */}
 
                         <td className="px-6 py-5">
                           <div className="flex items-center gap-3">
-
                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
                               <UserRound size={18} />
                             </div>
@@ -390,11 +405,10 @@ export default function AppointmentsPage() {
                                 Client #{appointment.id}
                               </p>
                             </div>
-
                           </div>
                         </td>
 
-                        {/* Date */}
+                        {/* Date & Time */}
 
                         <td className="px-6 py-5">
                           <p className="font-body text-[11px] font-semibold text-[#2D312E]/75">
@@ -412,23 +426,10 @@ export default function AppointmentsPage() {
 
                         {/* Type */}
 
-                        <td className="px-6 py-5 font-body text-[11px] text-[#2D312E]/60">
-                          {appointment.type}
-                        </td>
-
-                        {/* Mode */}
-
                         <td className="px-6 py-5">
-                          <div className="flex items-center gap-2 font-body text-[10px] text-[#2D312E]/60">
-
-                            {appointment.mode === "Online" ? (
-                              <Video size={15} />
-                            ) : (
-                              <MapPin size={15} />
-                            )}
-
-                            {appointment.mode}
-                          </div>
+                          <span className="font-body text-[11px] text-[#2D312E]/60">
+                            {appointment.type}
+                          </span>
                         </td>
 
                         {/* Status */}
@@ -448,11 +449,9 @@ export default function AppointmentsPage() {
                             <MoreHorizontal size={19} />
                           </button>
                         </td>
-
                       </tr>
                     ))
                   )}
-
                 </tbody>
               </table>
             </div>
@@ -460,34 +459,24 @@ export default function AppointmentsPage() {
             {/* ================= MOBILE CARDS ================= */}
 
             <div className="space-y-4 p-4 md:hidden">
-
               {isLoading ? (
-
                 <p className="py-8 text-center font-body text-[12px] text-[#2D312E]/40">
                   Loading appointments…
                 </p>
-
               ) : filteredAppointments.length === 0 ? (
-
                 <p className="py-8 text-center font-body text-[12px] text-[#2D312E]/40">
                   No appointments found.
                 </p>
-
               ) : (
-
                 filteredAppointments.map((appointment) => (
-
                   <div
                     key={appointment.id}
                     className="rounded-xl border border-[#2D312E]/[0.07] bg-[#FAF9F6]/50 p-4"
                   >
-
                     {/* Client Header */}
 
                     <div className="mb-4 flex items-center justify-between">
-
                       <div className="flex items-center gap-3">
-
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
                           <UserRound size={18} />
                         </div>
@@ -501,23 +490,20 @@ export default function AppointmentsPage() {
                             Client #{appointment.id}
                           </p>
                         </div>
-
                       </div>
 
                       <button
                         type="button"
-                        className="text-[#2D312E]/35"
+                        className="rounded-lg p-1 text-[#2D312E]/35 hover:bg-[#E9F0EC]"
                         aria-label="Appointment actions"
                       >
                         <MoreHorizontal size={20} />
                       </button>
-
                     </div>
 
                     {/* Details */}
 
                     <div className="space-y-3">
-
                       <div className="flex items-center gap-2 font-body text-[10px] text-[#2D312E]/60">
                         <CalendarDays size={15} />
                         {appointment.date}
@@ -528,28 +514,21 @@ export default function AppointmentsPage() {
                         {appointment.time}
                       </div>
 
-                      <div className="flex items-center gap-2 font-body text-[10px] text-[#2D312E]/60">
+                      <div>
+                        <p className="font-body text-[10px] font-semibold uppercase tracking-wider text-[#2D312E]/35">
+                          Type
+                        </p>
 
-                        {appointment.mode === "Online" ? (
-                          <Video size={15} />
-                        ) : (
-                          <MapPin size={15} />
-                        )}
-
-                        {appointment.mode}
+                        <p className="mt-1 font-body text-[10px] text-[#2D312E]/60">
+                          {appointment.type}
+                        </p>
                       </div>
 
-                      <p className="font-body text-[10px] text-[#2D312E]/60">
-                        {appointment.type}
-                      </p>
-
                       <StatusBadge status={appointment.status} />
-
                     </div>
                   </div>
                 ))
               )}
-
             </div>
           </section>
         </div>
@@ -573,9 +552,7 @@ function SummaryCard({
 }) {
   return (
     <div className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-
       <div className="mb-3 flex items-center justify-between">
-
         <p className="font-body text-[11px] font-semibold text-[#2D312E]/45">
           {label}
         </p>
@@ -583,7 +560,6 @@ function SummaryCard({
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
           {icon}
         </div>
-
       </div>
 
       <h2 className="font-display text-[27px] text-[#2D312E]">
@@ -593,7 +569,6 @@ function SummaryCard({
       <p className="font-body mt-1 text-[10px] text-[#4E876E]">
         {note}
       </p>
-
     </div>
   );
 }
@@ -612,7 +587,9 @@ function StatusBadge({
           ? "bg-[#E9F0EC] text-[#3D5A4C]"
           : status === "Pending"
             ? "bg-[#DCC48E]/20 text-[#8A6D32]"
-            : "bg-red-100 text-red-600"
+            : status === "Completed"
+              ? "bg-[#DDE8E0] text-[#315B45]"
+              : "bg-red-100 text-red-600"
       }`}
     >
       {status}

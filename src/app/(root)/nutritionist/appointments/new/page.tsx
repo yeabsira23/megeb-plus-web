@@ -7,7 +7,6 @@ import {
   CalendarDays,
   Check,
   Clock,
-  MapPin,
   Menu,
   MessageSquare,
   UserRound,
@@ -60,7 +59,6 @@ export default function NewAppointmentPage() {
   const [appointmentType, setAppointmentType] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [mode, setMode] = useState<"Online" | "In Person">("Online");
   const [notes, setNotes] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -90,7 +88,7 @@ export default function NewAppointmentPage() {
      *     type: appointmentType,
      *     date,
      *     time,
-     *     mode,
+     *     mode: "Online",
      *     notes,
      *   }),
      * });
@@ -190,8 +188,8 @@ export default function NewAppointmentPage() {
                 </p>
 
                 <p className="font-body mt-1 text-[10px] text-[#3D5A4C]/60">
-                  This is currently a mock appointment. It will be connected to
-                  the backend later.
+                  This is currently a mock appointment. It will be connected
+                  to the backend later.
                 </p>
               </div>
             </div>
@@ -370,88 +368,26 @@ export default function NewAppointmentPage() {
                 </h2>
 
                 <p className="font-body mt-1 text-[10px] text-[#2D312E]/40">
-                  Choose how the consultation will be conducted.
+                  Appointments are conducted online through video consultation.
                 </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                {/* Online */}
+              <div className="flex items-center gap-3 rounded-xl border border-[#4E876E] bg-[#E9F0EC] p-4">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[#3D5A4C]">
+                  <Video size={17} />
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => setMode("Online")}
-                  className={`flex items-center gap-3 rounded-xl border p-4 text-left transition ${
-                    mode === "Online"
-                      ? "border-[#4E876E] bg-[#E9F0EC]"
-                      : "border-[#2D312E]/[0.08] bg-[#FAF9F6] hover:border-[#CCD6C4]"
-                  }`}
-                >
-                  <div
-                    className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                      mode === "Online"
-                        ? "bg-white text-[#3D5A4C]"
-                        : "bg-white text-[#2D312E]/40"
-                    }`}
-                  >
-                    <Video size={17} />
-                  </div>
+                <div className="flex-1">
+                  <p className="font-body text-[11px] font-bold text-[#2D312E]">
+                    Online
+                  </p>
 
-                  <div className="flex-1">
-                    <p className="font-body text-[11px] font-bold text-[#2D312E]">
-                      Online
-                    </p>
+                  <p className="mt-0.5 font-body text-[9px] text-[#2D312E]/40">
+                    Video consultation
+                  </p>
+                </div>
 
-                    <p className="mt-0.5 font-body text-[9px] text-[#2D312E]/40">
-                      Video consultation
-                    </p>
-                  </div>
-
-                  {mode === "Online" && (
-                    <Check
-                      size={16}
-                      className="text-[#4E876E]"
-                    />
-                  )}
-                </button>
-
-                {/* In Person */}
-
-                <button
-                  type="button"
-                  onClick={() => setMode("In Person")}
-                  className={`flex items-center gap-3 rounded-xl border p-4 text-left transition ${
-                    mode === "In Person"
-                      ? "border-[#4E876E] bg-[#E9F0EC]"
-                      : "border-[#2D312E]/[0.08] bg-[#FAF9F6] hover:border-[#CCD6C4]"
-                  }`}
-                >
-                  <div
-                    className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                      mode === "In Person"
-                        ? "bg-white text-[#3D5A4C]"
-                        : "bg-white text-[#2D312E]/40"
-                    }`}
-                  >
-                    <MapPin size={17} />
-                  </div>
-
-                  <div className="flex-1">
-                    <p className="font-body text-[11px] font-bold text-[#2D312E]">
-                      In Person
-                    </p>
-
-                    <p className="mt-0.5 font-body text-[9px] text-[#2D312E]/40">
-                      Face-to-face consultation
-                    </p>
-                  </div>
-
-                  {mode === "In Person" && (
-                    <Check
-                      size={16}
-                      className="text-[#4E876E]"
-                    />
-                  )}
-                </button>
+                <Check size={16} className="text-[#4E876E]" />
               </div>
             </div>
 

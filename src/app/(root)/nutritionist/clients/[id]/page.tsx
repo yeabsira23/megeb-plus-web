@@ -56,6 +56,7 @@ type ClientDetails = {
   activityLevel: string;
   allergies: string;
 
+  nutritionPlanId: string;
   nutritionPlan: string;
   calories: string;
   dietType: string[];
@@ -99,6 +100,7 @@ const TEMPORARY_CLIENT_DETAILS: ClientDetails[] = [
     activityLevel: "Moderate",
     allergies: "No known allergies",
 
+    nutritionPlanId: "NP-001",
     nutritionPlan: "High-Protein Balanced Diet",
     calories: "1,800 kcal/day",
     dietType: ["High Protein", "Low Sugar", "Fiber Rich"],
@@ -167,6 +169,7 @@ const TEMPORARY_CLIENT_DETAILS: ClientDetails[] = [
     activityLevel: "Light",
     allergies: "No known allergies",
 
+    nutritionPlanId: "NP-002",
     nutritionPlan: "Diabetes-Friendly Meal Plan",
     calories: "1,700 kcal/day",
     dietType: ["Low Sugar", "High Fiber", "Balanced"],
@@ -227,6 +230,7 @@ const TEMPORARY_CLIENT_DETAILS: ClientDetails[] = [
     activityLevel: "Active",
     allergies: "Peanuts",
 
+    nutritionPlanId: "NP-003",
     nutritionPlan: "Balanced Lifestyle Plan",
     calories: "2,000 kcal/day",
     dietType: ["Balanced", "Whole Foods", "High Fiber"],
@@ -287,6 +291,7 @@ const TEMPORARY_CLIENT_DETAILS: ClientDetails[] = [
     activityLevel: "Light",
     allergies: "No known allergies",
 
+    nutritionPlanId: "NP-004",
     nutritionPlan: "Balanced Weight Management Plan",
     calories: "1,750 kcal/day",
     dietType: ["Balanced", "High Fiber", "Low Processed Foods"],
@@ -332,7 +337,7 @@ function useClient(clientId: string) {
         /*
          * TEMPORARY DATA
          *
-         * Later, replace this with:
+         * Later replace this with:
          *
          * const data = await apiFetch<ClientDetails>(
          *   `/nutritionist/clients/${clientId}`
@@ -381,24 +386,7 @@ export default function ClientDetailsPage() {
   if (isLoading) {
     return (
       <main className="min-h-screen bg-[#FAF9F6] text-[#2D312E]">
-        <div className="flex items-center justify-between border-b border-[#2D312E]/[0.07] bg-white px-5 py-4 lg:hidden">
-          <Link href="/nutritionist/dashboard">
-            <div className="rounded-full border border-[#CCD6C4] bg-[#E9F0EC] px-4 py-1.5">
-              <span className="font-display text-xl font-bold text-[#3D5A4C]">
-                Megeb<span className="text-[#4E876E]">+</span>
-              </span>
-            </div>
-          </Link>
-
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            className="rounded-xl p-2 text-[#3D5A4C] hover:bg-[#E9F0EC]"
-            aria-label="Open menu"
-          >
-            <Menu size={22} />
-          </button>
-        </div>
+        <MobileHeader setSidebarOpen={setSidebarOpen} />
 
         <Sidebar
           sidebarOpen={sidebarOpen}
@@ -431,24 +419,7 @@ export default function ClientDetailsPage() {
   if (!client) {
     return (
       <main className="min-h-screen bg-[#FAF9F6] text-[#2D312E]">
-        <div className="flex items-center justify-between border-b border-[#2D312E]/[0.07] bg-white px-5 py-4 lg:hidden">
-          <Link href="/nutritionist/dashboard">
-            <div className="rounded-full border border-[#CCD6C4] bg-[#E9F0EC] px-4 py-1.5">
-              <span className="font-display text-xl font-bold text-[#3D5A4C]">
-                Megeb<span className="text-[#4E876E]">+</span>
-              </span>
-            </div>
-          </Link>
-
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            className="rounded-xl p-2 text-[#3D5A4C] hover:bg-[#E9F0EC]"
-            aria-label="Open menu"
-          >
-            <Menu size={22} />
-          </button>
-        </div>
+        <MobileHeader setSidebarOpen={setSidebarOpen} />
 
         <Sidebar
           sidebarOpen={sidebarOpen}
@@ -489,50 +460,19 @@ export default function ClientDetailsPage() {
 
   return (
     <main className="min-h-screen bg-[#FAF9F6] text-[#2D312E]">
-      {/* ========================================= */}
-      {/* MOBILE HEADER */}
-      {/* ========================================= */}
-
-      <div className="flex items-center justify-between border-b border-[#2D312E]/[0.07] bg-white px-5 py-4 lg:hidden">
-        <Link href="/nutritionist/dashboard">
-          <div className="rounded-full border border-[#CCD6C4] bg-[#E9F0EC] px-4 py-1.5">
-            <span className="font-display text-xl font-bold text-[#3D5A4C]">
-              Megeb<span className="text-[#4E876E]">+</span>
-            </span>
-          </div>
-        </Link>
-
-        <button
-          type="button"
-          onClick={() => setSidebarOpen(true)}
-          className="rounded-xl p-2 text-[#3D5A4C] hover:bg-[#E9F0EC]"
-          aria-label="Open menu"
-        >
-          <Menu size={22} />
-        </button>
-      </div>
-
-      {/* ========================================= */}
-      {/* SIDEBAR */}
-      {/* ========================================= */}
+      <MobileHeader setSidebarOpen={setSidebarOpen} />
 
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
       />
 
-      {/* ========================================= */}
-      {/* MAIN CONTENT */}
-      {/* ========================================= */}
-
       <div className="lg:pl-[250px]">
         <Topbar />
 
         <div className="mx-auto max-w-7xl px-5 py-7 sm:px-7 lg:px-8 lg:py-9">
-          {/* ========================================= */}
-          {/* BACK */}
-          {/* ========================================= */}
 
+          {/* Back */}
           <Link
             href="/nutritionist/clients"
             className="mb-6 inline-flex items-center gap-2 font-body text-[11px] font-semibold text-[#4E876E] transition hover:text-[#3D5A4C]"
@@ -541,12 +481,10 @@ export default function ClientDetailsPage() {
             Back to Clients
           </Link>
 
-          {/* ========================================= */}
-          {/* CLIENT HEADER */}
-          {/* ========================================= */}
-
+          {/* Client Header */}
           <section className="mb-6 rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm sm:p-6">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+
               <div className="flex items-center gap-4">
                 <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
                   <UserRound size={27} />
@@ -579,6 +517,7 @@ export default function ClientDetailsPage() {
                         size={12}
                         className="text-[#4E876E]"
                       />
+
                       <span className="font-body text-[10px] text-[#2D312E]/55">
                         {client.phone}
                       </span>
@@ -589,6 +528,7 @@ export default function ClientDetailsPage() {
                         size={12}
                         className="text-[#4E876E]"
                       />
+
                       <span className="font-body text-[10px] text-[#2D312E]/55">
                         {client.email}
                       </span>
@@ -597,31 +537,32 @@ export default function ClientDetailsPage() {
                 </div>
               </div>
 
+              {/* Header Actions */}
               <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
+
+                <Link
+                  href={`/nutritionist/messages/${client.id}`}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#CCD6C4] px-4 py-2.5 font-body text-[10px] font-bold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
                 >
                   <MessageCircle size={14} />
                   Message
-                </button>
+                </Link>
 
-                <button
-                  type="button"
+                <Link
+                  href={`/nutritionist/appointments/new?clientId=${client.id}`}
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#3D5A4C] px-4 py-2.5 font-body text-[10px] font-bold text-white transition hover:bg-[#334B40]"
                 >
                   <CalendarDays size={14} />
                   Schedule
-                </button>
+                </Link>
+
               </div>
             </div>
           </section>
 
-          {/* ========================================= */}
-          {/* SUMMARY CARDS */}
-          {/* ========================================= */}
-
+          {/* Summary Cards */}
           <section className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
             {/* Goal */}
             <div className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm">
               <div className="flex items-center justify-between">
@@ -702,21 +643,18 @@ export default function ClientDetailsPage() {
               </p>
 
               <p className="font-body mt-1 text-[10px] text-[#2D312E]/40">
-                {client.nextAppointment.time || "No appointment scheduled"}
+                {client.nextAppointment.time ||
+                  "No appointment scheduled"}
               </p>
             </div>
           </section>
 
-          {/* ========================================= */}
-          {/* MAIN GRID */}
-          {/* ========================================= */}
-
+          {/* Main Grid */}
           <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-            {/* ========================================= */}
-            {/* LEFT COLUMN */}
-            {/* ========================================= */}
 
+            {/* LEFT COLUMN */}
             <div className="space-y-6">
+
               {/* Health Overview */}
               <section className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm sm:p-6">
                 <div className="mb-5 flex items-center gap-3">
@@ -736,6 +674,7 @@ export default function ClientDetailsPage() {
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
+
                   <div className="rounded-xl bg-[#FAF9F6] p-4">
                     <div className="flex items-center gap-2">
                       <Ruler
@@ -806,6 +745,7 @@ export default function ClientDetailsPage() {
                 </div>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
+
                   <div className="rounded-xl border border-[#2D312E]/[0.06] p-4">
                     <p className="font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/30">
                       Medical Condition
@@ -825,6 +765,7 @@ export default function ClientDetailsPage() {
                       {client.allergies}
                     </p>
                   </div>
+
                 </div>
               </section>
 
@@ -847,6 +788,7 @@ export default function ClientDetailsPage() {
                 </div>
 
                 <div className="mb-5 flex items-end justify-between">
+
                   <div>
                     <p className="font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/30">
                       Starting Weight
@@ -876,6 +818,7 @@ export default function ClientDetailsPage() {
                       {client.progress.currentWeight}
                     </p>
                   </div>
+
                 </div>
 
                 <div className="h-2 overflow-hidden rounded-full bg-[#E9F0EC]">
@@ -901,6 +844,7 @@ export default function ClientDetailsPage() {
               {/* Appointments */}
               <section className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm sm:p-6">
                 <div className="mb-5 flex items-center justify-between">
+
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
                       <CalendarDays size={17} />
@@ -917,12 +861,12 @@ export default function ClientDetailsPage() {
                     </div>
                   </div>
 
-                  <button
-                    type="button"
+                  <Link
+                    href={`/nutritionist/appointments?clientId=${client.id}`}
                     className="font-body text-[10px] font-bold text-[#4E876E] hover:text-[#3D5A4C]"
                   >
                     View All
-                  </button>
+                  </Link>
                 </div>
 
                 <div className="space-y-3">
@@ -932,6 +876,7 @@ export default function ClientDetailsPage() {
                       className="rounded-xl border border-[#2D312E]/[0.06] p-4"
                     >
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+
                         <div className="flex gap-3">
                           <div
                             className={`mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${
@@ -978,11 +923,9 @@ export default function ClientDetailsPage() {
               </section>
             </div>
 
-            {/* ========================================= */}
             {/* RIGHT COLUMN */}
-            {/* ========================================= */}
-
             <div className="space-y-6">
+
               {/* Current Nutrition Plan */}
               <section className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm sm:p-6">
                 <div className="mb-5 flex items-center gap-3">
@@ -1026,13 +969,13 @@ export default function ClientDetailsPage() {
                   ))}
                 </div>
 
-                <button
-                  type="button"
+                <Link
+                  href={`/nutritionist/nutrition-plans/${client.nutritionPlanId}`}
                   className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-[#CCD6C4] py-3 font-body text-[10px] font-bold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
                 >
                   <FileText size={14} />
                   View Full Meal Plan
-                </button>
+                </Link>
               </section>
 
               {/* Nutritionist Notes */}
@@ -1059,12 +1002,12 @@ export default function ClientDetailsPage() {
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  className="mt-4 w-full rounded-xl bg-[#3D5A4C] py-3 font-body text-[10px] font-bold text-white transition hover:bg-[#334B40]"
+                <Link
+                  href={`/nutritionist/clients/${client.id}/notes`}
+                  className="mt-4 flex w-full items-center justify-center rounded-xl bg-[#3D5A4C] py-3 font-body text-[10px] font-bold text-white transition hover:bg-[#334B40]"
                 >
                   Update Notes
-                </button>
+                </Link>
               </section>
 
               {/* Quick Actions */}
@@ -1078,8 +1021,10 @@ export default function ClientDetailsPage() {
                 </p>
 
                 <div className="mt-5 space-y-2">
-                  <button
-                    type="button"
+
+                  {/* Update Meal Plan */}
+                  <Link
+                    href={`/nutritionist/nutrition-plans/${client.nutritionPlanId}/edit`}
                     className="flex w-full items-center gap-3 rounded-xl border border-[#2D312E]/[0.07] px-4 py-3 text-left transition hover:bg-[#FAF9F6]"
                   >
                     <Utensils
@@ -1090,10 +1035,11 @@ export default function ClientDetailsPage() {
                     <span className="font-body text-[10px] font-semibold text-[#2D312E]/70">
                       Update Meal Plan
                     </span>
-                  </button>
+                  </Link>
 
-                  <button
-                    type="button"
+                  {/* Schedule Appointment */}
+                  <Link
+                    href={`/nutritionist/appointments/new?clientId=${client.id}`}
                     className="flex w-full items-center gap-3 rounded-xl border border-[#2D312E]/[0.07] px-4 py-3 text-left transition hover:bg-[#FAF9F6]"
                   >
                     <CalendarDays
@@ -1104,10 +1050,11 @@ export default function ClientDetailsPage() {
                     <span className="font-body text-[10px] font-semibold text-[#2D312E]/70">
                       Schedule Appointment
                     </span>
-                  </button>
+                  </Link>
 
-                  <button
-                    type="button"
+                  {/* Message Client */}
+                  <Link
+                    href={`/nutritionist/messages/${client.id}`}
                     className="flex w-full items-center gap-3 rounded-xl border border-[#2D312E]/[0.07] px-4 py-3 text-left transition hover:bg-[#FAF9F6]"
                   >
                     <MessageCircle
@@ -1118,7 +1065,8 @@ export default function ClientDetailsPage() {
                     <span className="font-body text-[10px] font-semibold text-[#2D312E]/70">
                       Message Client
                     </span>
-                  </button>
+                  </Link>
+
                 </div>
               </section>
             </div>
@@ -1126,5 +1074,32 @@ export default function ClientDetailsPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+function MobileHeader({
+  setSidebarOpen,
+}: {
+  setSidebarOpen: (open: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between border-b border-[#2D312E]/[0.07] bg-white px-5 py-4 lg:hidden">
+      <Link href="/nutritionist/dashboard">
+        <div className="rounded-full border border-[#CCD6C4] bg-[#E9F0EC] px-4 py-1.5">
+          <span className="font-display text-xl font-bold text-[#3D5A4C]">
+            Megeb<span className="text-[#4E876E]">+</span>
+          </span>
+        </div>
+      </Link>
+
+      <button
+        type="button"
+        onClick={() => setSidebarOpen(true)}
+        className="rounded-xl p-2 text-[#3D5A4C] hover:bg-[#E9F0EC]"
+        aria-label="Open menu"
+      >
+        <Menu size={22} />
+      </button>
+    </div>
   );
 }
