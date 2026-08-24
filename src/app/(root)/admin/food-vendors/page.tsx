@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Search, Check, X, Store } from 'lucide-react';
+import { Search, Check, X, Store, FileText } from 'lucide-react';
 import { apiFetch } from '@/app/lib/api';
+import DocumentPreviewModal, { SubmittedDocument } from  '@/app/components/admin/DocumentPreviewModal';
 
 type FoodVendorStatus = 'Pending' | 'Approved' | 'Rejected';
 
@@ -17,7 +18,62 @@ type FoodVendorApplication = {
   address: string;
   status: FoodVendorStatus;
   appliedDate: string;
+  documents: SubmittedDocument[];
 };
+
+const DEFAULT_VENDORS: FoodVendorApplication[] = [
+  {
+    id: '1',
+    businessName: 'Green Table Catering',
+    ownerName: 'Hanna Girma',
+    email: 'hanna@greentable.et',
+    phone: '+251 91 111 2222',
+    businessLicenseNumber: 'BL-77291',
+    foodSafetyCertNumber: 'FSC-40218',
+    address: 'Bole Road, Addis Ababa',
+    status: 'Pending',
+    appliedDate: 'Aug 18, 2026',
+    documents: [
+      { label: 'Business License', fileName: 'business_license.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 18, 2026' },
+      { label: 'Food Safety Certificate', fileName: 'food_safety_cert.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 18, 2026' },
+      { label: 'Owner ID', fileName: 'owner_id.jpg', fileType: 'image', fileUrl: '', uploadedDate: 'Aug 18, 2026' },
+    ],
+  },
+  {
+    id: '2',
+    businessName: 'Fresh Harvest Foods',
+    ownerName: 'Dawit Mulu',
+    email: 'dawit@freshharvest.et',
+    phone: '+251 92 222 3333',
+    businessLicenseNumber: 'BL-55043',
+    foodSafetyCertNumber: 'FSC-19087',
+    address: 'Kazanchis, Addis Ababa',
+    status: 'Pending',
+    appliedDate: 'Aug 17, 2026',
+    documents: [
+      { label: 'Business License', fileName: 'business_license.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 17, 2026' },
+      { label: 'Food Safety Certificate', fileName: 'food_safety_cert.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 17, 2026' },
+      { label: 'Owner ID', fileName: 'owner_id.jpg', fileType: 'image', fileUrl: '', uploadedDate: 'Aug 17, 2026' },
+    ],
+  },
+  {
+    id: '3',
+    businessName: 'Habesha Kitchen',
+    ownerName: 'Selam Tesfaye',
+    email: 'selam@habeshakitchen.et',
+    phone: '+251 93 333 4444',
+    businessLicenseNumber: 'BL-30982',
+    foodSafetyCertNumber: 'FSC-77654',
+    address: 'Piassa, Addis Ababa',
+    status: 'Approved',
+    appliedDate: 'Aug 5, 2026',
+    documents: [
+      { label: 'Business License', fileName: 'business_license.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 5, 2026' },
+      { label: 'Food Safety Certificate', fileName: 'food_safety_cert.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 5, 2026' },
+      { label: 'Owner ID', fileName: 'owner_id.jpg', fileType: 'image', fileUrl: '', uploadedDate: 'Aug 5, 2026' },
+    ],
+  },
+];
 
 const STATUS_FILTERS: (FoodVendorStatus | 'All')[] = ['All', 'Pending', 'Approved', 'Rejected'];
 
@@ -35,7 +91,7 @@ function useFoodVendorApplications() {
         // Backend API will be connected here later.
         // const data = await apiFetch<FoodVendorApplication[]>('/admin/food-vendors');
         // if (isMounted) setApplications(data);
-        if (isMounted) setApplications([]);
+        if (isMounted) setApplications(DEFAULT_VENDORS); // TEMP: sample data for preview
       } catch (err) {
         console.error('Unable to load food vendor applications:', err);
         if (isMounted) setError('Unable to load food vendor applications.');
@@ -55,6 +111,7 @@ export default function FoodVendorsPage() {
   const [statusFilter, setStatusFilter] = useState<FoodVendorStatus | 'All'>('All');
   const [query, setQuery] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<SubmittedDocument | null>(null);
 
   const filtered = applications.filter((vendor) => {
     const matchesStatus = statusFilter === 'All' || vendor.status === statusFilter;
@@ -193,6 +250,26 @@ export default function FoodVendorsPage() {
                         </div>
                       </div>
 
+                      <div className="mt-4">
+                        <p className="mb-2 text-[11px] font-semibold text-[#2D312E]/70">Submitted Documents</p>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {vendor.documents.map((doc) => (
+                            <button
+                              key={doc.label}
+                              type="button"
+                              onClick={() => setPreviewDoc(doc)}
+                              className="flex items-center gap-2.5 rounded-xl border border-[#2D312E]/10 bg-white px-3 py-2.5 text-left transition hover:border-[#3D5A4C]/30 hover:bg-[#E9F0EC]/30"
+                            >
+                              <FileText className="h-4 w-4 shrink-0 text-[#4E876E]" />
+                              <div className="min-w-0">
+                                <p className="truncate text-[11px] font-semibold text-[#2D312E]">{doc.label}</p>
+                                <p className="truncate text-[9.5px] text-[#2D312E]/40">{doc.fileName}</p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
                       {vendor.status === 'Pending' && (
                         <div className="mt-4 flex items-center gap-2">
                           <button
@@ -221,6 +298,8 @@ export default function FoodVendorsPage() {
           </div>
         )}
       </section>
+
+      <DocumentPreviewModal document={previewDoc} onClose={() => setPreviewDoc(null)} />
     </div>
   );
 }

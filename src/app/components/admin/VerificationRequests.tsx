@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight, UserCheck } from 'lucide-react';
 import { apiFetch } from '@/app/lib/api';
+import { useRouter } from 'next/navigation';
 
 export type VerificationRequest = {
   id: string;
@@ -31,6 +32,7 @@ function useVerificationRequests() {
   const [requests, setRequests] = useState<VerificationRequest[]>(DEFAULT_REQUESTS);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+   
 
   useEffect(() => {
     let isMounted = true;
@@ -64,12 +66,15 @@ export default function VerificationRequests({ requests: requestsProp }: Verific
   const requests = requestsProp ?? fetched.requests;
   const isLoading = requestsProp ? false : fetched.isLoading;
   const error = requestsProp ? null : fetched.error;
+   const router = useRouter();
 
-  const handleReview = (id: string) => {
+  const handleReview = (request: VerificationRequest) => {
+     const params = new URLSearchParams({ status: 'pending', search: request.name });
+    router.push(`/admin/verification-requests?${params.toString()}`);
     // Backend API will be connected here later — e.g. navigate to a
     // detail/review page, or open a modal that calls:
     // await apiFetch(`/admin/verification-requests/${id}`, { method: 'PATCH', data: { status: 'approved' } });
-    console.log('Review request', id);
+    //console.log('Review request', id);
   };
 
   return (
@@ -112,7 +117,7 @@ export default function VerificationRequests({ requests: requestsProp }: Verific
               </div>
               <button
                 type="button"
-                onClick={() => handleReview(request.id)}
+                onClick={() => router.push('/admin/verification-requests')}
                 className="flex items-center gap-0.5 rounded-lg border border-[#3D5A4C]/15 px-2.5 py-1.5 text-[10px] font-semibold text-[#3D5A4C] hover:bg-[#E9F0EC]"
               >
                 Review

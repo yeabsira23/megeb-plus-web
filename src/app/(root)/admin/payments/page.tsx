@@ -15,6 +15,13 @@ type Payment = {
   date: string;
 };
 
+const DEFAULT_PAYMENTS: Payment[] = [
+  { id: '1', user: 'Sara Abebe', amount: 'ETB 450', method: 'Telebirr', status: 'Completed', date: 'Aug 20, 2026' },
+  { id: '2', user: 'Mekdes Tadesse', amount: 'ETB 300', method: 'CBE Birr', status: 'Completed', date: 'Aug 19, 2026' },
+  { id: '3', user: 'Abel Tesfaye', amount: 'ETB 600', method: 'Telebirr', status: 'Pending', date: 'Aug 19, 2026' },
+  { id: '4', user: 'Rahel Girma', amount: 'ETB 250', method: 'Visa', status: 'Failed', date: 'Aug 18, 2026' },
+];
+
 function usePayments() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,7 +36,7 @@ function usePayments() {
         // Backend API will be connected here later.
         // const data = await apiFetch<Payment[]>('/admin/payments');
         // if (isMounted) setPayments(data);
-        if (isMounted) setPayments([]);
+        if (isMounted) setPayments(DEFAULT_PAYMENTS); // TEMP: sample data for preview
       } catch (err) {
         console.error('Unable to load payments:', err);
         if (isMounted) setError('Unable to load payments.');
@@ -43,7 +50,6 @@ function usePayments() {
 
   return { payments, isLoading, error };
 }
-
 export default function PaymentsPage() {
   const { payments, isLoading, error } = usePayments();
   const [query, setQuery] = useState('');

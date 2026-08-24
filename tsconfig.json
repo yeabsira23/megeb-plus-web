@@ -35,7 +35,7 @@
     "**/*.mts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "src/app/(root)/admin/verification-requests"  ],
   "exclude": [
     "node_modules"
   ]
