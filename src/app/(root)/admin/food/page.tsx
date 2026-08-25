@@ -15,6 +15,14 @@ type FoodItem = {
   servingSize: string;
 };
 
+const DEFAULT_FOOD_ITEMS: FoodItem[] = [
+  { id: '1', name: 'Injera', category: 'Grains', calories: 85, protein: 2.6, carbs: 17, fat: 0.5, servingSize: '1 piece (60g)' },
+  { id: '2', name: 'Shiro Wat', category: 'Legumes', calories: 190, protein: 9, carbs: 22, fat: 8, servingSize: '1 cup (200g)' },
+  { id: '3', name: 'Doro Wat', category: 'Poultry', calories: 320, protein: 28, carbs: 6, fat: 20, servingSize: '1 serving (250g)' },
+  { id: '4', name: 'Tibs', category: 'Meat', calories: 280, protein: 24, carbs: 3, fat: 19, servingSize: '1 serving (200g)' },
+  { id: '5', name: 'Gomen', category: 'Vegetables', calories: 60, protein: 3, carbs: 8, fat: 2, servingSize: '1 cup (150g)' },
+];
+
 function useFoodItems() {
   const [items, setItems] = useState<FoodItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,7 +37,7 @@ function useFoodItems() {
         // Backend API will be connected here later.
         // const data = await apiFetch<FoodItem[]>('/admin/food');
         // if (isMounted) setItems(data);
-        if (isMounted) setItems([]);
+        if (isMounted) setItems(DEFAULT_FOOD_ITEMS); // TEMP: sample data for preview
       } catch (err) {
         console.error('Unable to load food items:', err);
         if (isMounted) setError('Unable to load food items.');

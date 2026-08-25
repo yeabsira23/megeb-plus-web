@@ -387,6 +387,18 @@ export default function LoginPage() {
               </a>
             </p>
           </div>
+          {/* Vendor registration */}
+          <div className="mt-3 text-center">
+            <p className="font-body text-[12.5px] text-[#2D312E]/50">
+               Own a food business?{' '}
+    
+             <a href="/auth/vendor-register"
+              className="font-semibold text-[#4E876E] hover:text-[#3D5A4C] transition"
+               >
+             Register as a vendor →
+             </a>
+            </p>
+         </div>
 
         </div>
 
