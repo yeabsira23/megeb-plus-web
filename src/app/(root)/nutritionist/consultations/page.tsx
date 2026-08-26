@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -142,7 +142,7 @@ const TEMPORARY_MESSAGES: Record<string, Message[]> = {
   ],
 };
 
-export default function ConsultationsPage() {
+function ConsultationsContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Default client when opening the consultation page normally.
@@ -650,5 +650,23 @@ export default function ConsultationsPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function ConsultationsPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-[#FAF9F6] text-[#2D312E]">
+          <div className="flex min-h-screen items-center justify-center">
+            <p className="font-body text-[11px] text-[#2D312E]/40">
+              Loading consultations...
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <ConsultationsContent />
+    </Suspense>
   );
 }
