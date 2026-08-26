@@ -12,6 +12,7 @@ import {
   Clock,
   FileText,
   Pencil,
+  Eye,
 } from "lucide-react";
 
 import Sidebar from "@/app/components/nutritionist/Sidebar";
@@ -355,7 +356,7 @@ export default function NutritionPlansPage() {
                     </th>
 
                     <th className="px-6 py-4 font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/40">
-                      Action
+                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -372,7 +373,10 @@ export default function NutritionPlansPage() {
                     </tr>
                   ) : filteredPlans.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-10 text-center">
+                      <td
+                        colSpan={6}
+                        className="px-6 py-10 text-center"
+                      >
                         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
                           <ClipboardList size={21} />
                         </div>
@@ -450,15 +454,27 @@ export default function NutritionPlansPage() {
                           <StatusBadge status={plan.status} />
                         </td>
 
-                        {/* Action */}
+                        {/* Actions */}
                         <td className="px-6 py-5">
-                          <Link
-                            href={`/nutritionist/nutrition-plans/${plan.id}/edit`}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-[#CCD6C4] px-3 py-2 font-body text-[10px] font-bold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
-                          >
-                            <Pencil size={13} />
-                            Edit
-                          </Link>
+                          <div className="flex items-center gap-2">
+                            {/* View */}
+                            <Link
+                              href={`/nutritionist/nutrition-plans/${plan.id}`}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-[#CCD6C4] px-3 py-2 font-body text-[10px] font-bold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
+                            >
+                              <Eye size={13} />
+                              View
+                            </Link>
+
+                            {/* Edit */}
+                            <Link
+                              href={`/nutritionist/nutrition-plans/${plan.id}/edit`}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-[#3D5A4C] px-3 py-2 font-body text-[10px] font-bold text-white transition hover:bg-[#334B40]"
+                            >
+                              <Pencil size={13} />
+                              Edit
+                            </Link>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -493,7 +509,7 @@ export default function NutritionPlansPage() {
                     key={plan.id}
                     className="rounded-xl border border-[#2D312E]/[0.07] bg-[#FAF9F6]/50 p-4"
                   >
-                    <div className="mb-4 flex items-center justify-between">
+                    <div className="mb-4 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
                           <UserRound size={18} />
@@ -509,15 +525,6 @@ export default function NutritionPlansPage() {
                           </p>
                         </div>
                       </div>
-
-                      <Link
-                        href={`/nutritionist/nutrition-plans/${plan.id}/edit`}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#CCD6C4] px-3 py-2 font-body text-[10px] font-bold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
-                        aria-label={`Edit ${plan.planName}`}
-                      >
-                        <Pencil size={13} />
-                        Edit
-                      </Link>
                     </div>
 
                     <div className="space-y-3">
@@ -536,6 +543,27 @@ export default function NutritionPlansPage() {
                       </div>
 
                       <StatusBadge status={plan.status} />
+
+                      {/* Mobile Actions */}
+                      <div className="grid grid-cols-2 gap-2 pt-2">
+                        {/* View */}
+                        <Link
+                          href={`/nutritionist/nutrition-plans/${plan.id}`}
+                          className="flex items-center justify-center gap-1.5 rounded-lg border border-[#CCD6C4] px-3 py-2.5 font-body text-[10px] font-bold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
+                        >
+                          <Eye size={13} />
+                          View
+                        </Link>
+
+                        {/* Edit */}
+                        <Link
+                          href={`/nutritionist/nutrition-plans/${plan.id}/edit`}
+                          className="flex items-center justify-center gap-1.5 rounded-lg bg-[#3D5A4C] px-3 py-2.5 font-body text-[10px] font-bold text-white transition hover:bg-[#334B40]"
+                        >
+                          <Pencil size={13} />
+                          Edit
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 ))
