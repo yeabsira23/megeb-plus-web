@@ -2,13 +2,8 @@
 
 import { JitsiMeeting } from "@jitsi/react-sdk";
 import { useParams, useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  PhoneOff,
-  UserRound,
-  Video,
-} from "lucide-react";
-import { useMemo, useState } from "react";
+import { ArrowLeft, UserRound, Video } from "lucide-react";
+import { useMemo } from "react";
 
 type Client = {
   id: string;
@@ -49,14 +44,13 @@ export default function VideoConsultationPage() {
     TEMPORARY_CLIENTS.find((item) => item.id === clientId) ??
     TEMPORARY_CLIENTS[0];
 
-  const [callEnded, setCallEnded] = useState(false);
-
   /*
    * Each client gets their own consultation room.
    *
-   * Example:
-   * Hana -> megeb-consultation-1
+   * Hana  -> megeb-consultation-1
    * Selam -> megeb-consultation-2
+   * Meron -> megeb-consultation-3
+   * Liya  -> megeb-consultation-4
    */
   const roomName = useMemo(
     () => `megeb-consultation-${client.id}`,
@@ -67,14 +61,6 @@ export default function VideoConsultationPage() {
     router.push(
       `/nutritionist/consultations?clientId=${client.id}`
     );
-  }
-
-  function endCall() {
-    setCallEnded(true);
-
-    setTimeout(() => {
-      goBack();
-    }, 800);
   }
 
   return (
@@ -127,84 +113,43 @@ export default function VideoConsultationPage() {
         </div>
       </header>
 
-      {/* Main Area */}
-      <div className="relative flex min-h-[calc(100vh-64px)] flex-col">
-        {/* Jitsi Meeting */}
+      {/* Main Video Area */}
+      <div className="flex min-h-[calc(100vh-64px)] flex-col">
         <div className="flex flex-1 items-center justify-center p-3 sm:p-5">
-          <div className="h-[calc(100vh-150px)] min-h-[520px] w-full max-w-7xl overflow-hidden rounded-2xl bg-[#151A18] shadow-2xl">
-            {!callEnded ? (
-              <JitsiMeeting
-                domain="meet.jit.si"
-                roomName={roomName}
-                userInfo={{
-  displayName: "Megeb+ Nutritionist",
-  email: "nutritionist@megebplus.com",
-}}
-                configOverwrite={{
-                  startWithAudioMuted: false,
-                  startWithVideoMuted: false,
-                  prejoinConfig: {
-                    enabled: true,
-                  },
-                  disableModeratorIndicator: true,
-                  enableEmailInStats: false,
-                }}
-                interfaceConfigOverwrite={{
-                  DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-                  MOBILE_APP_PROMO: false,
-                  TILE_VIEW_MAX_COLUMNS: 2,
-                }}
-                onReadyToClose={() => {
-                  goBack();
-                }}
-                getIFrameRef={(iframeRef) => {
-                  iframeRef.style.width = "100%";
-                  iframeRef.style.height = "100%";
-                  iframeRef.style.border = "0";
-                }}
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <div className="text-center">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/10">
-                    <PhoneOff
-                      size={25}
-                      className="text-white/50"
-                    />
-                  </div>
+          <div className="h-[calc(100vh-90px)] min-h-[520px] w-full max-w-7xl overflow-hidden rounded-2xl bg-[#151A18] shadow-2xl">
+            <JitsiMeeting
+              domain="meet.jit.si"
+              roomName={roomName}
+              userInfo={{
+                displayName: "Megeb+ Nutritionist",
+                email: "nutritionist@megebplus.com",
+              }}
+              configOverwrite={{
+                startWithAudioMuted: false,
+                startWithVideoMuted: false,
 
-                  <h2 className="font-display mt-5 text-[20px]">
-                    Consultation ended
-                  </h2>
+                prejoinConfig: {
+                  enabled: true,
+                },
 
-                  <p className="font-body mt-2 text-[10px] text-white/40">
-                    Returning to consultations...
-                  </p>
-                </div>
-              </div>
-            )}
+                disableModeratorIndicator: true,
+                enableEmailInStats: false,
+              }}
+              interfaceConfigOverwrite={{
+                DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+                MOBILE_APP_PROMO: false,
+                TILE_VIEW_MAX_COLUMNS: 2,
+              }}
+              onReadyToClose={() => {
+                goBack();
+              }}
+              getIFrameRef={(iframeRef) => {
+                iframeRef.style.width = "100%";
+                iframeRef.style.height = "100%";
+                iframeRef.style.border = "0";
+              }}
+            />
           </div>
-        </div>
-
-        {/* Bottom Controls */}
-        <div className="border-t border-white/10 bg-[#252C28] px-5 py-4">
-          <div className="flex items-center justify-center">
-            <button
-              type="button"
-              onClick={endCall}
-              disabled={callEnded}
-              className="flex h-12 items-center gap-2 rounded-full bg-red-500 px-6 text-[10px] font-bold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <PhoneOff size={17} />
-              End Consultation
-            </button>
-          </div>
-
-          <p className="mt-2 text-center font-body text-[8px] text-white/25">
-            {callEnded
-              ? "Ending consultation..."
-              : "Your video and microphone controls are available inside the meeting."}
-          </p>
         </div>
       </div>
     </main>
