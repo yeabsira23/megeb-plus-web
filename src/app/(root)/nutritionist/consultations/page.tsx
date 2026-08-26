@@ -33,6 +33,15 @@ type Message = {
   time: string;
 };
 
+type Consultation = {
+  id: string;
+  clientId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  type: "Online";
+};
+
 const TEMPORARY_CLIENTS: Client[] = [
   {
     id: "1",
@@ -65,6 +74,41 @@ const TEMPORARY_CLIENTS: Client[] = [
     status: "Completed",
     lastMessage: "Thank you for your help.",
     lastMessageTime: "Aug 20",
+  },
+];
+
+const TEMPORARY_CONSULTATIONS: Consultation[] = [
+  {
+    id: "c1",
+    clientId: "1",
+    date: "2026-08-26",
+    startTime: "2:00 PM",
+    endTime: "2:30 PM",
+    type: "Online",
+  },
+  {
+    id: "c2",
+    clientId: "2",
+    date: "2026-08-27",
+    startTime: "10:00 AM",
+    endTime: "10:30 AM",
+    type: "Online",
+  },
+  {
+    id: "c3",
+    clientId: "3",
+    date: "2026-08-28",
+    startTime: "3:00 PM",
+    endTime: "3:30 PM",
+    type: "Online",
+  },
+  {
+    id: "c4",
+    clientId: "4",
+    date: "2026-08-29",
+    startTime: "11:00 AM",
+    endTime: "11:30 AM",
+    type: "Online",
   },
 ];
 
@@ -142,10 +186,61 @@ const TEMPORARY_MESSAGES: Record<string, Message[]> = {
   ],
 };
 
+function formatConsultationDate(dateString: string): string {
+  const date = new Date(`${dateString}T00:00:00`);
+
+  const today = new Date();
+  const tomorrow = new Date();
+
+  tomorrow.setDate(today.getDate() + 1);
+
+  if (date.toDateString() === today.toDateString()) {
+    return "Today";
+  }
+
+  if (date.toDateString() === tomorrow.toDateString()) {
+    return "Tomorrow";
+  }
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function getDurationInMinutes(
+  startTime: string,
+  endTime: string
+): number {
+  const parseTime = (time: string) => {
+    const [timePart, modifier] = time.split(" ");
+    let [hours, minutes] = timePart.split(":").map(Number);
+
+    if (modifier === "PM" && hours !== 12) {
+      hours += 12;
+    }
+
+    if (modifier === "AM" && hours === 12) {
+      hours = 0;
+    }
+
+    return hours * 60 + minutes;
+  };
+
+  let start = parseTime(startTime);
+  let end = parseTime(endTime);
+
+  if (end < start) {
+    end += 24 * 60;
+  }
+
+  return end - start;
+}
+
 function ConsultationsContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Default client when opening the consultation page normally.
   const [selectedClientId, setSelectedClientId] = useState("1");
 
   const [search, setSearch] = useState("");
@@ -158,13 +253,6 @@ function ConsultationsContent() {
 
   const clientIdFromUrl = searchParams.get("clientId");
 
-  /*
-   * If the page was opened from:
-   *
-   * /nutritionist/consultations?clientId=2
-   *
-   * then automatically select Selam.
-   */
   useEffect(() => {
     if (
       clientIdFromUrl &&
@@ -181,11 +269,34 @@ function ConsultationsContent() {
       (client) => client.id === selectedClientId
     ) ?? TEMPORARY_CLIENTS[0];
 
+  const selectedConsultation =
+    TEMPORARY_CONSULTATIONS.find(
+      (consultation) =>
+        consultation.clientId === selectedClient.id
+    ) ?? TEMPORARY_CONSULTATIONS[0];
+
   const filteredClients = TEMPORARY_CLIENTS.filter(
     (client) =>
       client.name.toLowerCase().includes(search.toLowerCase()) ||
       client.email.toLowerCase().includes(search.toLowerCase())
   );
+
+  const duration = getDurationInMinutes(
+    selectedConsultation.startTime,
+    selectedConsultation.endTime
+  );
+
+  const nextConsultation =
+    TEMPORARY_CONSULTATIONS.find(
+      (consultation) =>
+        consultation.date >=
+        new Date().toISOString().split("T")[0]
+    ) ?? TEMPORARY_CONSULTATIONS[0];
+
+  const nextConsultationClient =
+    TEMPORARY_CLIENTS.find(
+      (client) => client.id === nextConsultation.clientId
+    );
 
   function handleSendMessage(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -282,7 +393,14 @@ function ConsultationsContent() {
                   </p>
 
                   <p className="font-display mt-1 text-[15px]">
-                    Today, 2:00 PM
+                    {formatConsultationDate(
+                      nextConsultation.date
+                    )}
+                    , {nextConsultation.startTime}
+                  </p>
+
+                  <p className="font-body mt-0.5 text-[9px] text-[#2D312E]/35">
+                    {nextConsultationClient?.name}
                   </p>
                 </div>
               </div>
@@ -301,7 +419,7 @@ function ConsultationsContent() {
                   </p>
 
                   <p className="font-display mt-1 text-[15px]">
-                    30 Minutes
+                    {duration} Minutes
                   </p>
                 </div>
               </div>
@@ -495,7 +613,7 @@ function ConsultationsContent() {
                   </div>
                 </div>
 
-                {/* Consultation Details */}
+                {/* Dynamic Consultation Details */}
                 <div className="border-b border-[#2D312E]/[0.05] bg-[#FAF9F6] px-5 py-3">
                   <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
                     <span className="flex items-center gap-1.5 font-body text-[9px] text-[#2D312E]/45">
@@ -503,7 +621,10 @@ function ConsultationsContent() {
                         size={13}
                         className="text-[#4E876E]"
                       />
-                      Today, August 26
+
+                      {formatConsultationDate(
+                        selectedConsultation.date
+                      )}
                     </span>
 
                     <span className="flex items-center gap-1.5 font-body text-[9px] text-[#2D312E]/45">
@@ -511,7 +632,9 @@ function ConsultationsContent() {
                         size={13}
                         className="text-[#4E876E]"
                       />
-                      2:00 PM – 2:30 PM
+
+                      {selectedConsultation.startTime} –{" "}
+                      {selectedConsultation.endTime}
                     </span>
 
                     <span className="flex items-center gap-1.5 font-body text-[9px] text-[#2D312E]/45">
@@ -519,7 +642,8 @@ function ConsultationsContent() {
                         size={13}
                         className="text-[#4E876E]"
                       />
-                      Online Consultation
+
+                      {selectedConsultation.type} Consultation
                     </span>
                   </div>
                 </div>
