@@ -13,6 +13,13 @@ const STATUS_CONFIG: Record<AppointmentStatus, { icon: typeof CheckCircle2; clas
 
 const STATUS_FILTERS: (AppointmentStatus | 'All')[] = ['All', 'Confirmed', 'Pending', 'Cancelled'];
 
+const DEFAULT_APPOINTMENTS: Appointment[] = [
+  { id: '1', client: 'Sara Abebe', nutritionist: 'Dr. Hana Bekele', date: 'Today', time: '10:30 AM', status: 'Confirmed' },
+  { id: '2', client: 'Mekdes Tadesse', nutritionist: 'Dr. Samuel Alemu', date: 'Today', time: '1:00 PM', status: 'Pending' },
+  { id: '3', client: 'Abel Tesfaye', nutritionist: 'Dr. Hana Bekele', date: 'Tomorrow', time: '9:00 AM', status: 'Confirmed' },
+  { id: '4', client: 'Rahel Girma', nutritionist: 'Dr. Meron Worku', date: 'Tomorrow', time: '3:30 PM', status: 'Cancelled' },
+];
+
 function useAllAppointments() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,7 +34,7 @@ function useAllAppointments() {
         // Backend API will be connected here later.
         // const data = await apiFetch<Appointment[]>('/admin/appointments');
         // if (isMounted) setAppointments(data);
-        if (isMounted) setAppointments([]);
+        if (isMounted) setAppointments(DEFAULT_APPOINTMENTS); // TEMP: sample data for preview
       } catch (err) {
         console.error('Unable to load appointments:', err);
         if (isMounted) setError('Unable to load appointments.');

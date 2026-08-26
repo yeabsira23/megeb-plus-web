@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Search, Check, X } from 'lucide-react';
 import { apiFetch } from '@/app/lib/api';
 
@@ -17,7 +18,18 @@ type NutritionistApplication = {
   appliedDate: string;
 };
 
+const DEFAULT_APPLICATIONS: NutritionistApplication[] = [
+  { id: '1', name: 'Dr. Bethlehem Kassa', email: 'bethlehem.kassa@example.com', specialty: 'Clinical Nutrition', credentialType: 'RDN', licenseNumber: 'RDN-4821', status: 'Pending', appliedDate: 'Aug 19, 2026' },
+  { id: '2', name: 'Dr. Yonatan Haile', email: 'yonatan.haile@example.com', specialty: 'Sports Nutrition', credentialType: 'CNS', licenseNumber: 'CNS-2237', status: 'Pending', appliedDate: 'Aug 19, 2026' },
+  { id: '3', name: 'Dr. Meron Fikru', email: 'meron.fikru@example.com', specialty: 'Pediatric Nutrition', credentialType: 'RDN', licenseNumber: 'RDN-9013', status: 'Approved', appliedDate: 'Aug 10, 2026' },
+  { id: '4', name: 'Dr. Samuel Alemu', email: 'samuel.alemu@example.com', specialty: 'Weight Management', credentialType: 'CNS', licenseNumber: 'CNS-5540', status: 'Rejected', appliedDate: 'Jul 28, 2026' },
+];
+
 const STATUS_FILTERS: (NutritionistStatus | 'All')[] = ['All', 'Pending', 'Approved', 'Rejected'];
+
+function isNutritionistStatus(value: string | null): value is NutritionistStatus {
+  return value === 'Pending' || value === 'Approved' || value === 'Rejected';
+}
 
 function useNutritionistApplications() {
   const [applications, setApplications] = useState<NutritionistApplication[]>([]);
@@ -33,7 +45,7 @@ function useNutritionistApplications() {
         // Backend API will be connected here later.
         // const data = await apiFetch<NutritionistApplication[]>('/admin/nutritionists');
         // if (isMounted) setApplications(data);
-        if (isMounted) setApplications([]);
+        if (isMounted) setApplications(DEFAULT_APPLICATIONS); // TEMP: sample data for preview
       } catch (err) {
         console.error('Unable to load nutritionist applications:', err);
         if (isMounted) setError('Unable to load nutritionist applications.');
@@ -50,8 +62,17 @@ function useNutritionistApplications() {
 
 export default function NutritionistsPage() {
   const { applications, isLoading, error, setApplications } = useNutritionistApplications();
-  const [statusFilter, setStatusFilter] = useState<NutritionistStatus | 'All'>('All');
-  const [query, setQuery] = useState('');
+  const searchParams = useSearchParams();
+
+  const rawStatus = searchParams.get('status');
+  const capitalizedStatus = rawStatus ? rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1) : null;
+  const initialStatus: NutritionistStatus | 'All' = isNutritionistStatus(capitalizedStatus)
+    ? (capitalizedStatus as NutritionistStatus)
+    : 'All';
+  const initialSearch = searchParams.get('search') ?? '';
+
+  const [statusFilter, setStatusFilter] = useState<NutritionistStatus | 'All'>(initialStatus);
+  const [query, setQuery] = useState(initialSearch);
 
   const filtered = applications.filter((app) => {
     const matchesStatus = statusFilter === 'All' || app.status === statusFilter;

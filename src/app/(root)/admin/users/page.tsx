@@ -14,6 +14,14 @@ type PlatformUser = {
   joinedDate: string;
 };
 
+const DEFAULT_USERS: PlatformUser[] = [
+  { id: '1', name: 'Sara Abebe', email: 'sara.abebe@example.com', status: 'Active', joinedDate: 'Jan 12, 2026' },
+  { id: '2', name: 'Mekdes Tadesse', email: 'mekdes.t@example.com', status: 'Active', joinedDate: 'Feb 3, 2026' },
+  { id: '3', name: 'Abel Tesfaye', email: 'abel.tesfaye@example.com', status: 'Suspended', joinedDate: 'Feb 20, 2026' },
+  { id: '4', name: 'Rahel Girma', email: 'rahel.girma@example.com', status: 'Active', joinedDate: 'Mar 8, 2026' },
+  { id: '5', name: 'Yonas Bekele', email: 'yonas.bekele@example.com', status: 'Active', joinedDate: 'Apr 15, 2026' },
+];
+
 function useUsers() {
   const [users, setUsers] = useState<PlatformUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,7 +36,7 @@ function useUsers() {
         // Backend API will be connected here later.
         // const data = await apiFetch<PlatformUser[]>('/admin/users');
         // if (isMounted) setUsers(data);
-        if (isMounted) setUsers([]);
+        if (isMounted) setUsers(DEFAULT_USERS); // TEMP: sample data for preview
       } catch (err) {
         console.error('Unable to load users:', err);
         if (isMounted) setError('Unable to load users.');
