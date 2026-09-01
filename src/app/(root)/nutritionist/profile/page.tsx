@@ -294,14 +294,15 @@ export default function NutritionistProfilePage() {
                 onChange={handleChange}
               />
 
-              <ProfileField
-                icon={<ShieldCheck size={17} />}
-                label="License Number"
-                name="licenseNumber"
-                value={formData.licenseNumber}
-                isEditing={isEditing}
-                onChange={handleChange}
-              />
+             <ProfileField
+  icon={<ShieldCheck size={17} />}
+  label="License Number"
+  name="licenseNumber"
+  value={formData.licenseNumber}
+  isEditing={false}
+  onChange={handleChange}
+/>
+              
 
               <ProfileField
                 icon={<span className="text-[10px] font-bold">ETB</span>}
