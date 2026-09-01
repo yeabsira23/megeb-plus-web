@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -55,6 +56,7 @@ const NUTRITION_PLANS: NutritionPlan[] = [
     startDate: "Aug 1, 2026",
     endDate: "Aug 31, 2026",
     status: "Active",
+
     meals: [
       {
         name: "Breakfast",
@@ -67,11 +69,6 @@ const NUTRITION_PLANS: NutritionPlan[] = [
         ],
       },
       {
-        name: "Morning Snack",
-        time: "11:00 AM",
-        foods: ["Greek yogurt", "Handful of almonds"],
-      },
-      {
         name: "Lunch",
         time: "1:30 PM",
         foods: [
@@ -82,11 +79,6 @@ const NUTRITION_PLANS: NutritionPlan[] = [
         ],
       },
       {
-        name: "Afternoon Snack",
-        time: "4:30 PM",
-        foods: ["Apple", "Plain yogurt"],
-      },
-      {
         name: "Dinner",
         time: "7:00 PM",
         foods: [
@@ -95,141 +87,23 @@ const NUTRITION_PLANS: NutritionPlan[] = [
           "Sweet potato",
         ],
       },
+      {
+        name: "Snacks",
+        time: "11:00 AM / 4:30 PM",
+        foods: [
+          "Greek yogurt",
+          "Handful of almonds",
+          "Apple",
+          "Plain yogurt",
+        ],
+      },
     ],
+
     recommendations: [
       "Drink at least 2.5L of water every day.",
       "Limit added sugar and highly processed foods.",
       "Include protein with every main meal.",
       "Do strength training twice per week.",
-    ],
-  },
-
-  {
-    id: "NP-002",
-    clientId: "2",
-    clientName: "Selam Alemu",
-    planName: "Diabetes-Friendly Meal Plan",
-    description:
-      "A balanced meal plan focused on blood sugar management, portion control, and high-fiber foods.",
-    calories: "1,700 kcal/day",
-    goal: "Diabetes Nutrition",
-    dietType: ["Low Sugar", "High Fiber", "Balanced"],
-    startDate: "Aug 1, 2026",
-    endDate: "Aug 31, 2026",
-    status: "Active",
-    meals: [
-      {
-        name: "Breakfast",
-        time: "8:00 AM",
-        foods: ["Oatmeal", "Boiled egg", "Fresh berries"],
-      },
-      {
-        name: "Morning Snack",
-        time: "11:00 AM",
-        foods: ["Plain yogurt", "Small handful of nuts"],
-      },
-      {
-        name: "Lunch",
-        time: "1:30 PM",
-        foods: ["Grilled chicken", "Lentils", "Mixed vegetables"],
-      },
-      {
-        name: "Dinner",
-        time: "7:00 PM",
-        foods: ["Grilled fish", "Vegetable salad", "Sweet potato"],
-      },
-    ],
-    recommendations: [
-      "Monitor carbohydrate portions.",
-      "Avoid sugary drinks.",
-      "Eat meals at consistent times.",
-      "Stay hydrated throughout the day.",
-    ],
-  },
-
-  {
-    id: "NP-003",
-    clientId: "3",
-    clientName: "Meron Kebede",
-    planName: "Balanced Lifestyle Plan",
-    description:
-      "A flexible whole-food meal plan designed to maintain a healthy weight and support an active lifestyle.",
-    calories: "2,000 kcal/day",
-    goal: "Healthy Lifestyle",
-    dietType: ["Balanced", "Whole Foods", "High Fiber"],
-    startDate: "Aug 1, 2026",
-    endDate: "Aug 31, 2026",
-    status: "Active",
-    meals: [
-      {
-        name: "Breakfast",
-        time: "8:00 AM",
-        foods: ["Oatmeal", "Banana", "Greek yogurt"],
-      },
-      {
-        name: "Lunch",
-        time: "1:00 PM",
-        foods: ["Chicken", "Brown rice", "Vegetables", "Salad"],
-      },
-      {
-        name: "Snack",
-        time: "4:00 PM",
-        foods: ["Fresh fruit", "Yogurt"],
-      },
-      {
-        name: "Dinner",
-        time: "7:00 PM",
-        foods: ["Lentil stew", "Whole grain bread", "Vegetables"],
-      },
-    ],
-    recommendations: [
-      "Continue regular physical activity.",
-      "Prioritize whole foods.",
-      "Maintain adequate hydration.",
-      "Keep meals balanced throughout the day.",
-    ],
-  },
-
-  {
-    id: "NP-004",
-    clientId: "4",
-    clientName: "Liya Michael",
-    planName: "Balanced Weight Management Plan",
-    description:
-      "A moderate-calorie meal plan focused on sustainable weight management and healthier eating habits.",
-    calories: "1,750 kcal/day",
-    goal: "Weight Management",
-    dietType: ["Balanced", "High Fiber", "Low Processed Foods"],
-    startDate: "Aug 1, 2026",
-    endDate: "Aug 31, 2026",
-    status: "Inactive",
-    meals: [
-      {
-        name: "Breakfast",
-        time: "8:00 AM",
-        foods: ["Eggs", "Whole grain toast", "Fresh fruit"],
-      },
-      {
-        name: "Lunch",
-        time: "1:00 PM",
-        foods: ["Chicken", "Brown rice", "Vegetables"],
-      },
-      {
-        name: "Snack",
-        time: "4:00 PM",
-        foods: ["Fruit", "Plain yogurt"],
-      },
-      {
-        name: "Dinner",
-        time: "7:00 PM",
-        foods: ["Vegetable soup", "Grilled protein", "Salad"],
-      },
-    ],
-    recommendations: [
-      "Reduce highly processed foods.",
-      "Drink enough water every day.",
-      "Maintain regular physical activity.",
-      "Follow recommended portion sizes.",
     ],
   },
 ];
@@ -259,11 +133,11 @@ export default function NutritionPlanDetailsPage() {
 
           <div className="mx-auto max-w-4xl px-5 py-10 sm:px-7 lg:px-8">
             <Link
-              href="/nutritionist/clients"
+              href="/nutritionist/nutrition-plans"
               className="mb-6 inline-flex items-center gap-2 font-body text-[11px] font-semibold text-[#4E876E]"
             >
               <ArrowLeft size={15} />
-              Back to Clients
+              Back to Nutrition Plan
             </Link>
 
             <div className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-10 text-center shadow-sm">
@@ -302,11 +176,11 @@ export default function NutritionPlanDetailsPage() {
 
           {/* Back */}
           <Link
-            href={`/nutritionist/clients/${plan.clientId}`}
+            href="/nutritionist/nutrition-plans"
             className="mb-6 inline-flex items-center gap-2 font-body text-[11px] font-semibold text-[#4E876E] hover:text-[#3D5A4C]"
           >
             <ArrowLeft size={15} />
-            Back to Client
+            Back to Nutrition Plan
           </Link>
 
           {/* Header */}
@@ -681,3 +555,4 @@ function MobileHeader({
     </div>
   );
 }
+

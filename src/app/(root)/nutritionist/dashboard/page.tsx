@@ -76,7 +76,7 @@ export default function NutritionistDashboard() {
               </div>
 
               <h1 className="font-display text-[27px] leading-tight text-white sm:text-[32px]">
-                Welcome, Dr. Sarah 👋
+                Welcome, Dr. Sarah 
               </h1>
 
               <p className="font-body mt-2 max-w-xl text-[13px] leading-5 text-white/60">

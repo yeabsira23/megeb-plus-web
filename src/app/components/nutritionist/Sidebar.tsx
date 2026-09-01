@@ -12,6 +12,8 @@ import {
   UserRound,
   LogOut,
   X,
+  Utensils,
+  Database,
 } from "lucide-react";
 
 type SidebarProps = {
@@ -40,15 +42,21 @@ const MENU_ITEMS = [
     icon: ClipboardList,
     path: "/nutritionist/nutrition-plans",
   },
+  
+  {
+    name: "Food Database",
+    icon: Database,
+    path: "/nutritionist/foods",
+  },
+   {
+    name: "Meal Library",
+    icon:  Utensils,
+    path: "/nutritionist/meals",
+  },
   {
     name: "Consultations & Messages",
     icon: MessageSquare,
     path: "/nutritionist/consultations",
-  },
-  {
-    name: "Profile",
-    icon: UserRound,
-    path: "/nutritionist/profile",
   },
 ];
 

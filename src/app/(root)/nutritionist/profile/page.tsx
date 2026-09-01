@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -33,6 +34,7 @@ export default function NutritionistProfilePage() {
     education: "BSc in Nutrition and Dietetics",
     institution: "Addis Ababa University",
     licenseNumber: "NUT-2024-00125",
+    consultationPrice: "500 ETB",
     bio: "Certified nutritionist focused on helping clients build sustainable and healthy eating habits through personalized nutrition plans.",
   });
 
@@ -300,6 +302,15 @@ export default function NutritionistProfilePage() {
                 isEditing={isEditing}
                 onChange={handleChange}
               />
+
+              <ProfileField
+                icon={<span className="text-[10px] font-bold">ETB</span>}
+                label="Consultation Price (per session)"
+                name="consultationPrice"
+                value={formData.consultationPrice}
+                isEditing={isEditing}
+                onChange={handleChange}
+              />
             </div>
           </section>
 
@@ -413,3 +424,4 @@ function ProfileField({
     </div>
   );
 }
+
