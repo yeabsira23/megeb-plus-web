@@ -1,0 +1,168 @@
+import apiClient from './client';
+
+export interface LoginRequest {
+  identifier: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  access: string;
+  refresh: string;
+  role: string;
+  full_name: string;
+  email: string;
+  phone: string;
+}
+
+export interface User {
+  id?: number | string;
+  full_name?: string;
+  email?: string;
+  phone?: string;
+  role?: string;
+  [key: string]: unknown;
+}
+
+export async function getMe(): Promise<User> {
+  const response = await apiClient.get<User>(
+    '/api/auth/me/'
+  );
+
+  return response.data;
+}
+
+/**
+ * Login with email or phone number
+ */
+export async function login(
+  identifier: string,
+  password: string
+): Promise<LoginResponse> {
+  const response = await apiClient.post<LoginResponse>(
+    '/api/auth/login/',
+    {
+      identifier,
+      password,
+    }
+  );
+
+  return response.data;
+}
+
+
+
+/**
+ * Update user profile
+ */
+export async function updateProfile(
+  data: Record<string, unknown>
+): Promise<User> {
+  const response = await apiClient.patch<User>(
+    '/api/auth/profile/',
+    data
+  );
+
+  return response.data;
+}
+
+/**
+ * Change password
+ */
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string
+) {
+  const response = await apiClient.post(
+    '/api/auth/change-password/',
+    {
+      current_password: currentPassword,
+      new_password: newPassword,
+    }
+  );
+
+  return response.data;
+}
+
+/**
+ * Send OTP to phone
+ */
+export async function sendOtp(identifier: string) {
+  const response = await apiClient.post(
+    '/api/auth/send-otp/',
+    {
+      identifier,
+    }
+  );
+
+  return response.data;
+}
+
+/**
+ * Verify phone OTP
+ */
+export async function verifyOtp(
+  identifier: string,
+  otp: string
+) {
+  const response = await apiClient.post(
+    '/api/auth/verify-otp/',
+    {
+      identifier,
+      otp,
+    }
+  );
+
+  return response.data;
+}
+
+/**
+ * Send email OTP
+ */
+export async function sendEmailOtp(email: string) {
+  const response = await apiClient.post(
+    '/api/auth/send-email-otp/',
+    {
+      email,
+    }
+  );
+
+  return response.data;
+}
+
+/**
+ * Verify email OTP
+ */
+export async function verifyEmailOtp(
+  email: string,
+  otp: string
+) {
+  const response = await apiClient.post(
+    '/api/auth/verify-email-otp/',
+    {
+      email,
+      otp,
+    }
+  );
+
+  return response.data;
+}
+
+/**
+ * Reset password
+ */
+export async function resetPassword(
+  identifier: string,
+  otp: string,
+  newPassword: string
+) {
+  const response = await apiClient.post(
+    '/api/auth/reset-password/',
+    {
+      identifier,
+      otp,
+      new_password: newPassword,
+    }
+  );
+
+  return response.data;
+}
