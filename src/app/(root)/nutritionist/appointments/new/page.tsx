@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -16,88 +16,248 @@ import {
 import Sidebar from "@/app/components/nutritionist/Sidebar";
 import Topbar from "@/app/components/nutritionist/Topbar";
 
+import { getMe} from "@/app/libs/api/auth";
+import {
+  createAppointment,
+  getNutritionistAppointments,
+  type Appointment,
+} from "@/app/libs/api/appointments";
+
+type AppointmentType =
+  | "consultation"
+  | "follow_up"
+  | "nutrition_plan";
+
 type Client = {
-  id: string;
+  id: number;
   name: string;
-  age: number;
 };
 
-const TEMPORARY_CLIENTS: Client[] = [
-  {
-    id: "1",
-    name: "Hana Tesfaye",
-    age: 28,
-  },
-  {
-    id: "2",
-    name: "Selam Alemu",
-    age: 34,
-  },
-  {
-    id: "3",
-    name: "Meron Kebede",
-    age: 25,
-  },
-  {
-    id: "4",
-    name: "Liya Michael",
-    age: 31,
-  },
-];
-
 const APPOINTMENT_TYPES = [
-  "Initial Consultation",
-  "Follow-up Consultation",
-  "Nutrition Assessment",
-  "Online Consultation",
+  {
+    label: "Consultation",
+    value: "consultation",
+  },
+  {
+    label: "Follow-up",
+    value: "follow_up",
+  },
+  {
+    label: "Nutrition Plan",
+    value: "nutrition_plan",
+  },
 ];
 
 export default function NewAppointmentPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const [clients, setClients] = useState<Client[]>([]);
+  const [nutritionistId, setNutritionistId] = useState<number | null>(null);
+
   const [clientId, setClientId] = useState("");
-  const [appointmentType, setAppointmentType] = useState("");
+  const [appointmentType, setAppointmentType] =
+  useState<AppointmentType | "">("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [notes, setNotes] = useState("");
 
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
 
-  const selectedClient = TEMPORARY_CLIENTS.find(
-    (client) => client.id === clientId
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  /*
+   * Load the authenticated nutritionist and their existing appointments.
+   *
+   * /api/auth/me/ gives us the nutritionist ID.
+   * /api/appointments/nutritionist/ gives us client IDs/names.
+   */
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadPageData() {
+      setIsLoading(true);
+      setError("");
+
+      try {
+        const [user, appointments] = await Promise.all([
+          getMe(),
+          getNutritionistAppointments(),
+        ]);
+
+        if (!isMounted) return;
+
+        /*
+         * The backend returns:
+         *
+         * {
+         *   "id": 38,
+         *   "role": "nutritionist",
+         *   ...
+         * }
+         */
+        if (!user.id) {
+          throw new Error("Nutritionist ID was not returned.");
+        }
+
+        setNutritionistId(Number(user.id));
+
+        /*
+         * Build a unique client list from the nutritionist's appointments.
+         * 
+         * FIX: Check if appointments is an array before iterating
+         */
+        if (Array.isArray(appointments)) {
+          const clientsMap = new Map<number, Client>();
+
+          appointments.forEach((appointment: Appointment) => {
+            if (!clientsMap.has(appointment.client)) {
+              clientsMap.set(appointment.client, {
+                id: appointment.client,
+                name: appointment.client_name || `Client #${appointment.client}`,
+              });
+            }
+          });
+
+          setClients(Array.from(clientsMap.values()));
+        } else {
+          // If appointments is not an array, set clients to empty array
+          setClients([]);
+        }
+      } catch (err) {
+        console.error("Unable to load appointment data:", err);
+
+        if (isMounted) {
+          setError("Unable to load your clients. Please try again.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadPageData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const selectedClient = clients.find(
+    (client) => String(client.id) === clientId
   );
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    setIsSubmitting(true);
+    setError("");
     setSuccess(false);
 
-    /*
-     * TEMPORARY
-     *
-     * Later, this will send the appointment to the backend.
-     *
-     * Example:
-     *
-     * await apiFetch("/nutritionist/appointments", {
-     *   method: "POST",
-     *   body: JSON.stringify({
-     *     client: clientId,
-     *     type: appointmentType,
-     *     date,
-     *     time,
-     *     mode: "Online",
-     *     notes,
-     *   }),
-     * });
-     */
+    if (!nutritionistId) {
+      setError("Unable to identify the nutritionist. Please try again.");
+      return;
+    }
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+    if (!clientId) {
+      setError("Please select a client.");
+      return;
+    }
+
+    if (!appointmentType) {
+      setError("Please select an appointment type.");
+      return;
+    }
+
+    if (!date || !time) {
+      setError("Please select a date and time.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      /*
+       * HTML <input type="time"> normally gives us:
+       *
+       * 11:00
+       *
+       * The backend expects:
+       *
+       * 11:00:00
+       */
+      const formattedTime =
+        time.length === 5 ? `${time}:00` : time;
+
+      // FIX: Ensure all required fields are properly formatted
+      const appointmentData = {
+        nutritionist: nutritionistId,
+        client: Number(clientId),
+        appointment_type: appointmentType,
+        date: date,
+        time: formattedTime,
+        mode: "online" as const,
+        notes: notes || undefined, // Only include notes if not empty
+      };
+
+      const appointment = await createAppointment(appointmentData);
+
+      console.log(
+        "APPOINTMENT CREATED:",
+        appointment
+      );
+
       setSuccess(true);
-    }, 700);
+
+      /*
+       * Clear the form after successful creation.
+       */
+      setClientId("");
+      setAppointmentType("");
+      setDate("");
+      setTime("");
+      setNotes("");
+    } catch (err) {
+      console.error(
+        "Unable to create appointment:",
+        err
+      );
+
+      /*
+       * Try to show the backend's error message when available.
+       */
+      let errorMessage = "Unable to schedule the appointment. Please try again.";
+      
+      // FIX: Improved error handling for different error structures
+      if (err && typeof err === 'object') {
+        // Check for response data with detail
+        const errorObj = err as {
+          response?: {
+            data?: {
+              detail?: string;
+              message?: string;
+              error?: string;
+            };
+          };
+          message?: string;
+        };
+        
+        if (errorObj.response?.data?.detail) {
+          errorMessage = errorObj.response.data.detail;
+        } else if (errorObj.response?.data?.message) {
+          errorMessage = errorObj.response.data.message;
+        } else if (errorObj.response?.data?.error) {
+          errorMessage = errorObj.response.data.error;
+        } else if (errorObj.message) {
+          errorMessage = errorObj.message;
+        }
+      }
+
+      setError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -188,10 +348,21 @@ export default function NewAppointmentPage() {
                 </p>
 
                 <p className="font-body mt-1 text-[10px] text-[#3D5A4C]/60">
-                  This is currently a mock appointment. It will be connected
-                  to the backend later.
+                  The appointment has been created successfully.
                 </p>
               </div>
+            </div>
+          )}
+
+          {/* ========================================= */}
+          {/* ERROR MESSAGE */}
+          {/* ========================================= */}
+
+          {error && (
+            <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4">
+              <p className="font-body text-[11px] font-semibold text-red-600">
+                {error}
+              </p>
             </div>
           )}
 
@@ -233,13 +404,23 @@ export default function NewAppointmentPage() {
                   required
                   value={clientId}
                   onChange={(e) => setClientId(e.target.value)}
-                  className="mt-2 w-full rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] px-4 py-3 font-body text-[11px] text-[#2D312E] outline-none transition focus:border-[#4E876E]/50 focus:ring-2 focus:ring-[#4E876E]/10"
+                  disabled={isLoading || clients.length === 0}
+                  className="mt-2 w-full rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] px-4 py-3 font-body text-[11px] text-[#2D312E] outline-none transition focus:border-[#4E876E]/50 focus:ring-2 focus:ring-[#4E876E]/10 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <option value="">Select a client</option>
+                  <option value="">
+                    {isLoading
+                      ? "Loading clients..."
+                      : clients.length === 0
+                        ? "No clients available"
+                        : "Select a client"}
+                  </option>
 
-                  {TEMPORARY_CLIENTS.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.name} — {client.age} years old
+                  {clients.map((client) => (
+                    <option
+                      key={client.id}
+                      value={client.id}
+                    >
+                      {client.name}
                     </option>
                   ))}
                 </select>
@@ -296,14 +477,21 @@ export default function NewAppointmentPage() {
                   <select
                     required
                     value={appointmentType}
-                    onChange={(e) => setAppointmentType(e.target.value)}
+                    onChange={(e) =>
+                      setAppointmentType(e.target.value as AppointmentType)
+                    }
                     className="mt-2 w-full rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] px-4 py-3 font-body text-[11px] text-[#2D312E] outline-none transition focus:border-[#4E876E]/50 focus:ring-2 focus:ring-[#4E876E]/10"
                   >
-                    <option value="">Select appointment type</option>
+                    <option value="">
+                      Select appointment type
+                    </option>
 
                     {APPOINTMENT_TYPES.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
+                      <option
+                        key={type.value}
+                        value={type.value}
+                      >
+                        {type.label}
                       </option>
                     ))}
                   </select>
@@ -326,7 +514,9 @@ export default function NewAppointmentPage() {
                       required
                       type="date"
                       value={date}
-                      onChange={(e) => setDate(e.target.value)}
+                      onChange={(e) =>
+                        setDate(e.target.value)
+                      }
                       className="w-full rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] py-3 pl-11 pr-4 font-body text-[11px] text-[#2D312E] outline-none transition focus:border-[#4E876E]/50 focus:ring-2 focus:ring-[#4E876E]/10"
                     />
                   </div>
@@ -349,7 +539,9 @@ export default function NewAppointmentPage() {
                       required
                       type="time"
                       value={time}
-                      onChange={(e) => setTime(e.target.value)}
+                      onChange={(e) =>
+                        setTime(e.target.value)
+                      }
                       className="w-full rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] py-3 pl-11 pr-4 font-body text-[11px] text-[#2D312E] outline-none transition focus:border-[#4E876E]/50 focus:ring-2 focus:ring-[#4E876E]/10"
                     />
                   </div>
@@ -414,7 +606,9 @@ export default function NewAppointmentPage() {
 
               <textarea
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                onChange={(e) =>
+                  setNotes(e.target.value)
+                }
                 placeholder="Write appointment notes..."
                 rows={5}
                 className="w-full resize-none rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] px-4 py-3 font-body text-[11px] leading-5 text-[#2D312E] outline-none transition placeholder:text-[#2D312E]/30 focus:border-[#4E876E]/50 focus:ring-2 focus:ring-[#4E876E]/10"
@@ -434,7 +628,11 @@ export default function NewAppointmentPage() {
 
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={
+                    isSubmitting ||
+                    isLoading ||
+                    clients.length === 0
+                  }
                   className="flex items-center justify-center gap-2 rounded-xl bg-[#3D5A4C] px-6 py-3 font-body text-[11px] font-bold text-white transition hover:bg-[#2D312E] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <CalendarDays size={15} />
