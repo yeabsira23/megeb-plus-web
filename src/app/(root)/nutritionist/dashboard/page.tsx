@@ -185,7 +185,7 @@ const upcomingAppointments = appointments
           </h1>
 
               <p className="font-body mt-2 max-w-xl text-[13px] leading-5 text-white/60">
-                Here&apos;s your overview for today. You have a few
+                Here&apos;s your overview for today  You have a few
                 appointments and tasks waiting for you.
               </p>
             </div>
