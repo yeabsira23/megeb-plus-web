@@ -8,6 +8,7 @@ import {
   MoreHorizontal,
   Search,
   UserRound,
+  X,
 } from "lucide-react";
 
 import Link from "next/link";
@@ -35,6 +36,8 @@ type Appointment = {
   date: string;
   time: string;
   status: AppointmentStatus;
+  rawDate?: string; // Store original date for sorting
+  rawTime?: string; // Store original time for sorting
 };
 
 function formatAppointmentType(type: string): string {
@@ -88,6 +91,32 @@ function formatAppointmentStatus(status: string): AppointmentStatus {
   }
 }
 
+// Helper function to sort appointments: upcoming first, then past
+function sortAppointmentsByDateTime(appointments: Appointment[]): Appointment[] {
+  const now = new Date();
+  
+  return [...appointments].sort((a, b) => {
+    // Parse dates and times for comparison
+    const dateA = new Date(`${a.rawDate || a.date}T${a.rawTime || a.time}`);
+    const dateB = new Date(`${b.rawDate || b.date}T${b.rawTime || b.time}`);
+    
+    // Check if appointments are upcoming or past
+    const isAUpcoming = dateA >= now;
+    const isBUpcoming = dateB >= now;
+    
+    // If one is upcoming and the other is past, upcoming comes first
+    if (isAUpcoming && !isBUpcoming) return -1;
+    if (!isAUpcoming && isBUpcoming) return 1;
+    
+    // If both are upcoming or both are past, sort by date (newest first for upcoming, oldest first for past)
+    if (isAUpcoming && isBUpcoming) {
+      return dateA.getTime() - dateB.getTime(); // Earliest upcoming first
+    } else {
+      return dateB.getTime() - dateA.getTime(); // Most recent past first
+    }
+  });
+}
+
 function useAppointments() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -114,10 +143,14 @@ function useAppointments() {
           date: formatAppointmentDate(appointment.date),
           time: formatAppointmentTime(appointment.time),
           status: formatAppointmentStatus(appointment.status),
+          rawDate: appointment.date, // Store original date for sorting
+          rawTime: appointment.time, // Store original time for sorting
         })
       );
 
-      setAppointments(mappedAppointments);
+      // Sort appointments: upcoming first, then past
+      const sortedAppointments = sortAppointmentsByDateTime(mappedAppointments);
+      setAppointments(sortedAppointments);
     } catch (err) {
       console.error("Unable to load appointments:", err);
       setError("Unable to load appointments. Please try again.");
@@ -149,8 +182,13 @@ export default function AppointmentsPage() {
   const [openActionId, setOpenActionId] = useState<string | null>(null);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [successPopup, setSuccessPopup] = useState<{
+    show: boolean;
+    message: string;
+    type: "confirm" | "cancel";
+  }>({ show: false, message: "", type: "confirm" });
 
-  // Filter appointments
+  // Filter appointments (maintains the sorted order)
   const filteredAppointments = appointments.filter((appointment) => {
     const searchText = query.toLowerCase().trim();
     const matchesSearch =
@@ -186,13 +224,30 @@ export default function AppointmentsPage() {
     try {
       if (action === "confirm") {
         await confirmAppointment(Number(appointmentId));
+        // Show success popup for confirmation
+        setSuccessPopup({
+          show: true,
+          message: "Appointment confirmed successfully!",
+          type: "confirm",
+        });
       } else {
         await cancelAppointment(Number(appointmentId));
+        // Show success popup for cancellation
+        setSuccessPopup({
+          show: true,
+          message: "Appointment cancelled successfully.",
+          type: "cancel",
+        });
       }
 
       // Reload appointments
       await loadAppointments();
       setOpenActionId(null);
+      
+      // Auto-hide popup after 5 seconds
+      setTimeout(() => {
+        setSuccessPopup({ show: false, message: "", type: "confirm" });
+      }, 5000);
     } catch (err) {
       console.error("Unable to update appointment:", err);
       
@@ -224,6 +279,76 @@ export default function AppointmentsPage() {
 
   return (
     <main className="min-h-screen bg-[#FAF9F6] text-[#2D312E]">
+      {/* ================= SUCCESS POPUP ================= */}
+      {successPopup.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+            onClick={() => setSuccessPopup({ show: false, message: "", type: "confirm" })}
+          />
+          
+          {/* Modal */}
+          <div className="relative w-full max-w-md animate-in fade-in zoom-in duration-300">
+            <div className="relative overflow-hidden rounded-2xl bg-white shadow-2xl">
+              {/* Decorative gradient bar */}
+              <div className={`h-1.5 w-full ${
+                successPopup.type === "confirm" 
+                  ? "bg-gradient-to-r from-[#3D5A4C] to-[#4E876E]" 
+                  : "bg-gradient-to-r from-amber-400 to-amber-600"
+              }`} />
+              
+              <div className="p-6">
+                {/* Close button */}
+                <button
+                  onClick={() => setSuccessPopup({ show: false, message: "", type: "confirm" })}
+                  className="absolute right-4 top-4 rounded-full p-1.5 text-[#2D312E]/40 transition hover:bg-[#FAF9F6] hover:text-[#2D312E]"
+                >
+                  <X size={18} />
+                </button>
+
+                <div className="flex flex-col items-center text-center">
+                  {/* Icon */}
+                  <div className={`mb-4 flex h-16 w-16 items-center justify-center rounded-full ${
+                    successPopup.type === "confirm"
+                      ? "bg-[#E9F0EC] text-[#3D5A4C]"
+                      : "bg-amber-50 text-amber-600"
+                  }`}>
+                    {successPopup.type === "confirm" ? (
+                      <CheckCircle2 size={32} strokeWidth={1.5} />
+                    ) : (
+                      <X size={32} strokeWidth={1.5} />
+                    )}
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="font-display text-xl font-semibold text-[#2D312E]">
+                    {successPopup.type === "confirm" ? "Success!" : "Cancelled"}
+                  </h3>
+
+                  {/* Message */}
+                  <p className="mt-2 font-body text-[13px] text-[#2D312E]/60">
+                    {successPopup.message}
+                  </p>
+
+                  {/* Button */}
+                  <button
+                    onClick={() => setSuccessPopup({ show: false, message: "", type: "confirm" })}
+                    className={`mt-6 w-full rounded-xl px-6 py-3 font-body text-[12px] font-semibold text-white transition hover:shadow-md ${
+                      successPopup.type === "confirm"
+                        ? "bg-[#3D5A4C] hover:bg-[#2D312E]"
+                        : "bg-amber-500 hover:bg-amber-600"
+                    }`}
+                  >
+                    Got it
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ================= MOBILE HEADER ================= */}
       <div className="flex items-center justify-between border-b border-[#2D312E]/[0.07] bg-white px-5 py-4 lg:hidden">
         <div className="flex items-center">

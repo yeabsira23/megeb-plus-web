@@ -11,6 +11,7 @@ import {
   MessageSquare,
   UserRound,
   Video,
+  X,
 } from "lucide-react";
 
 import Sidebar from "@/app/components/nutritionist/Sidebar";
@@ -64,7 +65,17 @@ export default function NewAppointmentPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [success, setSuccess] = useState(false);
+  const [successPopup, setSuccessPopup] = useState<{
+    show: boolean;
+    message: string;
+    appointmentDetails?: {
+      clientName: string;
+      date: string;
+      time: string;
+      type: string;
+    };
+  }>({ show: false, message: "" });
+  
   const [error, setError] = useState("");
 
   /*
@@ -153,7 +164,7 @@ export default function NewAppointmentPage() {
     e.preventDefault();
 
     setError("");
-    setSuccess(false);
+    setSuccessPopup({ show: false, message: "" });
 
     if (!nutritionistId) {
       setError("Unable to identify the nutritionist. Please try again.");
@@ -208,7 +219,24 @@ export default function NewAppointmentPage() {
         appointment
       );
 
-      setSuccess(true);
+      // Show success popup with appointment details
+      const typeLabel = APPOINTMENT_TYPES.find(t => t.value === appointmentType)?.label || appointmentType;
+      const formattedDate = new Date(date).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
+      
+      setSuccessPopup({
+        show: true,
+        message: "Your appointment has been scheduled successfully!",
+        appointmentDetails: {
+          clientName: selectedClient?.name || `Client #${clientId}`,
+          date: formattedDate,
+          time: time,
+          type: typeLabel,
+        }
+      });
 
       /*
        * Clear the form after successful creation.
@@ -262,6 +290,100 @@ export default function NewAppointmentPage() {
 
   return (
     <main className="min-h-screen bg-[#FAF9F6] text-[#2D312E]">
+      {/* ================= SUCCESS POPUP ================= */}
+      {successPopup.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+            onClick={() => setSuccessPopup({ show: false, message: "" })}
+          />
+          
+          {/* Modal */}
+          <div className="relative w-full max-w-md animate-in fade-in zoom-in duration-300">
+            <div className="relative overflow-hidden rounded-2xl bg-white shadow-2xl">
+              {/* Decorative gradient bar */}
+              <div className="h-1.5 w-full bg-gradient-to-r from-[#3D5A4C] to-[#4E876E]" />
+              
+              <div className="p-6">
+                {/* Close button */}
+                <button
+                  onClick={() => setSuccessPopup({ show: false, message: "" })}
+                  className="absolute right-4 top-4 rounded-full p-1.5 text-[#2D312E]/40 transition hover:bg-[#FAF9F6] hover:text-[#2D312E]"
+                >
+                  <X size={18} />
+                </button>
+
+                <div className="flex flex-col items-center text-center">
+                  {/* Icon */}
+                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
+                    <Check size={32} strokeWidth={1.5} />
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="font-display text-xl font-semibold text-[#2D312E]">
+                    Appointment Scheduled!
+                  </h3>
+
+                  {/* Message */}
+                  <p className="mt-2 font-body text-[13px] text-[#2D312E]/60">
+                    {successPopup.message}
+                  </p>
+
+                  {/* Appointment Details */}
+                  {successPopup.appointmentDetails && (
+                    <div className="mt-4 w-full rounded-xl bg-[#FAF9F6] p-4 text-left">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-medium text-[#2D312E]/40">Client</span>
+                          <span className="font-semibold text-[#2D312E]">
+                            {successPopup.appointmentDetails.clientName}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-medium text-[#2D312E]/40">Type</span>
+                          <span className="font-semibold text-[#2D312E]">
+                            {successPopup.appointmentDetails.type}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-medium text-[#2D312E]/40">Date</span>
+                          <span className="font-semibold text-[#2D312E]">
+                            {successPopup.appointmentDetails.date}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-medium text-[#2D312E]/40">Time</span>
+                          <span className="font-semibold text-[#2D312E]">
+                            {successPopup.appointmentDetails.time}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Buttons */}
+                  <div className="mt-6 flex w-full flex-col gap-2 sm:flex-row">
+                    <Link
+                      href="/nutritionist/appointments"
+                      className="flex-1 rounded-xl bg-[#3D5A4C] px-6 py-3 font-body text-[12px] font-semibold text-white transition hover:bg-[#2D312E] hover:shadow-md"
+                    >
+                      View All Appointments
+                    </Link>
+                    <button
+                      onClick={() => setSuccessPopup({ show: false, message: "" })}
+                      className="flex-1 rounded-xl border border-[#CCD6C4] px-6 py-3 font-body text-[12px] font-semibold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
+                    >
+                      Schedule Another
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ========================================= */}
       {/* MOBILE HEADER */}
       {/* ========================================= */}
@@ -331,28 +453,6 @@ export default function NewAppointmentPage() {
               Schedule a consultation with one of your clients.
             </p>
           </div>
-
-          {/* ========================================= */}
-          {/* SUCCESS MESSAGE */}
-          {/* ========================================= */}
-
-          {success && (
-            <div className="mb-6 flex items-start gap-3 rounded-2xl border border-[#CCD6C4] bg-[#E9F0EC] p-4">
-              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#3D5A4C] text-white">
-                <Check size={15} />
-              </div>
-
-              <div>
-                <p className="font-body text-[11px] font-bold text-[#3D5A4C]">
-                  Appointment scheduled successfully
-                </p>
-
-                <p className="font-body mt-1 text-[10px] text-[#3D5A4C]/60">
-                  The appointment has been created successfully.
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* ========================================= */}
           {/* ERROR MESSAGE */}
