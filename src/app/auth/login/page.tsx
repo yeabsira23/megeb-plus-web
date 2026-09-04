@@ -71,44 +71,6 @@ async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     }
   } finally {
     setLoading(false);
-
-  }
-}
-
-  setLoading(true);
-
-  try {
-    const response = await login(identifier, password);
-
-    // Store authentication tokens
-    localStorage.setItem('access', response.access);
-    localStorage.setItem('refresh', response.refresh);
-
-    // Store user information
-    localStorage.setItem('role', response.role);
-    localStorage.setItem('full_name', response.full_name);
-    localStorage.setItem('email', response.email);
-    localStorage.setItem('phone', response.phone);
-
-    // Redirect staff based on role
-    if (response.role === 'admin') {
-      router.push('/admin/dashboard');
-    } else if (response.role === 'nutritionist') {
-      router.push('/nutritionist/dashboard');
-    } else {
-      setError('This account does not have access to the staff portal.');
-    }
-  } catch (err) {
-    if (axios.isAxiosError(err)) {
-      setError(
-        err.response?.data?.detail ||
-          'Login failed. Check your credentials.'
-      );
-    } else {
-      setError('Login failed. Check your credentials.');
-    }
-  } finally {
-    setLoading(false);
   }
 }
 
