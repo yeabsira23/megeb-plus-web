@@ -93,7 +93,7 @@ export default function AppointmentsTable({ appointments: appointmentsProp }: Ap
       <div className="flex items-center justify-between border-b border-[#2D312E]/[0.06] px-5 py-4">
         <div>
           <h3 className="font-display text-[19px]">Recent appointments</h3>
-          <p className="mt-1 text-[11px] text-[#2D312E]/45">Latest consultation activity</p>
+          <p className="mt-1 text-[11px] text-[#2D312E]/65">Latest consultation activity</p>
         </div>
         <Link href="/admin/appointments" className="flex items-center gap-1 text-[11px] font-semibold text-[#4E876E]">
           View all
@@ -107,10 +107,10 @@ export default function AppointmentsTable({ appointments: appointmentsProp }: Ap
         <table className="w-full min-w-[600px]">
           <thead>
             <tr className="border-b border-[#2D312E]/[0.05] text-left">
-              <th className="px-5 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">Client</th>
-              <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">Nutritionist</th>
-              <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">Schedule</th>
-              <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">Status</th>
+              <th className="px-5 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Client</th>
+              <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Nutritionist</th>
+              <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Schedule</th>
+              <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -124,15 +124,15 @@ export default function AppointmentsTable({ appointments: appointmentsProp }: Ap
                 </tr>
               ))
             ) : appointments.length === 0 ? (
-              <tr><td colSpan={4} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/40">No recent appointments.</td></tr>
+              <tr><td colSpan={4} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/55">No recent appointments.</td></tr>
             ) : (
               appointments.map((appointment) => (
                 <tr key={appointment.id} className="border-b border-[#2D312E]/[0.04] last:border-0">
                   <td className="px-5 py-4 text-[12px] font-semibold">{appointment.client}</td>
-                  <td className="px-3 py-4 text-[11px] text-[#2D312E]/60">{appointment.nutritionist}</td>
+                  <td className="px-3 py-4 text-[11px] text-[#2D312E]/75">{appointment.nutritionist}</td>
                   <td className="px-3 py-4">
                     <p className="text-[11px]">{appointment.date}</p>
-                    <p className="text-[10px] text-[#2D312E]/40">{appointment.time}</p>
+                    <p className="text-[10px] text-[#2D312E]/55">{appointment.time}</p>
                   </td>
                   <td className="px-3 py-4"><StatusBadge status={appointment.status} /></td>
                 </tr>

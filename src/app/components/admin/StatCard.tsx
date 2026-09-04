@@ -54,13 +54,13 @@ export default function StatCard({
           {change}
         </span>
       </div>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#2D312E]/40">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#2D312E]/55">
         {title}
       </p>
       <p className="mt-1 font-display text-[25px]">
         {value}
       </p>
-      <p className="mt-1 text-[10px] text-[#2D312E]/40">
+      <p className="mt-1 text-[10px] text-[#2D312E]/55">
         {description}
       </p>
     </div>

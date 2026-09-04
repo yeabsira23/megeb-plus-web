@@ -66,7 +66,7 @@ export default function AppointmentsPage() {
     <div className="space-y-5">
       <div>
         <h1 className="font-display text-[23px] text-[#2D312E]">Appointments</h1>
-        <p className="mt-1 text-[12px] text-[#2D312E]/50">All consultations across the platform.</p>
+        <p className="mt-1 text-[12px] text-[#2D312E]/70">All consultations across the platform.</p>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -79,7 +79,7 @@ export default function AppointmentsPage() {
               className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition ${
                 statusFilter === status
                   ? 'bg-[#3D5A4C] text-white'
-                  : 'bg-white text-[#2D312E]/60 border border-[#2D312E]/10 hover:bg-[#FAF9F6]'
+                  : 'bg-white text-[#2D312E]/75 border border-[#2D312E]/10 hover:bg-[#FAF9F6]'
               }`}
             >
               {status}
@@ -106,27 +106,27 @@ export default function AppointmentsPage() {
           <table className="w-full min-w-[600px]">
             <thead>
               <tr className="border-b border-[#2D312E]/[0.05] text-left">
-                <th className="px-5 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">Client</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">Nutritionist</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">Schedule</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">Status</th>
+                <th className="px-5 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Client</th>
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Nutritionist</th>
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Schedule</th>
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Status</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={4} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/40">Loading appointments…</td></tr>
+                <tr><td colSpan={4} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/55">Loading appointments…</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={4} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/40">No appointments match your filters.</td></tr>
+                <tr><td colSpan={4} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/55">No appointments match your filters.</td></tr>
               ) : (
                 filtered.map((appointment) => {
                   const { icon: Icon, className } = STATUS_CONFIG[appointment.status];
                   return (
                     <tr key={appointment.id} className="border-b border-[#2D312E]/[0.04] last:border-0">
                       <td className="px-5 py-4 text-[12px] font-semibold">{appointment.client}</td>
-                      <td className="px-3 py-4 text-[11px] text-[#2D312E]/60">{appointment.nutritionist}</td>
+                      <td className="px-3 py-4 text-[11px] text-[#2D312E]/75">{appointment.nutritionist}</td>
                       <td className="px-3 py-4">
                         <p className="text-[11px]">{appointment.date}</p>
-                        <p className="text-[10px] text-[#2D312E]/40">{appointment.time}</p>
+                        <p className="text-[10px] text-[#2D312E]/55">{appointment.time}</p>
                       </td>
                       <td className="px-3 py-4">
                         <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[9px] font-semibold ${className}`}>

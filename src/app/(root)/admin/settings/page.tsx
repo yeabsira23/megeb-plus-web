@@ -84,7 +84,7 @@ export default function SettingsPage() {
     <div className="max-w-2xl space-y-5">
       <div>
         <h1 className="font-display text-[23px] text-[#2D312E]">Settings</h1>
-        <p className="mt-1 text-[12px] text-[#2D312E]/50">Platform-wide configuration.</p>
+        <p className="mt-1 text-[12px] text-[#2D312E]/70">Platform-wide configuration.</p>
       </div>
 
       {error && <p className="text-[12px] font-medium text-red-600">{error}</p>}
