@@ -1,8 +1,7 @@
 "use client";
-
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { clearSession } from "@/app/lib/api";
 import {
   LayoutDashboard,
   Users,
@@ -67,10 +66,12 @@ export default function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
 
-  function logout() {
-    clearSession();
-    router.push("/auth/login");
-  }
+async function logout() {
+  await signOut({
+    redirect: true,
+    callbackUrl: "/auth/login",
+  });
+}
 
   return (
     <>
