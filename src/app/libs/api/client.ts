@@ -4,7 +4,6 @@ import axios, {
 } from 'axios';
 
 import { getSession } from 'next-auth/react';
-
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   'https://megeb-plus-backend.vercel.app';
@@ -16,16 +15,34 @@ const apiClient = axios.create({
   },
 });
 
-/**
- * Add the current Auth.js access token
- * to authenticated API requests.
- */
+// Separate client for refreshing the access token.
+// This prevents the refresh request from triggering
+// the same interceptor again.
+const refreshClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add access token to every protected request
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     if (typeof window !== 'undefined') {
+      // Prefer NextAuth session access token when available,
+      // fall back to localStorage for manually-managed tokens.
       const session = await getSession();
+      const accessToken = session?.accessToken ?? localStorage.getItem('access');
 
-      const accessToken = session?.accessToken;
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
       if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
@@ -76,33 +93,60 @@ apiClient.interceptors.response.use(
     originalRequest._retry = true;
 
     try {
-      /**
-       * Get the current session.
-       *
-       * If the Django access token has expired,
-       * Auth.js should refresh it through the
-       * jwt callback in src/auth.ts.
-       */
+      // Try to get a refreshed access token from NextAuth first.
       const session = await getSession();
+      const newAccessToken = session?.accessToken;
 
-      const newAccessToken =
-        session?.accessToken;
-
-      if (!newAccessToken) {
-        throw new Error(
-          'No authenticated session found.'
-        );
+      if (newAccessToken) {
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return apiClient(originalRequest);
       }
 
-      /**
-       * Retry the original request using
-       * the latest Django access token.
-       */
-      originalRequest.headers.Authorization =
-        `Bearer ${newAccessToken}`;
+      // Fallback: try refreshing using the refresh token stored in localStorage
+      const refreshToken = localStorage.getItem('refresh');
 
+      if (!refreshToken) {
+        return Promise.reject(error);
+      }
+
+      const response = await refreshClient.post(
+        '/api/token/refresh/',
+        {
+          refresh: refreshToken,
+        }
+      );
+
+      const refreshedAccess = response.data.access;
+
+      if (!refreshedAccess) {
+        throw new Error('No access token returned from refresh.');
+      }
+
+      // Save the new access token
+      localStorage.setItem('access', refreshedAccess);
+
+      // Update the original request with the new token
+      originalRequest.headers.Authorization = `Bearer ${refreshedAccess}`;
+
+      // Retry the original request
       return apiClient(originalRequest);
     } catch (refreshError) {
+      // Refresh token is invalid/expired.
+      // Clear authentication data.
+      try {
+        localStorage.removeItem('access');
+        localStorage.removeItem('refresh');
+        localStorage.removeItem('role');
+        localStorage.removeItem('full_name');
+        localStorage.removeItem('email');
+        localStorage.removeItem('phone');
+      } catch (e) {
+        // ignore localStorage errors
+      }
+
+      return Promise.reject(refreshError);
+    }
+
       return Promise.reject(refreshError);
     }
   }

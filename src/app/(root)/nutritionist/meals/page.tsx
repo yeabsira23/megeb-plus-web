@@ -671,8 +671,7 @@ export default function MealLibraryPage() {
 
               <p className="font-body mt-2 max-w-2xl text-[12px] leading-5 text-[#2D312E]/45">
                 Create reusable meals from foods in the database.
-                Nutrition values are calculated automatically from
-                the selected foods and quantities.
+            
               </p>
             </div>
 
