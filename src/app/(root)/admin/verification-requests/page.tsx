@@ -1,11 +1,17 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, Check, X, UserCheck, FileText, Mail, BriefcaseBusiness, IdCard, Award, FileCheck2, GraduationCap } from 'lucide-react';
 import DocumentPreviewModal, { SubmittedDocument } from '@/app/components/admin/DocumentPreviewModal';
 
-type RequestStatus = 'Pending' | 'Approved' | 'Rejected';
+import { Search, Check, X, UserCheck, FileText } from "lucide-react";
+
+import DocumentPreviewModal, {
+  SubmittedDocument,
+} from "@/app/components/admin/DocumentPreviewModal";
+
+type RequestStatus = "Pending" | "Approved" | "Rejected";
 
 type VerificationRequestDetail = {
   id: string;
@@ -149,8 +155,14 @@ function saveRequests(requests: VerificationRequestDetail[]) {
 
 const STATUS_FILTERS: (RequestStatus | 'All')[] = ['All', 'Pending', 'Approved', 'Rejected'];
 
-function isRequestStatus(value: string | null): value is RequestStatus {
-  return value === 'Pending' || value === 'Approved' || value === 'Rejected';
+function isRequestStatus(
+  value: string | null
+): value is RequestStatus {
+  return (
+    value === "Pending" ||
+    value === "Approved" ||
+    value === "Rejected"
+  );
 }
 
 function getInitial(name: string): string {
@@ -162,17 +174,30 @@ export default function VerificationRequestsPage() {
   const [requests, setRequests] = useState<VerificationRequestDetail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const rawStatus = searchParams.get('status');
-  const capitalizedStatus = rawStatus ? rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1) : null;
-  const initialStatus: RequestStatus | 'All' = isRequestStatus(capitalizedStatus)
-    ? (capitalizedStatus as RequestStatus)
-    : 'Pending';
-  const initialSearch = searchParams.get('search') ?? '';
+  const rawStatus = searchParams.get("status");
 
-  const [statusFilter, setStatusFilter] = useState<RequestStatus | 'All'>(initialStatus);
+  const capitalizedStatus = rawStatus
+    ? rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1)
+    : null;
+
+  const initialStatus: RequestStatus | "All" =
+    isRequestStatus(capitalizedStatus)
+      ? capitalizedStatus
+      : "Pending";
+
+  const initialSearch = searchParams.get("search") ?? "";
+
+  const [statusFilter, setStatusFilter] =
+    useState<RequestStatus | "All">(initialStatus);
+
   const [query, setQuery] = useState(initialSearch);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [previewDoc, setPreviewDoc] = useState<SubmittedDocument | null>(null);
+
+  const [expandedId, setExpandedId] = useState<string | null>(
+    null
+  );
+
+  const [previewDoc, setPreviewDoc] =
+    useState<SubmittedDocument | null>(null);
 
   useEffect(() => {
     // Backend API will be connected here later.
@@ -189,11 +214,20 @@ export default function VerificationRequestsPage() {
     return matchesStatus && matchesQuery;
   });
 
-  const pendingCount = requests.filter((request) => request.status === 'Pending').length;
+  const pendingCount = requests.filter(
+    (request) => request.status === "Pending"
+  ).length;
 
   function updateStatus(id: string, status: RequestStatus) {
     // Backend API will be connected here later.
-    // await apiFetch(`/admin/verification-requests/${id}`, { method: 'PATCH', data: { status } });
+    //
+    // await apiFetch(
+    //   `/admin/verification-requests/${id}`,
+    //   {
+    //     method: "PATCH",
+    //     data: { status },
+    //   }
+    // );
 
     const updated = requests.map((request) => (request.id === id ? { ...request, status } : request));
     setRequests(updated);
@@ -202,6 +236,7 @@ export default function VerificationRequestsPage() {
 
   return (
     <div className="space-y-5">
+      {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-[23px] text-[#2D312E]">Verification Requests</h1>
@@ -209,14 +244,20 @@ export default function VerificationRequestsPage() {
             Review nutritionist applications and approve or reject their credentials.
           </p>
         </div>
+
         {pendingCount > 0 && (
           <span className="flex w-fit items-center gap-1 rounded-full bg-[#F7EFD9] px-2.5 py-1 text-[10px] font-bold text-[#8A6D2D]">
-            <UserCheck className="h-3 w-3" strokeWidth={2.5} />
+            <UserCheck
+              className="h-3 w-3"
+              strokeWidth={2.5}
+            />
+
             {pendingCount} pending
           </span>
         )}
       </div>
 
+      {/* Filters + Search */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-2">
           {STATUS_FILTERS.map((status) => (
@@ -234,6 +275,7 @@ export default function VerificationRequestsPage() {
             </button>
           ))}
         </div>
+
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#2D312E]/40" />
           <input
@@ -254,18 +296,26 @@ export default function VerificationRequestsPage() {
         ) : (
           <div className="divide-y divide-[#2D312E]/[0.05]">
             {filtered.map((request) => {
-              const isExpanded = expandedId === request.id;
+              const isExpanded =
+                expandedId === request.id;
+
               return (
                 <div key={request.id}>
+                  {/* Request Row */}
                   <button
                     type="button"
-                    onClick={() => setExpandedId(isExpanded ? null : request.id)}
+                    onClick={() =>
+                      setExpandedId(
+                        isExpanded ? null : request.id
+                      )
+                    }
                     className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left hover:bg-[#FAF9F6]"
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E9F0EC] font-semibold text-[#3D5A4C]">
                         {getInitial(request.fullName)}
                       </div>
+
                       <div>
                         <p className="text-[12.5px] font-semibold text-[#2D312E]">{request.fullName}</p>
                         <p className="text-[10.5px] text-[#2D312E]/65">
@@ -273,19 +323,21 @@ export default function VerificationRequestsPage() {
                         </p>
                       </div>
                     </div>
+
                     <span
                       className={`shrink-0 rounded-full px-2.5 py-1 text-[9px] font-semibold ${
-                        request.status === 'Approved'
-                          ? 'bg-[#E9F0EC] text-[#3D5A4C]'
-                          : request.status === 'Rejected'
-                          ? 'bg-red-50 text-red-500'
-                          : 'bg-[#F7EFD9] text-[#8A6D2D]'
+                        request.status === "Approved"
+                          ? "bg-[#E9F0EC] text-[#3D5A4C]"
+                          : request.status === "Rejected"
+                            ? "bg-red-50 text-red-500"
+                            : "bg-[#F7EFD9] text-[#8A6D2D]"
                       }`}
                     >
                       {request.status}
                     </span>
                   </button>
 
+                  {/* Expanded Details */}
                   {isExpanded && (
                     <div className="space-y-5 bg-[#FAF9F6]/60 px-5 py-5">
                       <DetailGroup icon={<Mail className="h-3.5 w-3.5" />} title="Contact">
@@ -334,10 +386,13 @@ export default function VerificationRequestsPage() {
                             <button
                               key={doc.label}
                               type="button"
-                              onClick={() => setPreviewDoc(doc)}
+                              onClick={() =>
+                                setPreviewDoc(doc)
+                              }
                               className="flex items-center gap-2.5 rounded-xl border border-[#2D312E]/10 bg-white px-3 py-2.5 text-left transition hover:border-[#3D5A4C]/30 hover:bg-[#E9F0EC]/30"
                             >
                               <FileText className="h-4 w-4 shrink-0 text-[#4E876E]" />
+
                               <div className="min-w-0">
                                 <p className="truncate text-[11px] font-semibold text-[#2D312E]">{doc.label}</p>
                                 <p className="truncate text-[9.5px] text-[#2D312E]/55">{doc.fileName}</p>
@@ -351,18 +406,37 @@ export default function VerificationRequestsPage() {
                         <div className="flex items-center gap-2 pt-1">
                           <button
                             type="button"
-                            onClick={() => updateStatus(request.id, 'Approved')}
+                            onClick={() =>
+                              updateStatus(
+                                request.id,
+                                "Approved"
+                              )
+                            }
                             className="flex items-center gap-1 rounded-lg bg-[#3D5A4C] px-3 py-2 text-[11px] font-semibold text-white hover:bg-[#4E876E]"
                           >
-                            <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
+                            <Check
+                              className="h-3.5 w-3.5"
+                              strokeWidth={2.5}
+                            />
+
                             Approve
                           </button>
+
                           <button
                             type="button"
-                            onClick={() => updateStatus(request.id, 'Rejected')}
+                            onClick={() =>
+                              updateStatus(
+                                request.id,
+                                "Rejected"
+                              )
+                            }
                             className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-2 text-[11px] font-semibold text-red-500 hover:bg-red-50"
                           >
-                            <X className="h-3.5 w-3.5" strokeWidth={2.5} />
+                            <X
+                              className="h-3.5 w-3.5"
+                              strokeWidth={2.5}
+                            />
+
                             Reject
                           </button>
                         </div>
@@ -376,7 +450,10 @@ export default function VerificationRequestsPage() {
         )}
       </section>
 
-      <DocumentPreviewModal document={previewDoc} onClose={() => setPreviewDoc(null)} />
+      <DocumentPreviewModal
+        document={previewDoc}
+        onClose={() => setPreviewDoc(null)}
+      />
     </div>
   );
 }

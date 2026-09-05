@@ -1,6 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  getMe,
+  type User,
+} from "@/app/libs/api/auth";
+
 import {
   UserRound,
   Mail,
@@ -19,24 +24,78 @@ import {
 import Sidebar from "@/app/components/nutritionist/Sidebar";
 import Topbar from "@/app/components/nutritionist/Topbar";
 
+type ProfileData = {
+  fullName: string;
+  email: string;
+  phone: string;
+  location: string;
+  specialization: string;
+  experience: string;
+  education: string;
+  institution: string;
+  licenseNumber: string;
+  consultationPrice: string;
+  bio: string;
+};
+
 export default function NutritionistProfilePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [nutritionist, setNutritionist] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const [profile, setProfile] = useState({
-    fullName: "Dr. Sarah Ahmed",
-    email: "sarah.ahmed@example.com",
-    phone: "+251 91 234 5678",
-    location: "Addis Ababa, Ethiopia",
-    specialization: "Clinical Nutrition",
-    experience: "5 years",
-    education: "BSc in Nutrition and Dietetics",
-    institution: "Addis Ababa University",
-    licenseNumber: "NUT-2024-00125",
-    bio: "Certified nutritionist focused on helping clients build sustainable and healthy eating habits through personalized nutrition plans.",
+  const [profile, setProfile] = useState<ProfileData>({
+    fullName: "",
+    email: "",
+    phone: "",
+    location: "",
+    specialization: "",
+    experience: "",
+    education: "",
+    institution: "",
+    licenseNumber: "",
+    consultationPrice: "",
+    bio: "",
   });
 
-  const [formData, setFormData] = useState(profile);
+  const [formData, setFormData] = useState<ProfileData>(profile);
+
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const data = await getMe();
+
+        setNutritionist(data);
+
+        const profileData: ProfileData = {
+          fullName: String(data.full_name ?? ""),
+          email: String(data.email ?? ""),
+          phone: String(data.phone ?? ""),
+          location: String(data.location ?? ""),
+          specialization: String(data.specialization ?? ""),
+          experience: String(data.experience ?? ""),
+          education: String(data.education ?? ""),
+          institution: String(data.institution ?? ""),
+          licenseNumber: String(data.license_number ?? ""),
+          consultationPrice:
+            data.consultation_price !== undefined &&
+            data.consultation_price !== null
+              ? `${data.consultation_price} ETB`
+              : "",
+          bio: String(data.bio ?? ""),
+        };
+
+        setProfile(profileData);
+        setFormData(profileData);
+      } catch (error) {
+        console.error("Failed to load nutritionist profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProfile();
+  }, []);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -168,7 +227,7 @@ export default function NutritionistProfilePage() {
 
                   <div>
                     <h2 className="font-display text-[23px] text-[#2D312E]">
-                      {profile.fullName}
+                      {loading ? "Loading..." : profile.fullName}
                     </h2>
 
                     <p className="font-body mt-1 text-[11px] text-[#2D312E]/45">
@@ -297,6 +356,15 @@ export default function NutritionistProfilePage() {
                 label="License Number"
                 name="licenseNumber"
                 value={formData.licenseNumber}
+                isEditing={false}
+                onChange={handleChange}
+              />
+
+              <ProfileField
+                icon={<span className="text-[10px] font-bold">ETB</span>}
+                label="Consultation Price (per session)"
+                name="consultationPrice"
+                value={formData.consultationPrice}
                 isEditing={isEditing}
                 onChange={handleChange}
               />

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -26,71 +27,30 @@ type Client = {
 };
 
 /*
- * Temporary client data
-
- * Later, we will replace this with data from:
- * /nutritionist/clients
- */
-const TEMPORARY_CLIENTS: Client[] = [
-  {
-    id: "1",
-    name: "Hana Tesfaye",
-    age: 28,
-    goal: "Weight Management",
-    lastAppointment: "Today",
-    status: "Active",
-  },
-  {
-    id: "2",
-    name: "Selam Alemu",
-    age: 34,
-    goal: "Diabetes Nutrition",
-    lastAppointment: "Yesterday",
-    status: "Active",
-  },
-  {
-    id: "3",
-    name: "Meron Kebede",
-    age: 25,
-    goal: "Healthy Lifestyle",
-    lastAppointment: "Aug 11",
-    status: "Active",
-  },
-  {
-    id: "4",
-    name: "Liya Michael",
-    age: 31,
-    goal: "Weight Management",
-    lastAppointment: "Aug 8",
-    status: "Inactive",
-  },
-];
-
-/*
  * Clients data hook
- 
- * Later, when the backend endpoint is ready, this
- * function can be changed to use apiFetch().
+ *
+ * Backend endpoint is not connected yet.
+ *
+ * When the backend endpoint is ready, replace the
+ * empty data with the real API request.
  */
 function useClients() {
   const [clients, setClients] = useState<Client[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
 
     async function loadClients() {
-      setIsLoading(true);
-      setError(null);
-
       try {
+        setIsLoading(true);
+        setError(null);
+
         /*
-         * TEMPORARY
+         * Backend will provide the endpoint later.
          *
-         * Backend is not connected yet.
-         *
-         * Later:
+         * Example:
          *
          * const data = await apiFetch<Client[]>(
          *   "/nutritionist/clients"
@@ -101,11 +61,8 @@ function useClients() {
          * }
          */
 
-        // Small delay so the loading state can be displayed.
-        await new Promise((resolve) => setTimeout(resolve, 300));
-
         if (isMounted) {
-          setClients(TEMPORARY_CLIENTS);
+          setClients([]);
         }
       } catch (err) {
         console.error("Unable to load clients:", err);
@@ -195,14 +152,12 @@ export default function ClientsPage() {
 
         {/* Page Content */}
         <div className="mx-auto max-w-7xl px-5 py-7 sm:px-7 lg:px-8 lg:py-9">
-
           {/* ========================================= */}
           {/* PAGE HEADER */}
           {/* ========================================= */}
 
           <div className="mb-7">
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-
               <div>
                 {/* Icon */}
                 <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
@@ -230,7 +185,6 @@ export default function ClientsPage() {
                   {clients.length}
                 </p>
               </div>
-
             </div>
           </div>
 
@@ -240,7 +194,6 @@ export default function ClientsPage() {
 
           <section className="mb-6 rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm">
             <div className="relative">
-
               <Search
                 size={18}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-[#2D312E]/35"
@@ -253,7 +206,6 @@ export default function ClientsPage() {
                 placeholder="Search clients..."
                 className="w-full rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] py-3 pl-11 pr-4 font-body text-[12px] text-[#2D312E] outline-none transition placeholder:text-[#2D312E]/30 focus:border-[#4E876E]/40 focus:ring-2 focus:ring-[#4E876E]/10"
               />
-
             </div>
           </section>
 
@@ -272,10 +224,8 @@ export default function ClientsPage() {
           {/* ========================================= */}
 
           <section className="overflow-hidden rounded-2xl border border-[#2D312E]/[0.07] bg-white shadow-sm">
-
             {/* List Header */}
             <div className="border-b border-[#2D312E]/[0.06] px-5 py-5 sm:px-6">
-
               <h2 className="font-display text-[20px] text-[#2D312E]">
                 All Clients
               </h2>
@@ -287,7 +237,6 @@ export default function ClientsPage() {
                       filteredClients.length !== 1 ? "s" : ""
                     } found`}
               </p>
-
             </div>
 
             {/* ========================================= */}
@@ -296,7 +245,6 @@ export default function ClientsPage() {
 
             {isLoading ? (
               <div className="px-6 py-12 text-center">
-
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
                   <Users size={21} />
                 </div>
@@ -308,26 +256,20 @@ export default function ClientsPage() {
                 <p className="font-body mt-1 text-[11px] text-[#2D312E]/40">
                   Please wait while your clients are loaded.
                 </p>
-
               </div>
-
             ) : filteredClients.length > 0 ? (
-
               /* ========================================= */
               /* CLIENTS */
               /* ========================================= */
 
               <div className="divide-y divide-[#2D312E]/[0.06]">
-
                 {filteredClients.map((client) => (
                   <div
                     key={client.id}
                     className="flex flex-col gap-4 px-5 py-5 transition hover:bg-[#FAF9F6]/70 sm:flex-row sm:items-center sm:px-6"
                   >
-
                     {/* Client */}
                     <div className="flex min-w-0 flex-1 items-center gap-4">
-
                       <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
                         <UserRound size={19} />
                       </div>
@@ -341,12 +283,10 @@ export default function ClientsPage() {
                           {client.age} years old
                         </p>
                       </div>
-
                     </div>
 
                     {/* Nutrition Goal */}
                     <div className="sm:w-[180px]">
-
                       <p className="font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/30">
                         Nutrition Goal
                       </p>
@@ -354,18 +294,15 @@ export default function ClientsPage() {
                       <p className="mt-1 font-body text-[11px] text-[#2D312E]/65">
                         {client.goal}
                       </p>
-
                     </div>
 
                     {/* Last Appointment */}
                     <div className="sm:w-[140px]">
-
                       <p className="font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/30">
                         Last Appointment
                       </p>
 
                       <div className="mt-1 flex items-center gap-1.5">
-
                         <CalendarDays
                           size={12}
                           className="text-[#4E876E]"
@@ -374,14 +311,11 @@ export default function ClientsPage() {
                         <p className="font-body text-[11px] text-[#2D312E]/65">
                           {client.lastAppointment}
                         </p>
-
                       </div>
-
                     </div>
 
                     {/* Status */}
                     <div className="sm:w-[90px]">
-
                       <span
                         className={`inline-flex rounded-full px-2.5 py-1 font-body text-[9px] font-bold ${
                           client.status === "Active"
@@ -391,7 +325,6 @@ export default function ClientsPage() {
                       >
                         {client.status}
                       </span>
-
                     </div>
 
                     {/* View Client */}
@@ -402,20 +335,15 @@ export default function ClientsPage() {
                     >
                       <ChevronRight size={17} />
                     </Link>
-
                   </div>
                 ))}
-
               </div>
-
             ) : (
-
               /* ========================================= */
               /* NO CLIENTS */
               /* ========================================= */
 
               <div className="px-6 py-12 text-center">
-
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
                   <Users size={21} />
                 </div>
@@ -427,14 +355,12 @@ export default function ClientsPage() {
                 <p className="font-body mt-1 text-[11px] text-[#2D312E]/40">
                   Try searching for a different name.
                 </p>
-
               </div>
             )}
-
           </section>
-
         </div>
       </div>
     </main>
   );
 }
+

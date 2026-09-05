@@ -77,252 +77,13 @@ type ClientDetails = {
   notes: string;
 };
 
-const TEMPORARY_CLIENT_DETAILS: ClientDetails[] = [
-  {
-    id: "1",
-    name: "Hana Tesfaye",
-    age: 28,
-    gender: "Female",
-    phone: "+251 91 234 5678",
-    email: "hana.tesfaye@example.com",
-    status: "Active",
-
-    height: "168 cm",
-    currentWeight: "69 kg",
-    targetWeight: "64 kg",
-    bmi: "24.4",
-
-    goal: "Weight Management",
-    goalDescription:
-      "Gradual and sustainable weight loss while maintaining a balanced and nutritious diet.",
-
-    medicalCondition: "Type 2 Diabetes",
-    activityLevel: "Moderate",
-    allergies: "No known allergies",
-
-    nutritionPlanId: "NP-001",
-    nutritionPlan: "High-Protein Balanced Diet",
-    calories: "1,800 kcal/day",
-    dietType: ["High Protein", "Low Sugar", "Fiber Rich"],
-
-    progress: {
-      startingWeight: "74 kg",
-      currentWeight: "69 kg",
-      weightLost: "5 kg",
-    },
-
-    nextAppointment: {
-      date: "Aug 24, 2026",
-      time: "10:00 AM",
-    },
-
-    appointments: [
-      {
-        date: "Aug 18, 2026",
-        time: "10:00 AM",
-        type: "Follow-up Consultation",
-        status: "Completed",
-        notes:
-          "Reviewed meal adherence and adjusted the calorie target.",
-      },
-      {
-        date: "Aug 11, 2026",
-        time: "11:00 AM",
-        type: "Initial Nutrition Assessment",
-        status: "Completed",
-        notes:
-          "Completed initial health and nutrition assessment.",
-      },
-      {
-        date: "Aug 24, 2026",
-        time: "10:00 AM",
-        type: "Nutrition Follow-up",
-        status: "Upcoming",
-        notes:
-          "Review progress and update the current nutrition plan.",
-      },
-    ],
-
-    notes:
-      "Hana has been consistently following her meal plan. Blood glucose readings have improved over the last month. Recommend increasing daily water intake to 2.5L and introducing strength training twice a week.",
-  },
-
-  {
-    id: "2",
-    name: "Selam Alemu",
-    age: 34,
-    gender: "Female",
-    phone: "+251 92 345 6789",
-    email: "selam.alemu@example.com",
-    status: "Active",
-
-    height: "162 cm",
-    currentWeight: "71 kg",
-    targetWeight: "66 kg",
-    bmi: "27.1",
-
-    goal: "Diabetes Nutrition",
-    goalDescription:
-      "Improve blood sugar management through a balanced meal plan and healthy eating habits.",
-
-    medicalCondition: "Type 2 Diabetes",
-    activityLevel: "Light",
-    allergies: "No known allergies",
-
-    nutritionPlanId: "NP-002",
-    nutritionPlan: "Diabetes-Friendly Meal Plan",
-    calories: "1,700 kcal/day",
-    dietType: ["Low Sugar", "High Fiber", "Balanced"],
-
-    progress: {
-      startingWeight: "75 kg",
-      currentWeight: "71 kg",
-      weightLost: "4 kg",
-    },
-
-    nextAppointment: {
-      date: "Aug 25, 2026",
-      time: "2:00 PM",
-    },
-
-    appointments: [
-      {
-        date: "Aug 19, 2026",
-        time: "2:00 PM",
-        type: "Follow-up Consultation",
-        status: "Completed",
-        notes:
-          "Reviewed blood sugar management and dietary adherence.",
-      },
-      {
-        date: "Aug 25, 2026",
-        time: "2:00 PM",
-        type: "Nutrition Follow-up",
-        status: "Upcoming",
-        notes:
-          "Review progress and adjust meal plan if necessary.",
-      },
-    ],
-
-    notes:
-      "Selam is responding well to the current meal plan. Continue monitoring portion sizes and carbohydrate intake.",
-  },
-
-  {
-    id: "3",
-    name: "Meron Kebede",
-    age: 25,
-    gender: "Female",
-    phone: "+251 93 456 7890",
-    email: "meron.kebede@example.com",
-    status: "Active",
-
-    height: "165 cm",
-    currentWeight: "60 kg",
-    targetWeight: "58 kg",
-    bmi: "22.0",
-
-    goal: "Healthy Lifestyle",
-    goalDescription:
-      "Maintain a balanced lifestyle and develop sustainable healthy eating habits.",
-
-    medicalCondition: "None",
-    activityLevel: "Active",
-    allergies: "Peanuts",
-
-    nutritionPlanId: "NP-003",
-    nutritionPlan: "Balanced Lifestyle Plan",
-    calories: "2,000 kcal/day",
-    dietType: ["Balanced", "Whole Foods", "High Fiber"],
-
-    progress: {
-      startingWeight: "62 kg",
-      currentWeight: "60 kg",
-      weightLost: "2 kg",
-    },
-
-    nextAppointment: {
-      date: "Aug 27, 2026",
-      time: "9:00 AM",
-    },
-
-    appointments: [
-      {
-        date: "Aug 11, 2026",
-        time: "9:00 AM",
-        type: "Nutrition Consultation",
-        status: "Completed",
-        notes:
-          "Discussed healthy meal preparation and daily activity.",
-      },
-      {
-        date: "Aug 27, 2026",
-        time: "9:00 AM",
-        type: "Follow-up Consultation",
-        status: "Upcoming",
-        notes:
-          "Review lifestyle changes and nutrition progress.",
-      },
-    ],
-
-    notes:
-      "Meron is maintaining a consistent exercise routine and has been following the recommended meal plan.",
-  },
-
-  {
-    id: "4",
-    name: "Liya Michael",
-    age: 31,
-    gender: "Female",
-    phone: "+251 94 567 8901",
-    email: "liya.michael@example.com",
-    status: "Inactive",
-
-    height: "170 cm",
-    currentWeight: "78 kg",
-    targetWeight: "70 kg",
-    bmi: "27.0",
-
-    goal: "Weight Management",
-    goalDescription:
-      "Work toward gradual weight reduction through sustainable nutrition habits.",
-
-    medicalCondition: "None",
-    activityLevel: "Light",
-    allergies: "No known allergies",
-
-    nutritionPlanId: "NP-004",
-    nutritionPlan: "Balanced Weight Management Plan",
-    calories: "1,750 kcal/day",
-    dietType: ["Balanced", "High Fiber", "Low Processed Foods"],
-
-    progress: {
-      startingWeight: "80 kg",
-      currentWeight: "78 kg",
-      weightLost: "2 kg",
-    },
-
-    nextAppointment: {
-      date: "Not scheduled",
-      time: "",
-    },
-
-    appointments: [
-      {
-        date: "Aug 8, 2026",
-        time: "3:00 PM",
-        type: "Nutrition Consultation",
-        status: "Completed",
-        notes:
-          "Reviewed current eating habits and discussed weight management goals.",
-      },
-    ],
-
-    notes:
-      "Client has not had a recent appointment. Follow-up should be scheduled when the client becomes active again.",
-  },
-];
-
+/*
+ * Backend client endpoint is not available yet.
+ *
+ * This hook is intentionally kept without mock data.
+ * Once the backend endpoint is ready, the API call can
+ * be added here without changing the UI below.
+ */
 function useClient(clientId: string) {
   const [client, setClient] = useState<ClientDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -333,35 +94,21 @@ function useClient(clientId: string) {
     async function loadClient() {
       setIsLoading(true);
 
-      try {
-        /*
-         * TEMPORARY DATA
-         *
-         * Later replace this with:
-         *
-         * const data = await apiFetch<ClientDetails>(
-         *   `/nutritionist/clients/${clientId}`
-         * );
-         */
+      /*
+       * Client API endpoint is not available yet.
+       * No mock data is used here.
+       */
 
-        await new Promise((resolve) => setTimeout(resolve, 300));
-
-        const foundClient = TEMPORARY_CLIENT_DETAILS.find(
-          (item) => item.id === clientId
-        );
-
-        if (isMounted) {
-          setClient(foundClient ?? null);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+      if (isMounted) {
+        setClient(null);
+        setIsLoading(false);
       }
     }
 
     if (clientId) {
       loadClient();
+    } else {
+      setIsLoading(false);
     }
 
     return () => {
@@ -540,8 +287,9 @@ export default function ClientDetailsPage() {
               {/* Header Actions */}
               <div className="flex flex-wrap gap-2">
 
+                {/* Message → Consultation */}
                 <Link
-                  href={`/nutritionist/messages/${client.id}`}
+                  href={`/nutritionist/consultations?clientId=${client.id}`}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#CCD6C4] px-4 py-2.5 font-body text-[10px] font-bold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
                 >
                   <MessageCircle size={14} />
@@ -770,74 +518,79 @@ export default function ClientDetailsPage() {
               </section>
 
               {/* Weight Progress */}
-              <section className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm sm:p-6">
-                <div className="mb-5 flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
-                    <Weight size={17} />
+              <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#2D312E] via-[#3D5A4C] to-[#4D6B5C] p-5 shadow-[0_18px_40px_-20px_rgba(45,49,46,0.35)] sm:p-6">
+                {/* Decorative elements */}
+                <div className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full border border-[#DCC48E]/15" />
+
+                <div className="pointer-events-none absolute -bottom-20 right-16 h-40 w-40 rounded-full bg-[#DCC48E]/10 blur-2xl" />
+
+                <div className="relative">
+                  <div className="mb-5 flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white">
+                      <Weight size={17} />
+                    </div>
+
+                    <div>
+                      <h2 className="font-display text-[19px] text-white">
+                        Weight Progress
+                      </h2>
+
+                      <p className="font-body text-[10px] text-white/60">
+                        Client progress toward target weight
+                      </p>
+                    </div>
                   </div>
 
-                  <div>
-                    <h2 className="font-display text-[19px]">
-                      Weight Progress
-                    </h2>
+                  <div className="mb-5 flex items-end justify-between">
+                    <div>
+                      <p className="font-body text-[9px] font-bold uppercase tracking-wider text-white/50">
+                        Starting Weight
+                      </p>
 
-                    <p className="font-body text-[10px] text-[#2D312E]/40">
-                      Client progress toward target weight
-                    </p>
+                      <p className="font-display mt-1 text-[20px] text-white">
+                        {client.progress.startingWeight}
+                      </p>
+                    </div>
+
+                    <div className="text-center">
+                      <p className="font-body text-[9px] font-bold uppercase tracking-wider text-[#DCC48E]/80">
+                        Lost
+                      </p>
+
+                      <p className="font-display mt-1 text-[20px] text-[#DCC48E]">
+                        {client.progress.weightLost}
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="font-body text-[9px] font-bold uppercase tracking-wider text-white/50">
+                        Current
+                      </p>
+
+                      <p className="font-display mt-1 text-[20px] text-white">
+                        {client.progress.currentWeight}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="mb-5 flex items-end justify-between">
+                  <div className="h-2.5 overflow-hidden rounded-full bg-white/15">
+                    <div
+                      className="h-full rounded-full bg-[#DCC48E]"
+                      style={{
+                        width: "62%",
+                      }}
+                    />
+                  </div>
 
-                  <div>
-                    <p className="font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/30">
-                      Starting Weight
-                    </p>
-
-                    <p className="font-display mt-1 text-[20px]">
+                  <div className="mt-2 flex justify-between">
+                    <span className="font-body text-[9px] text-white/45">
                       {client.progress.startingWeight}
-                    </p>
+                    </span>
+
+                    <span className="font-body text-[9px] font-semibold text-[#DCC48E]">
+                      Target {client.targetWeight}
+                    </span>
                   </div>
-
-                  <div className="text-center">
-                    <p className="font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/30">
-                      Lost
-                    </p>
-
-                    <p className="font-display mt-1 text-[20px] text-[#4E876E]">
-                      {client.progress.weightLost}
-                    </p>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/30">
-                      Current
-                    </p>
-
-                    <p className="font-display mt-1 text-[20px]">
-                      {client.progress.currentWeight}
-                    </p>
-                  </div>
-
-                </div>
-
-                <div className="h-2 overflow-hidden rounded-full bg-[#E9F0EC]">
-                  <div
-                    className="h-full rounded-full bg-[#4E876E]"
-                    style={{
-                      width: "62%",
-                    }}
-                  />
-                </div>
-
-                <div className="mt-2 flex justify-between">
-                  <span className="font-body text-[9px] text-[#2D312E]/35">
-                    {client.progress.startingWeight}
-                  </span>
-
-                  <span className="font-body text-[9px] text-[#2D312E]/35">
-                    Target {client.targetWeight}
-                  </span>
                 </div>
               </section>
 
@@ -1052,9 +805,9 @@ export default function ClientDetailsPage() {
                     </span>
                   </Link>
 
-                  {/* Message Client */}
+                  {/* Message Client → Consultation */}
                   <Link
-                    href={`/nutritionist/messages/${client.id}`}
+                    href={`/nutritionist/consultations?clientId=${client.id}`}
                     className="flex w-full items-center gap-3 rounded-xl border border-[#2D312E]/[0.07] px-4 py-3 text-left transition hover:bg-[#FAF9F6]"
                   >
                     <MessageCircle

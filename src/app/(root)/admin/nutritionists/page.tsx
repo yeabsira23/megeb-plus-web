@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from 'react';
 import { Search, ChevronRight, Mail, Phone } from 'lucide-react';
@@ -181,6 +181,7 @@ export default function NutritionistsPage() {
 
   return (
     <div className="space-y-5">
+      {/* Header */}
       <div>
         <h1 className="font-display text-[23px] text-[#2D312E]">Nutritionists</h1>
         <p className="mt-1 text-[12px] text-[#2D312E]/70">
@@ -188,6 +189,7 @@ export default function NutritionistsPage() {
         </p>
       </div>
 
+      {/* Filters + Search */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-2">
           {STATUS_FILTERS.map((status) => (
@@ -205,6 +207,7 @@ export default function NutritionistsPage() {
             </button>
           ))}
         </div>
+
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#2D312E]/40" />
           <input
@@ -232,6 +235,7 @@ export default function NutritionistsPage() {
                 <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55"></th>
               </tr>
             </thead>
+
             <tbody>
               {isLoading ? (
                 <tr><td colSpan={8} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/50">Loading applications…</td></tr>
@@ -239,7 +243,11 @@ export default function NutritionistsPage() {
                 <tr><td colSpan={8} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/50">No applications found.</td></tr>
               ) : (
                 filtered.map((app) => (
-                  <tr key={app.id} className="border-b border-[#2D312E]/[0.04] last:border-0">
+                  <tr
+                    key={app.id}
+                    className="border-b border-[#2D312E]/[0.04] last:border-0"
+                  >
+                    {/* Name */}
                     <td className="px-5 py-4">
                       <p className="text-[12.5px] font-semibold text-[#2D312E]">{app.fullName}</p>
                       <div className="mt-1 flex flex-col gap-0.5">
@@ -267,16 +275,18 @@ export default function NutritionistsPage() {
                     <td className="px-3 py-4">
                       <span
                         className={`rounded-full px-2.5 py-1 text-[9px] font-semibold ${
-                          app.status === 'Approved'
-                            ? 'bg-[#E9F0EC] text-[#3D5A4C]'
-                            : app.status === 'Rejected'
-                            ? 'bg-red-50 text-red-500'
-                            : 'bg-[#F7EFD9] text-[#8A6D2D]'
+                          app.status === "Approved"
+                            ? "bg-[#E9F0EC] text-[#3D5A4C]"
+                            : app.status === "Rejected"
+                            ? "bg-red-50 text-red-500"
+                            : "bg-[#F7EFD9] text-[#8A6D2D]"
                         }`}
                       >
                         {app.status}
                       </span>
                     </td>
+
+                    {/* Actions */}
                     <td className="px-3 py-4">
                       <button
                         type="button"
@@ -295,5 +305,37 @@ export default function NutritionistsPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+/*
+ * Suspense is required by Next.js when using useSearchParams()
+ * during production builds.
+ */
+export default function NutritionistsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="space-y-5">
+          <div>
+            <h1 className="font-display text-[23px] text-[#2D312E]">
+              Nutritionists
+            </h1>
+
+            <p className="mt-1 text-[12px] text-[#2D312E]/50">
+              Loading nutritionist applications…
+            </p>
+          </div>
+
+          <section className="rounded-2xl border border-[#2D312E]/[0.06] bg-white p-8 text-center shadow-sm">
+            <p className="text-[12px] text-[#2D312E]/40">
+              Loading…
+            </p>
+          </section>
+        </div>
+      }
+    >
+      <NutritionistsContent />
+    </Suspense>
   );
 }
