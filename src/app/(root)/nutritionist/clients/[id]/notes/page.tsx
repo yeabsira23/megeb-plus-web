@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   FileText,
@@ -19,36 +19,8 @@ type ClientNote = {
   notes: string;
 };
 
-const TEMPORARY_CLIENT_NOTES: ClientNote[] = [
-  {
-    id: "1",
-    name: "Hana Tesfaye",
-    notes:
-      "Hana has been consistently following her meal plan. Blood glucose readings have improved over the last month. Recommend increasing daily water intake to 2.5L and introducing strength training twice a week.",
-  },
-  {
-    id: "2",
-    name: "Selam Alemu",
-    notes:
-      "Selam is responding well to the current meal plan. Continue monitoring portion sizes and carbohydrate intake.",
-  },
-  {
-    id: "3",
-    name: "Meron Kebede",
-    notes:
-      "Meron is maintaining a consistent exercise routine and has been following the recommended meal plan.",
-  },
-  {
-    id: "4",
-    name: "Liya Michael",
-    notes:
-      "Client has not had a recent appointment. Follow-up should be scheduled when the client becomes active again.",
-  },
-];
-
 export default function UpdateNotesPage() {
   const params = useParams();
-  const router = useRouter();
 
   const clientId = String(params.id);
 
@@ -58,23 +30,17 @@ export default function UpdateNotesPage() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    const foundClient = TEMPORARY_CLIENT_NOTES.find(
-      (item) => item.id === clientId
-    );
-
-    if (foundClient) {
-      setClient(foundClient);
-      setNotes(foundClient.notes);
-    }
+    // Client notes API is not connected yet.
+    // The client will be loaded here when the backend endpoint is available.
+    setClient(null);
+    setNotes("");
   }, [clientId]);
 
   const handleSave = async () => {
     setIsSaving(true);
     setSaved(false);
 
-    // Temporary save until backend is connected.
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
+    // Backend save functionality will be connected here.
     setIsSaving(false);
     setSaved(true);
   };
