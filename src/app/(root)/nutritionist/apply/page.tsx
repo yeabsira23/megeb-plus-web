@@ -1,6 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import type {
+  ChangeEvent,
+  FormEvent,
+  ReactNode,
+} from "react";
 import axios from "axios";
 import {
   ArrowLeft,
@@ -101,7 +106,9 @@ const initialFiles: FilesState = {
   degree_document: null,
 };
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://127.0.0.1:8000";
 
 const steps = [
   {
@@ -128,16 +135,23 @@ const steps = [
 
 export default function NutritionistApplication() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>(initialFormData);
-  const [files, setFiles] = useState<FilesState>(initialFiles);
+
+  const [formData, setFormData] =
+    useState<FormData>(initialFormData);
+
+  const [files, setFiles] =
+    useState<FilesState>(initialFiles);
+
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
+
+    setSubmitError("");
 
     setFormData((previous) => ({
       ...previous,
@@ -148,43 +162,304 @@ export default function NutritionistApplication() {
     }));
   };
 
-  const handleFileChange = (name: keyof FilesState, file: File | null) => {
+  const handleFileChange = (
+    name: keyof FilesState,
+    file: File | null
+  ) => {
+    setSubmitError("");
+
     setFiles((previous) => ({
       ...previous,
       [name]: file,
     }));
   };
 
+  const validateCurrentStep = () => {
+    setSubmitError("");
+
+    // STEP 1 — PERSONAL
+    if (currentStep === 1) {
+      if (!formData.fullName.trim()) {
+        setSubmitError(
+          "Please enter your full name."
+        );
+        return false;
+      }
+
+      if (!formData.email.trim()) {
+        setSubmitError(
+          "Please enter your email address."
+        );
+        return false;
+      }
+
+      if (!formData.phone.trim()) {
+        setSubmitError(
+          "Please enter your phone number."
+        );
+        return false;
+      }
+
+      if (!formData.password) {
+        setSubmitError(
+          "Please enter a password."
+        );
+        return false;
+      }
+
+      if (formData.password.length < 8) {
+        setSubmitError(
+          "Password must be at least 8 characters."
+        );
+        return false;
+      }
+
+      if (!formData.confirmPassword) {
+        setSubmitError(
+          "Please confirm your password."
+        );
+        return false;
+      }
+
+      if (
+        formData.password !==
+        formData.confirmPassword
+      ) {
+        setSubmitError(
+          "Passwords do not match."
+        );
+        return false;
+      }
+    }
+
+    // STEP 2 — PROFESSIONAL
+    if (currentStep === 2) {
+      if (!formData.currentRole.trim()) {
+        setSubmitError(
+          "Please enter your current professional role."
+        );
+        return false;
+      }
+
+      if (!formData.yearsOfExperience) {
+        setSubmitError(
+          "Please enter your years of experience."
+        );
+        return false;
+      }
+
+      if (
+        Number(formData.yearsOfExperience) < 0
+      ) {
+        setSubmitError(
+          "Years of experience cannot be negative."
+        );
+        return false;
+      }
+
+      if (!formData.specialization.trim()) {
+        setSubmitError(
+          "Please enter your area of specialization."
+        );
+        return false;
+      }
+    }
+
+    // STEP 3 — CREDENTIALS
+    if (currentStep === 3) {
+      // State License
+      if (!formData.licenseNumber.trim()) {
+        setSubmitError(
+          "Please enter your license number."
+        );
+        return false;
+      }
+
+      if (!formData.licenseState.trim()) {
+        setSubmitError(
+          "Please enter your state or jurisdiction."
+        );
+        return false;
+      }
+
+      if (!formData.licenseExpiration) {
+        setSubmitError(
+          "Please enter your license expiration date."
+        );
+        return false;
+      }
+
+      if (!files.license_document) {
+        setSubmitError(
+          "Please upload your state license document."
+        );
+        return false;
+      }
+
+      // National Credential
+      if (!formData.credentialType) {
+        setSubmitError(
+          "Please select your credential type."
+        );
+        return false;
+      }
+
+      if (!formData.credentialNumber.trim()) {
+        setSubmitError(
+          "Please enter your credential number."
+        );
+        return false;
+      }
+
+      if (!files.credential_document) {
+        setSubmitError(
+          "Please upload your national credential document."
+        );
+        return false;
+      }
+
+      // Insurance
+      if (!formData.insuranceProvider.trim()) {
+        setSubmitError(
+          "Please enter your insurance provider."
+        );
+        return false;
+      }
+
+      if (!formData.policyNumber.trim()) {
+        setSubmitError(
+          "Please enter your insurance policy number."
+        );
+        return false;
+      }
+
+      if (!formData.insuranceExpiration) {
+        setSubmitError(
+          "Please enter your insurance expiration date."
+        );
+        return false;
+      }
+
+      if (!formData.coverageLimit.trim()) {
+        setSubmitError(
+          "Please enter your insurance coverage limit."
+        );
+        return false;
+      }
+
+      if (!files.insurance_document) {
+        setSubmitError(
+          "Please upload your certificate of insurance."
+        );
+        return false;
+      }
+
+      // Degree
+      if (!formData.degree.trim()) {
+        setSubmitError(
+          "Please enter your degree."
+        );
+        return false;
+      }
+
+      if (!formData.institution.trim()) {
+        setSubmitError(
+          "Please enter your institution."
+        );
+        return false;
+      }
+
+      if (!formData.fieldOfStudy.trim()) {
+        setSubmitError(
+          "Please enter your field of study."
+        );
+        return false;
+      }
+
+      if (!formData.graduationYear.trim()) {
+        setSubmitError(
+          "Please enter your graduation year."
+        );
+        return false;
+      }
+
+      if (!files.degree_document) {
+        setSubmitError(
+          "Please upload your degree or transcript."
+        );
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const nextStep = () => {
+    const isValid = validateCurrentStep();
+
+    if (!isValid) {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+      return;
+    }
+
     if (currentStep < 4) {
-      setCurrentStep((previous) => previous + 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      setCurrentStep(
+        (previous) => previous + 1
+      );
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     }
   };
 
   const previousStep = () => {
+    setSubmitError("");
+
     if (currentStep > 1) {
-      setCurrentStep((previous) => previous - 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      setCurrentStep(
+        (previous) => previous - 1
+      );
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    e: FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
+
     setSubmitError("");
 
     if (!formData.declaration) {
-      setSubmitError("Please confirm the declaration before submitting.");
+      setSubmitError(
+        "Please confirm the declaration before submitting."
+      );
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      setSubmitError("Passwords do not match.");
+    if (
+      formData.password !==
+      formData.confirmPassword
+    ) {
+      setSubmitError(
+        "Passwords do not match."
+      );
       return;
     }
 
     if (formData.password.length < 8) {
-      setSubmitError("Password must be at least 8 characters.");
+      setSubmitError(
+        "Password must be at least 8 characters."
+      );
       return;
     }
 
@@ -192,79 +467,182 @@ export default function NutritionistApplication() {
 
     const fd = new FormData();
 
-    fd.append("full_name", formData.fullName);
-    fd.append("email", formData.email);
-    fd.append("phone", formData.phone);
-    fd.append("role", "nutritionist");
-    fd.append("password", formData.password);
-    fd.append("confirm_password", formData.confirmPassword);
+    fd.append(
+      "full_name",
+      formData.fullName
+    );
+
+    fd.append(
+      "email",
+      formData.email
+    );
+
+    fd.append(
+      "phone",
+      formData.phone
+    );
+
+    fd.append(
+      "role",
+      "nutritionist"
+    );
+
+    fd.append(
+      "password",
+      formData.password
+    );
+
+    fd.append(
+      "confirm_password",
+      formData.confirmPassword
+    );
 
     fd.append(
       "application_data",
       JSON.stringify({
-        currentRole: formData.currentRole,
-        yearsOfExperience: formData.yearsOfExperience,
-        specialization: formData.specialization,
-        licenseNumber: formData.licenseNumber,
-        licenseState: formData.licenseState,
-        licenseExpiration: formData.licenseExpiration,
-        credentialType: formData.credentialType,
-        credentialNumber: formData.credentialNumber,
-        insuranceProvider: formData.insuranceProvider,
-        policyNumber: formData.policyNumber,
-        insuranceExpiration: formData.insuranceExpiration,
-        coverageLimit: formData.coverageLimit,
-        degree: formData.degree,
-        institution: formData.institution,
-        fieldOfStudy: formData.fieldOfStudy,
-        graduationYear: formData.graduationYear,
+        currentRole:
+          formData.currentRole,
+
+        yearsOfExperience:
+          formData.yearsOfExperience,
+
+        specialization:
+          formData.specialization,
+
+        licenseNumber:
+          formData.licenseNumber,
+
+        licenseState:
+          formData.licenseState,
+
+        licenseExpiration:
+          formData.licenseExpiration,
+
+        credentialType:
+          formData.credentialType,
+
+        credentialNumber:
+          formData.credentialNumber,
+
+        insuranceProvider:
+          formData.insuranceProvider,
+
+        policyNumber:
+          formData.policyNumber,
+
+        insuranceExpiration:
+          formData.insuranceExpiration,
+
+        coverageLimit:
+          formData.coverageLimit,
+
+        degree:
+          formData.degree,
+
+        institution:
+          formData.institution,
+
+        fieldOfStudy:
+          formData.fieldOfStudy,
+
+        graduationYear:
+          formData.graduationYear,
       })
     );
 
     if (files.license_document) {
-      fd.append("license_document", files.license_document);
+      fd.append(
+        "license_document",
+        files.license_document
+      );
     }
 
     if (files.credential_document) {
-      fd.append("credential_document", files.credential_document);
+      fd.append(
+        "credential_document",
+        files.credential_document
+      );
     }
 
     if (files.insurance_document) {
-      fd.append("insurance_document", files.insurance_document);
+      fd.append(
+        "insurance_document",
+        files.insurance_document
+      );
     }
 
     if (files.degree_document) {
-      fd.append("degree_document", files.degree_document);
+      fd.append(
+        "degree_document",
+        files.degree_document
+      );
     }
 
     try {
-      await axios.post(`${API_URL}/api/auth/apply-staff/`, fd, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        timeout: 20000,
-      });
+      await axios.post(
+        `${API_URL}/api/auth/apply-staff/`,
+        fd,
+        {
+          timeout: 20000,
+        }
+      );
 
       setSubmitted(true);
     } catch (err) {
-      console.error("APPLICATION ERROR:", err);
+      console.error(
+        "APPLICATION ERROR:",
+        err
+      );
 
       if (axios.isAxiosError(err)) {
-        if (err.code === "ERR_NETWORK") {
+        if (
+          err.code === "ERR_NETWORK" ||
+          err.code === "ECONNREFUSED"
+        ) {
           setSubmitError(
             "Cannot connect to the backend. Make sure Django is running at http://127.0.0.1:8000/"
           );
         } else if (err.response?.data) {
           const data = err.response.data;
+
           const messages: string[] = [];
 
-          Object.entries(data).forEach(([field, value]) => {
-            if (Array.isArray(value)) {
-              messages.push(`${field}: ${value.join(", ")}`);
-            } else {
-              messages.push(`${field}: ${String(value)}`);
-            }
-          });
+          if (
+            typeof data === "string"
+          ) {
+            messages.push(data);
+          } else if (
+            typeof data === "object" &&
+            data !== null
+          ) {
+            Object.entries(data).forEach(
+              ([field, value]) => {
+                if (Array.isArray(value)) {
+                  messages.push(
+                    `${field}: ${value.join(
+                      ", "
+                    )}`
+                  );
+                } else if (
+                  typeof value ===
+                    "object" &&
+                  value !== null
+                ) {
+                  messages.push(
+                    `${field}: ${JSON.stringify(
+                      value
+                    )}`
+                  );
+                } else {
+                  messages.push(
+                    `${field}: ${String(
+                      value
+                    )}`
+                  );
+                }
+              }
+            );
+          }
 
           setSubmitError(
             messages.length > 0
@@ -272,10 +650,14 @@ export default function NutritionistApplication() {
               : "Submission failed. Please check your information."
           );
         } else {
-          setSubmitError("Submission failed. Please try again.");
+          setSubmitError(
+            "Submission failed. Please try again."
+          );
         }
       } else {
-        setSubmitError("Submission failed. Please try again.");
+        setSubmitError(
+          "Submission failed. Please try again."
+        );
       }
     } finally {
       setSubmitting(false);
@@ -292,8 +674,6 @@ export default function NutritionistApplication() {
 
       <header className="border-b border-[#2D312E]/[0.07] bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
-          {/* Megeb+ Logo */}
-
           <div className="flex items-center">
             <span className="font-display text-[28px] font-bold tracking-tight text-[#DCC48E]">
               Megeb
@@ -303,8 +683,6 @@ export default function NutritionistApplication() {
               +
             </span>
           </div>
-
-          {/* Back to Login */}
 
           <a
             href="/auth/login"
@@ -325,8 +703,6 @@ export default function NutritionistApplication() {
             "linear-gradient(135deg, #2D312E 0%, #3D5A4C 55%, #4D6B5C 100%)",
         }}
       >
-        {/* Decorative background */}
-
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div
             className="absolute -right-32 -top-40 h-[420px] w-[420px] rounded-full"
@@ -342,7 +718,9 @@ export default function NutritionistApplication() {
           <div className="absolute -bottom-48 -left-32 h-[420px] w-[420px] rounded-full border border-[#CCD6C4]/10" />
 
           <div className="absolute right-[15%] top-[30%] grid grid-cols-4 gap-2 opacity-25">
-            {Array.from({ length: 16 }).map((_, index) => (
+            {Array.from({
+              length: 16,
+            }).map((_, index) => (
               <span
                 key={index}
                 className="h-1.5 w-1.5 rounded-full bg-[#DCC48E]"
@@ -354,7 +732,10 @@ export default function NutritionistApplication() {
         <div className="relative mx-auto max-w-7xl px-5 py-11 lg:px-8 lg:py-14">
           <div className="max-w-3xl">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 backdrop-blur-sm">
-              <ShieldCheck size={15} className="text-[#DCC48E]" />
+              <ShieldCheck
+                size={15}
+                className="text-[#DCC48E]"
+              />
 
               <span className="font-body text-[10px] font-semibold uppercase tracking-[0.18em] text-[#CCD6C4]">
                 Professional Verification
@@ -366,8 +747,9 @@ export default function NutritionistApplication() {
             </h1>
 
             <p className="font-body mt-4 max-w-2xl text-[14px] leading-6 text-white/60 sm:text-[15px]">
-              Join our network of qualified nutrition professionals. Submit
-              your credentials and our team will review your application before
+              Join our network of qualified nutrition
+              professionals. Submit your credentials and
+              our team will review your application before
               you create your account.
             </p>
           </div>
@@ -379,79 +761,88 @@ export default function NutritionistApplication() {
       <section className="border-b border-[#2D312E]/[0.07] bg-white">
         <div className="mx-auto max-w-5xl px-5 py-5 lg:px-8">
           <div className="flex items-center justify-center">
-            {steps.map((step, index) => {
-              const completed = currentStep > step.number;
-              const active = currentStep === step.number;
-              const Icon = step.icon;
+            {steps.map(
+              (step, index) => {
+                const completed =
+                  currentStep > step.number;
 
-              return (
-                <div key={step.number} className="flex items-center">
-                  <div className="flex flex-col items-center">
-                    {/* Step Circle */}
+                const active =
+                  currentStep === step.number;
 
-                    <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 ${
-                        completed
-                          ? "border-[#3D5A4C] bg-[#3D5A4C] text-white"
-                          : active
-                            ? "border-[#3D5A4C] bg-[#E9F0EC] text-[#3D5A4C]"
-                            : "border-[#CCD6C4] bg-white text-[#2D312E]/35"
-                      }`}
-                    >
-                      {completed ? (
-                        <Check size={18} strokeWidth={2.5} />
-                      ) : (
-                        <Icon size={17} />
-                      )}
-                    </div>
+                const Icon = step.icon;
 
-                    {/* Step Label */}
-
-                    <div className="mt-2 hidden text-center sm:block">
-                      <p
-                        className={`font-body text-[10px] font-bold uppercase tracking-[0.12em] ${
-                          completed || active
-                            ? "text-[#4E876E]"
-                            : "text-[#2D312E]/35"
-                        }`}
-                      >
-                        Step {step.number}
-                      </p>
-
-                      <p
-                        className={`font-body mt-0.5 text-[12px] font-semibold ${
-                          completed || active
-                            ? "text-[#2D312E]"
-                            : "text-[#2D312E]/35"
-                        }`}
-                      >
-                        {step.label}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Connecting Line */}
-
-                  {index < steps.length - 1 && (
-                    <div className="mx-2 h-[2px] w-8 sm:mx-4 sm:w-16">
+                return (
+                  <div
+                    key={step.number}
+                    className="flex items-center"
+                  >
+                    <div className="flex flex-col items-center">
                       <div
-                        className={`h-full transition-all duration-500 ${
-                          currentStep > step.number
-                            ? "bg-[#3D5A4C]"
-                            : "bg-[#CCD6C4]/50"
+                        className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 ${
+                          completed
+                            ? "border-[#3D5A4C] bg-[#3D5A4C] text-white"
+                            : active
+                              ? "border-[#3D5A4C] bg-[#E9F0EC] text-[#3D5A4C]"
+                              : "border-[#CCD6C4] bg-white text-[#2D312E]/35"
                         }`}
-                      />
+                      >
+                        {completed ? (
+                          <Check
+                            size={18}
+                            strokeWidth={2.5}
+                          />
+                        ) : (
+                          <Icon size={17} />
+                        )}
+                      </div>
+
+                      <div className="mt-2 hidden text-center sm:block">
+                        <p
+                          className={`font-body text-[10px] font-bold uppercase tracking-[0.12em] ${
+                            completed ||
+                            active
+                              ? "text-[#4E876E]"
+                              : "text-[#2D312E]/35"
+                          }`}
+                        >
+                          Step {step.number}
+                        </p>
+
+                        <p
+                          className={`font-body mt-0.5 text-[12px] font-semibold ${
+                            completed ||
+                            active
+                              ? "text-[#2D312E]"
+                              : "text-[#2D312E]/35"
+                          }`}
+                        >
+                          {step.label}
+                        </p>
+                      </div>
                     </div>
-                  )}
-                </div>
-              );
-            })}
+
+                    {index <
+                      steps.length - 1 && (
+                      <div className="mx-2 h-[2px] w-8 sm:mx-4 sm:w-16">
+                        <div
+                          className={`h-full transition-all duration-500 ${
+                            currentStep >
+                            step.number
+                              ? "bg-[#3D5A4C]"
+                              : "bg-[#CCD6C4]/50"
+                          }`}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+            )}
           </div>
 
-          {/* Mobile Step Label */}
-
           <p className="font-body mt-3 text-center text-[11px] font-semibold text-[#2D312E]/45 sm:hidden">
-            Step {currentStep} of 4 · {steps[currentStep - 1].label}
+            Step {currentStep} of 4 ·{" "}
+            {steps[currentStep - 1].label}
           </p>
         </div>
       </section>
@@ -460,7 +851,7 @@ export default function NutritionistApplication() {
 
       <div className="mx-auto max-w-5xl px-5 py-8 lg:px-8 lg:py-12">
         <form onSubmit={handleSubmit}>
-          {/* STEP 1 — PERSONAL */}
+          {/* STEP 1 */}
 
           {currentStep === 1 && (
             <FormSection
@@ -522,12 +913,14 @@ export default function NutritionistApplication() {
             </FormSection>
           )}
 
-          {/* STEP 2 — PROFESSIONAL */}
+          {/* STEP 2 */}
 
           {currentStep === 2 && (
             <FormSection
               number="02"
-              icon={<BriefcaseBusiness size={20} />}
+              icon={
+                <BriefcaseBusiness size={20} />
+              }
               title="Professional Information"
               description="Tell us about your professional background and experience."
             >
@@ -546,7 +939,9 @@ export default function NutritionistApplication() {
                   name="yearsOfExperience"
                   type="number"
                   min="0"
-                  value={formData.yearsOfExperience}
+                  value={
+                    formData.yearsOfExperience
+                  }
                   onChange={handleChange}
                   placeholder="e.g. 5"
                   required
@@ -556,7 +951,9 @@ export default function NutritionistApplication() {
                   <Input
                     label="Area of Specialization"
                     name="specialization"
-                    value={formData.specialization}
+                    value={
+                      formData.specialization
+                    }
                     onChange={handleChange}
                     placeholder="e.g. Clinical nutrition, sports nutrition"
                     required
@@ -566,7 +963,7 @@ export default function NutritionistApplication() {
             </FormSection>
           )}
 
-          {/* STEP 3 — CREDENTIALS */}
+          {/* STEP 3 */}
 
           {currentStep === 3 && (
             <div className="space-y-6">
@@ -582,14 +979,14 @@ export default function NutritionistApplication() {
                     </h2>
 
                     <p className="font-body mt-1 text-[13px] text-[#2D312E]/50">
-                      Provide the documents required for professional
-                      verification.
+                      Provide the documents required for
+                      professional verification.
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* State License */}
+              {/* STATE LICENSE */}
 
               <CredentialCard
                 icon={<IdCard size={20} />}
@@ -600,7 +997,9 @@ export default function NutritionistApplication() {
                   <Input
                     label="License Number"
                     name="licenseNumber"
-                    value={formData.licenseNumber}
+                    value={
+                      formData.licenseNumber
+                    }
                     onChange={handleChange}
                     placeholder="Enter license number"
                     required
@@ -609,7 +1008,9 @@ export default function NutritionistApplication() {
                   <Input
                     label="State / Jurisdiction"
                     name="licenseState"
-                    value={formData.licenseState}
+                    value={
+                      formData.licenseState
+                    }
                     onChange={handleChange}
                     placeholder="Enter state or jurisdiction"
                     required
@@ -619,7 +1020,9 @@ export default function NutritionistApplication() {
                     label="Expiration Date"
                     name="licenseExpiration"
                     type="date"
-                    value={formData.licenseExpiration}
+                    value={
+                      formData.licenseExpiration
+                    }
                     onChange={handleChange}
                     required
                   />
@@ -633,7 +1036,7 @@ export default function NutritionistApplication() {
                 </div>
               </CredentialCard>
 
-              {/* National Credential */}
+              {/* NATIONAL CREDENTIAL */}
 
               <CredentialCard
                 icon={<Award size={20} />}
@@ -644,20 +1047,25 @@ export default function NutritionistApplication() {
                   <SelectInput
                     label="Credential Type"
                     name="credentialType"
-                    value={formData.credentialType}
+                    value={
+                      formData.credentialType
+                    }
                     onChange={handleChange}
                     required
                     options={[
                       {
-                        label: "Select credential",
+                        label:
+                          "Select credential",
                         value: "",
                       },
                       {
-                        label: "RDN — Registered Dietitian Nutritionist",
+                        label:
+                          "RDN — Registered Dietitian Nutritionist",
                         value: "RDN",
                       },
                       {
-                        label: "CNS — Certified Nutrition Specialist",
+                        label:
+                          "CNS — Certified Nutrition Specialist",
                         value: "CNS",
                       },
                     ]}
@@ -666,7 +1074,9 @@ export default function NutritionistApplication() {
                   <Input
                     label="Credential Number"
                     name="credentialNumber"
-                    value={formData.credentialNumber}
+                    value={
+                      formData.credentialNumber
+                    }
                     onChange={handleChange}
                     placeholder="Enter credential number"
                     required
@@ -683,7 +1093,7 @@ export default function NutritionistApplication() {
                 </div>
               </CredentialCard>
 
-              {/* Insurance */}
+              {/* INSURANCE */}
 
               <CredentialCard
                 icon={<FileCheck2 size={20} />}
@@ -694,7 +1104,9 @@ export default function NutritionistApplication() {
                   <Input
                     label="Insurance Provider"
                     name="insuranceProvider"
-                    value={formData.insuranceProvider}
+                    value={
+                      formData.insuranceProvider
+                    }
                     onChange={handleChange}
                     placeholder="Enter provider name"
                     required
@@ -703,7 +1115,9 @@ export default function NutritionistApplication() {
                   <Input
                     label="Policy Number"
                     name="policyNumber"
-                    value={formData.policyNumber}
+                    value={
+                      formData.policyNumber
+                    }
                     onChange={handleChange}
                     placeholder="Enter policy number"
                     required
@@ -713,7 +1127,9 @@ export default function NutritionistApplication() {
                     label="Expiration Date"
                     name="insuranceExpiration"
                     type="date"
-                    value={formData.insuranceExpiration}
+                    value={
+                      formData.insuranceExpiration
+                    }
                     onChange={handleChange}
                     required
                   />
@@ -721,7 +1137,9 @@ export default function NutritionistApplication() {
                   <Input
                     label="Coverage Limit"
                     name="coverageLimit"
-                    value={formData.coverageLimit}
+                    value={
+                      formData.coverageLimit
+                    }
                     onChange={handleChange}
                     placeholder="e.g. $1,000,000"
                     required
@@ -738,10 +1156,12 @@ export default function NutritionistApplication() {
                 </div>
               </CredentialCard>
 
-              {/* Degree */}
+              {/* DEGREE */}
 
               <CredentialCard
-                icon={<GraduationCap size={20} />}
+                icon={
+                  <GraduationCap size={20} />
+                }
                 title="Degree / Transcript"
                 description="Verification of your foundational education."
               >
@@ -758,7 +1178,9 @@ export default function NutritionistApplication() {
                   <Input
                     label="Institution"
                     name="institution"
-                    value={formData.institution}
+                    value={
+                      formData.institution
+                    }
                     onChange={handleChange}
                     placeholder="University or institution"
                     required
@@ -767,7 +1189,9 @@ export default function NutritionistApplication() {
                   <Input
                     label="Field of Study"
                     name="fieldOfStudy"
-                    value={formData.fieldOfStudy}
+                    value={
+                      formData.fieldOfStudy
+                    }
                     onChange={handleChange}
                     placeholder="e.g. Nutrition and Dietetics"
                     required
@@ -777,7 +1201,9 @@ export default function NutritionistApplication() {
                     label="Graduation Year"
                     name="graduationYear"
                     type="number"
-                    value={formData.graduationYear}
+                    value={
+                      formData.graduationYear
+                    }
                     onChange={handleChange}
                     placeholder="e.g. 2022"
                     required
@@ -796,7 +1222,7 @@ export default function NutritionistApplication() {
             </div>
           )}
 
-          {/* STEP 4 — REVIEW & SUBMIT */}
+          {/* STEP 4 */}
 
           {currentStep === 4 && (
             <div className="space-y-6">
@@ -813,8 +1239,8 @@ export default function NutritionistApplication() {
                       </h2>
 
                       <p className="font-body mt-1 text-[13px] leading-5 text-[#2D312E]/55">
-                        Review your information and confirm your application
-                        before submitting.
+                        Review your information and confirm
+                        your application before submitting.
                       </p>
                     </div>
                   </div>
@@ -825,18 +1251,27 @@ export default function NutritionistApplication() {
                     icon={<UserRound size={17} />}
                     title="Personal Information"
                     values={[
-                      formData.fullName || "Not provided",
-                      formData.email || "Not provided",
-                      formData.phone || "Not provided",
+                      formData.fullName ||
+                        "Not provided",
+                      formData.email ||
+                        "Not provided",
+                      formData.phone ||
+                        "Not provided",
                     ]}
                   />
 
                   <ReviewRow
-                    icon={<BriefcaseBusiness size={17} />}
+                    icon={
+                      <BriefcaseBusiness
+                        size={17}
+                      />
+                    }
                     title="Professional Information"
                     values={[
-                      formData.currentRole || "Not provided",
-                      formData.specialization || "Not provided",
+                      formData.currentRole ||
+                        "Not provided",
+                      formData.specialization ||
+                        "Not provided",
                       formData.yearsOfExperience
                         ? `${formData.yearsOfExperience} years of experience`
                         : "Not provided",
@@ -844,7 +1279,9 @@ export default function NutritionistApplication() {
                   />
 
                   <ReviewRow
-                    icon={<ShieldCheck size={17} />}
+                    icon={
+                      <ShieldCheck size={17} />
+                    }
                     title="Credentials"
                     values={[
                       formData.licenseNumber
@@ -867,7 +1304,7 @@ export default function NutritionistApplication() {
                 </div>
               </section>
 
-              {/* Declaration */}
+              {/* DECLARATION */}
 
               <section className="overflow-hidden rounded-2xl border border-[#2D312E]/[0.07] bg-white shadow-sm">
                 <div className="border-b border-[#2D312E]/[0.06] bg-[#FAF9F6] px-6 py-5 sm:px-7">
@@ -886,9 +1323,10 @@ export default function NutritionistApplication() {
                       <input
                         type="checkbox"
                         name="declaration"
-                        checked={formData.declaration}
+                        checked={
+                          formData.declaration
+                        }
                         onChange={handleChange}
-                        required
                         className="peer sr-only"
                       />
 
@@ -902,16 +1340,17 @@ export default function NutritionistApplication() {
                     </span>
 
                     <span className="font-body text-[13px] font-medium leading-6 text-[#2D312E]/70">
-                      I confirm that the information and documents I have
-                      provided are accurate and current. I understand that
-                      Megeb+ may verify my credentials before approving my
-                      application.
+                      I confirm that the information and
+                      documents I have provided are accurate
+                      and current. I understand that Megeb+
+                      may verify my credentials before
+                      approving my application.
                     </span>
                   </label>
                 </div>
               </section>
 
-              {/* What happens next */}
+              {/* WHAT HAPPENS NEXT */}
 
               <section className="rounded-2xl border border-[#DCC48E]/30 bg-[#DCC48E]/10 p-5 sm:p-6">
                 <div className="flex items-start gap-3">
@@ -926,26 +1365,27 @@ export default function NutritionistApplication() {
                     </h3>
 
                     <p className="font-body mt-1 text-[12.5px] leading-5 text-[#2D312E]/60">
-                      Your application will be reviewed by the Megeb+ team. If
-                      approved, you'll receive an email confirming your account
-                      is active — you can then log in right away using the
-                      email and password you set here.
+                      Your application will be reviewed by
+                      the Megeb+ team. If approved, you'll
+                      receive an email confirming your account
+                      is active — you can then log in right away
+                      using the email and password you set here.
                     </p>
                   </div>
                 </div>
               </section>
-
-              {/* SUBMIT ERROR */}
-
-              {submitError && (
-                <p
-                  role="alert"
-                  className="font-body rounded-lg border border-[#EB5757]/20 bg-[#EB5757]/8 px-4 py-3 text-[13px] text-[#EB5757]"
-                >
-                  {submitError}
-                </p>
-              )}
             </div>
+          )}
+
+          {/* ERROR */}
+
+          {submitError && (
+            <p
+              role="alert"
+              className="mt-6 rounded-lg border border-[#EB5757]/20 bg-[#EB5757]/8 px-4 py-3 font-body text-[13px] text-[#EB5757]"
+            >
+              {submitError}
+            </p>
           )}
 
           {/* BUTTONS */}
@@ -981,10 +1421,15 @@ export default function NutritionistApplication() {
             ) : (
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={
+                  submitting ||
+                  !formData.declaration
+                }
                 className="font-body group inline-flex items-center gap-2 rounded-xl bg-[#3D5A4C] px-6 py-3 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#4E876E] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {submitting ? "Submitting…" : "Submit Application"}
+                {submitting
+                  ? "Submitting…"
+                  : "Submit Application"}
 
                 {!submitting && (
                   <ArrowRight
@@ -997,8 +1442,8 @@ export default function NutritionistApplication() {
           </div>
 
           <p className="font-body mt-6 text-center text-[11px] text-[#2D312E]/35">
-            Your information will be used only for professional verification
-            and application review.
+            Your information will be used only for
+            professional verification and application review.
           </p>
         </form>
       </div>
@@ -1016,10 +1461,10 @@ function FormSection({
   children,
 }: {
   number: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
   description: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <section className="overflow-hidden rounded-2xl border border-[#2D312E]/[0.07] bg-white shadow-[0_15px_35px_-18px_rgba(45,49,46,0.25)]">
@@ -1053,7 +1498,9 @@ function FormSection({
         </div>
       </div>
 
-      <div className="p-6 sm:p-7">{children}</div>
+      <div className="p-6 sm:p-7">
+        {children}
+      </div>
     </section>
   );
 }
@@ -1066,10 +1513,10 @@ function CredentialCard({
   description,
   children,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
   description: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <section className="overflow-hidden rounded-2xl border border-[#2D312E]/[0.07] bg-white shadow-sm transition hover:shadow-md">
@@ -1097,7 +1544,9 @@ function CredentialCard({
         </div>
       </div>
 
-      <div className="p-6 sm:p-7">{children}</div>
+      <div className="p-6 sm:p-7">
+        {children}
+      </div>
     </section>
   );
 }
@@ -1110,7 +1559,9 @@ type InputProps = {
   type?: string;
   value: string;
   onChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: ChangeEvent<
+      HTMLInputElement | HTMLSelectElement
+    >
   ) => void;
   placeholder?: string;
   required?: boolean;
@@ -1127,10 +1578,15 @@ function Input({
   required = false,
   min,
 }: InputProps) {
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] =
+    useState(false);
 
   const isPassword = type === "password";
-  const inputType = isPassword && showPassword ? "text" : type;
+
+  const inputType =
+    isPassword && showPassword
+      ? "text"
+      : type;
 
   return (
     <div>
@@ -1141,7 +1597,9 @@ function Input({
         {label}
 
         {required && (
-          <span className="ml-1 text-[#4E876E]">*</span>
+          <span className="ml-1 text-[#4E876E]">
+            *
+          </span>
         )}
       </label>
 
@@ -1164,11 +1622,15 @@ function Input({
           <button
             type="button"
             onClick={() =>
-              setShowPassword((previous) => !previous)
+              setShowPassword(
+                (previous) => !previous
+              )
             }
             className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[#2D312E]/40 transition hover:text-[#3D5A4C] focus:outline-none"
             aria-label={
-              showPassword ? "Hide password" : "Show password"
+              showPassword
+                ? "Hide password"
+                : "Show password"
             }
           >
             {showPassword ? (
@@ -1197,9 +1659,14 @@ function SelectInput({
   name: string;
   value: string;
   onChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: ChangeEvent<
+      HTMLInputElement | HTMLSelectElement
+    >
   ) => void;
-  options: { label: string; value: string }[];
+  options: {
+    label: string;
+    value: string;
+  }[];
   required?: boolean;
 }) {
   return (
@@ -1211,7 +1678,9 @@ function SelectInput({
         {label}
 
         {required && (
-          <span className="ml-1 text-[#4E876E]">*</span>
+          <span className="ml-1 text-[#4E876E]">
+            *
+          </span>
         )}
       </label>
 
@@ -1224,7 +1693,10 @@ function SelectInput({
         className="font-body w-full rounded-xl border border-[#2D312E]/12 bg-[#FAF9F6]/60 px-4 py-3 text-[13.5px] text-[#2D312E] outline-none transition hover:border-[#2D312E]/20 focus:border-[#3D5A4C] focus:bg-white focus:ring-4 focus:ring-[#3D5A4C]/10"
       >
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option
+            key={option.value}
+            value={option.value}
+          >
             {option.label}
           </option>
         ))}
@@ -1243,19 +1715,26 @@ function FileUpload({
 }: {
   label: string;
   helperText: string;
-  name: string;
-  onChange: (name: keyof FilesState, file: File | null) => void;
+  name: keyof FilesState;
+  onChange: (
+    name: keyof FilesState,
+    file: File | null
+  ) => void;
 }) {
-  const [fileName, setFileName] = useState("");
+  const [fileName, setFileName] =
+    useState("");
 
   const handleFileInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: ChangeEvent<HTMLInputElement>
   ) => {
-    const file = e.target.files?.[0] ?? null;
+    const file =
+      e.target.files?.[0] ?? null;
 
-    setFileName(file ? file.name : "");
+    setFileName(
+      file ? file.name : ""
+    );
 
-    onChange(name as keyof FilesState, file);
+    onChange(name, file);
   };
 
   return (
@@ -1263,7 +1742,9 @@ function FileUpload({
       <label className="font-body mb-2 block text-[12px] font-semibold text-[#2D312E]/75">
         Upload {label}
 
-        <span className="ml-1 text-[#4E876E]">*</span>
+        <span className="ml-1 text-[#4E876E]">
+          *
+        </span>
       </label>
 
       <label className="group flex min-h-[78px] cursor-pointer items-center gap-3 rounded-xl border border-dashed border-[#2D312E]/20 bg-[#FAF9F6]/60 px-4 py-3.5 transition hover:border-[#4E876E] hover:bg-[#E9F0EC]/40">
@@ -1276,7 +1757,8 @@ function FileUpload({
 
         <div className="min-w-0 flex-1">
           <p className="font-body truncate text-[12.5px] font-semibold text-[#2D312E]/75">
-            {fileName || "Choose a file"}
+            {fileName ||
+              "Choose a file"}
           </p>
 
           <p className="font-body mt-0.5 truncate text-[10.5px] text-[#2D312E]/40">
@@ -1294,8 +1776,9 @@ function FileUpload({
           name={name}
           className="hidden"
           accept=".pdf,.jpg,.jpeg,.png"
-          onChange={handleFileInputChange}
-          required
+          onChange={
+            handleFileInputChange
+          }
         />
       </label>
     </div>
@@ -1309,7 +1792,7 @@ function ReviewRow({
   title,
   values,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
   values: string[];
 }) {
@@ -1325,14 +1808,16 @@ function ReviewRow({
         </h3>
 
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-          {values.map((value, index) => (
-            <p
-              key={index}
-              className="font-body text-[11.5px] text-[#2D312E]/55"
-            >
-              {value}
-            </p>
-          ))}
+          {values.map(
+            (value, index) => (
+              <p
+                key={index}
+                className="font-body text-[11.5px] text-[#2D312E]/55"
+              >
+                {value}
+              </p>
+            )
+          )}
         </div>
       </div>
     </div>
@@ -1345,8 +1830,6 @@ function ApplicationSubmitted() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#FAF9F6] px-5 py-10">
       <div className="w-full max-w-lg overflow-hidden rounded-3xl border border-[#2D312E]/[0.07] bg-white shadow-[0_25px_60px_-20px_rgba(45,49,46,0.25)]">
-        {/* Success Header */}
-
         <div
           className="relative overflow-hidden px-6 py-10 text-center"
           style={{
@@ -1370,12 +1853,11 @@ function ApplicationSubmitted() {
             </h1>
 
             <p className="font-body mt-3 text-[13px] leading-6 text-white/60">
-              Thank you for applying to become a Megeb+ nutritionist.
+              Thank you for applying to become a Megeb+
+              nutritionist.
             </p>
           </div>
         </div>
-
-        {/* Success Content */}
 
         <div className="p-7 text-center sm:p-9">
           <div className="rounded-2xl border border-[#CCD6C4] bg-[#E9F0EC] p-5">
@@ -1388,8 +1870,8 @@ function ApplicationSubmitted() {
             </p>
 
             <p className="font-body mt-2 text-[12px] leading-5 text-[#2D312E]/55">
-              Our team will review your credentials and contact you once a
-              decision has been made.
+              Our team will review your credentials and
+              contact you once a decision has been made.
             </p>
           </div>
 
@@ -1400,9 +1882,10 @@ function ApplicationSubmitted() {
             />
 
             <p className="font-body text-[12px] leading-5 text-[#2D312E]/55">
-              If your application is approved, you'll get an email letting you
-              know — then you can log in right away with the email and password
-              you just set.
+              If your application is approved, you'll get
+              an email letting you know — then you can log
+              in right away with the email and password you
+              just set.
             </p>
           </div>
 

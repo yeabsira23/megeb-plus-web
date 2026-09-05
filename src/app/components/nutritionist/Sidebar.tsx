@@ -1,8 +1,7 @@
 "use client";
-
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { clearSession } from "@/app/lib/api";
 import {
   LayoutDashboard,
   Users,
@@ -12,6 +11,8 @@ import {
   UserRound,
   LogOut,
   X,
+  Utensils,
+  Database,
 } from "lucide-react";
 
 type SidebarProps = {
@@ -40,15 +41,21 @@ const MENU_ITEMS = [
     icon: ClipboardList,
     path: "/nutritionist/nutrition-plans",
   },
+  
+  {
+    name: "Food Database",
+    icon: Database,
+    path: "/nutritionist/foods",
+  },
+   {
+    name: "Meal Library",
+    icon:  Utensils,
+    path: "/nutritionist/meals",
+  },
   {
     name: "Consultations & Messages",
     icon: MessageSquare,
     path: "/nutritionist/consultations",
-  },
-  {
-    name: "Profile",
-    icon: UserRound,
-    path: "/nutritionist/profile",
   },
 ];
 
@@ -59,10 +66,12 @@ export default function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
 
-  function logout() {
-    clearSession();
-    router.push("/auth/login");
-  }
+async function logout() {
+  await signOut({
+    redirect: true,
+    callbackUrl: "/auth/login",
+  });
+}
 
   return (
     <>

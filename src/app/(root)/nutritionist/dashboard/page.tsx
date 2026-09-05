@@ -1,6 +1,14 @@
 "use client";
+import {
+  getMe,
+  type User,
+} from "@/app/libs/api/auth";
 
-import { useState } from "react";
+import {
+  getNutritionistAppointments,
+  type Appointment as BackendAppointment,
+} from "@/app/libs/api/appointments";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   CalendarDays,
@@ -21,7 +29,104 @@ import ClientCard from "@/app/components/nutritionist/ClientCard";
 
 export default function NutritionistDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [nutritionist, setNutritionist] = useState<User | null>(null);
+  const [appointments, setAppointments] = useState<BackendAppointment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+  async function loadDashboard() {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const [user, appointmentData] = await Promise.all([
+        getMe(),
+        getNutritionistAppointments(),
+      ]);
+
+      setNutritionist(user);
+
+      if (!Array.isArray(appointmentData)) {
+        throw new Error("Invalid appointments data received.");
+      }
+
+      setAppointments(appointmentData);
+    } catch (err) {
+      console.error("Unable to load dashboard:", err);
+      setError("Unable to load dashboard data.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  loadDashboard();
+}, []);
+
+const now = new Date();
+
+const today =
+  `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
+    now.getDate()
+  ).padStart(2, "0")}`;
+
+const todaysAppointments = appointments
+  .filter((appointment) => appointment.date === today)
+  .sort((a, b) =>
+    a.time.localeCompare(b.time)
+  );
+
+const remainingAppointments = todaysAppointments.filter(
+  (appointment) =>
+    appointment.status !== "completed" &&
+    appointment.status !== "cancelled"
+).length;
+const uniqueClients = Array.from(
+  new Map(
+    appointments.map((appointment) => [
+      appointment.client,
+      {
+        id: appointment.client,
+        name: appointment.client_name,
+      },
+    ])
+  ).values()
+);
+
+const upcomingAppointments = appointments
+  .filter(
+    (appointment) =>
+      appointment.date >= today &&
+      appointment.status !== "cancelled" &&
+      appointment.status !== "completed"
+  )
+  .sort((a, b) => {
+    const dateTimeA = `${a.date}T${a.time}`;
+    const dateTimeB = `${b.date}T${b.time}`;
+
+    return dateTimeA.localeCompare(dateTimeB);
+  })
+  .slice(0, 3);
+
+  const recentClients = Array.from(
+  new Map(
+    [...appointments]
+      .sort((a, b) => {
+        const dateA = `${a.date}T${a.time}`;
+        const dateB = `${b.date}T${b.time}`;
+
+        return dateB.localeCompare(dateA);
+      })
+      .map((appointment) => [
+        appointment.client,
+        {
+          id: appointment.client,
+          name: appointment.client_name,
+          date: appointment.date,
+        },
+      ])
+  ).values()
+).slice(0, 3);
   return (
     <main className="min-h-screen bg-[#FAF9F6] text-[#2D312E]">
       {/* Mobile Header */}
@@ -75,12 +180,12 @@ export default function NutritionistDashboard() {
                 </span>
               </div>
 
-              <h1 className="font-display text-[27px] leading-tight text-white sm:text-[32px]">
-                Welcome, Dr. Sarah 👋
-              </h1>
+          <h1 className="font-display text-[27px] leading-tight text-white sm:text-[32px]">
+            Welcome, {isLoading ? "..." : nutritionist?.full_name || "Nutritionist"}
+          </h1>
 
               <p className="font-body mt-2 max-w-xl text-[13px] leading-5 text-white/60">
-                Here&apos;s your overview for today. You have a few
+                Here&apos;s your overview for today  You have a few
                 appointments and tasks waiting for you.
               </p>
             </div>
@@ -88,18 +193,22 @@ export default function NutritionistDashboard() {
 
           {/* Statistics */}
           <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              icon={<CalendarDays size={19} />}
-              label="Today's Appointments"
-              value="5"
-              note="2 remaining"
-            />
+          <StatCard
+            icon={<CalendarDays size={19} />}
+            label="Today's Appointments"
+            value={isLoading ? "..." : String(todaysAppointments.length)}
+            note={
+              isLoading
+                ? "Loading..."
+                : `${remainingAppointments} remaining`
+            }
+          />
 
             <StatCard
               icon={<Users size={19} />}
               label="Total Clients"
-              value="42"
-              note="+3 this month"
+              value={isLoading ? "..." : String(uniqueClients.length)}
+              note={isLoading ? "Loading..." : "Active clients"}
             />
 
             <StatCard
@@ -128,9 +237,13 @@ export default function NutritionistDashboard() {
                     Today&apos;s Appointments
                   </h2>
 
-                  <p className="font-body mt-1 text-[11px] text-[#2D312E]/40">
-                    Monday, August 18
-                  </p>
+              <p className="font-body mt-1 text-[11px] text-[#2D312E]/40">
+                {new Date().toLocaleDateString("en-US", {
+                  weekday: "long",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
                 </div>
 
                 <Link
@@ -143,34 +256,41 @@ export default function NutritionistDashboard() {
               </div>
 
               <div className="divide-y divide-[#2D312E]/[0.06]">
-                <Appointment
-                  time="09:00 AM"
-                  client="Hana Tesfaye"
-                  type="Nutrition Consultation"
-                  status="Confirmed"
-                />
-
-                <Appointment
-                  time="10:30 AM"
-                  client="Selam Alemu"
-                  type="Follow-up Consultation"
-                  status="Confirmed"
-                />
-
-                <Appointment
-                  time="01:00 PM"
-                  client="Meron Kebede"
-                  type="Diet Assessment"
-                  status="Pending"
-                />
-
-                <Appointment
-                  time="03:30 PM"
-                  client="Liya Michael"
-                  type="Nutrition Consultation"
-                  status="Confirmed"
-                />
-              </div>
+  {isLoading ? (
+    <div className="px-5 py-8 text-center font-body text-[12px] text-[#2D312E]/40">
+      Loading appointments...
+    </div>
+  ) : error ? (
+    <div className="px-5 py-8 text-center font-body text-[12px] text-red-500">
+      {error}
+    </div>
+  ) : todaysAppointments.length === 0 ? (
+    <div className="px-5 py-8 text-center font-body text-[12px] text-[#2D312E]/40">
+      No appointments scheduled for today.
+    </div>
+  ) : (
+    todaysAppointments.map((appointment) => (
+      <Appointment
+        key={appointment.id}
+        time={new Date(
+          `1970-01-01T${appointment.time}`
+        ).toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+        })}
+        client={appointment.client_name}
+        type={appointment.appointment_type
+          .replace("_", " ")
+          .replace(/\b\w/g, (char) => char.toUpperCase())}
+        status={
+          appointment.status === "confirmed"
+            ? "Confirmed"
+            : "Pending"
+        }
+      />
+    ))
+  )}
+</div>
             </section>
 
             {/* Right Column */}
@@ -184,25 +304,43 @@ export default function NutritionistDashboard() {
                   </h2>
                 </div>
 
-                <div className="space-y-3 p-5">
-                  <UpcomingAppointment
-                    day="Tomorrow"
-                    time="09:30 AM"
-                    client="Mimi Yohannes"
-                  />
+<div className="space-y-3 p-5">
+  {isLoading ? (
+    <div className="py-5 text-center font-body text-[11px] text-[#2D312E]/40">
+      Loading upcoming appointments...
+    </div>
+  ) : upcomingAppointments.length === 0 ? (
+    <div className="py-5 text-center font-body text-[11px] text-[#2D312E]/40">
+      No upcoming appointments.
+    </div>
+  ) : (
+    upcomingAppointments.map((appointment) => {
+      const appointmentDate = new Date(
+        `${appointment.date}T${appointment.time}`
+      );
 
-                  <UpcomingAppointment
-                    day="Tuesday"
-                    time="11:00 AM"
-                    client="Rahel Tadesse"
-                  />
+      const day = appointmentDate.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "short",
+        day: "numeric",
+      });
 
-                  <UpcomingAppointment
-                    day="Tuesday"
-                    time="02:30 PM"
-                    client="Betty Abraham"
-                  />
-                </div>
+      const time = appointmentDate.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      });
+
+      return (
+        <UpcomingAppointment
+          key={appointment.id}
+          day={day}
+          time={time}
+          client={appointment.client_name}
+        />
+      );
+    })
+  )}
+</div>
               </section>
 
               {/* Tasks */}
@@ -256,25 +394,40 @@ export default function NutritionistDashboard() {
               </Link>
             </div>
 
-            <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-3">
-              <ClientCard
-                name="Hana Tesfaye"
-                detail="Weight Management"
-                lastVisit="Today"
-              />
+            
 
-              <ClientCard
-                name="Selam Alemu"
-                detail="Diabetes Nutrition"
-                lastVisit="Yesterday"
-              />
+{isLoading ? (
+  <div className="col-span-full py-6 text-center font-body text-[11px] text-[#2D312E]/40">
+    Loading clients...
+  </div>
+) : recentClients.length === 0 ? (
+  <div className="col-span-full py-6 text-center font-body text-[11px] text-[#2D312E]/40">
+    No clients found.
+  </div>
+) : (
+  recentClients.map((client) => {
+    const clientDate = new Date(
+      `${client.date}T00:00:00`
+    );
 
-              <ClientCard
-                name="Meron Kebede"
-                detail="Healthy Lifestyle"
-                lastVisit="Aug 11"
-              />
-            </div>
+    const lastVisit =
+      client.date === today
+        ? "Today"
+        : clientDate.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
+
+    return (
+      <ClientCard
+        key={client.id}
+        name={client.name}
+        detail="Client"
+        lastVisit={lastVisit}
+      />
+    );
+  })
+)}
           </section>
 
         </div>

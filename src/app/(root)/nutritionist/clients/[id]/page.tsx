@@ -334,16 +334,6 @@ function useClient(clientId: string) {
       setIsLoading(true);
 
       try {
-        /*
-         * TEMPORARY DATA
-         *
-         * Later replace this with:
-         *
-         * const data = await apiFetch<ClientDetails>(
-         *   `/nutritionist/clients/${clientId}`
-         * );
-         */
-
         await new Promise((resolve) => setTimeout(resolve, 300));
 
         const foundClient = TEMPORARY_CLIENT_DETAILS.find(
@@ -540,8 +530,9 @@ export default function ClientDetailsPage() {
               {/* Header Actions */}
               <div className="flex flex-wrap gap-2">
 
+                {/* Message → Consultation */}
                 <Link
-                  href={`/nutritionist/messages/${client.id}`}
+                  href={`/nutritionist/consultations?clientId=${client.id}`}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#CCD6C4] px-4 py-2.5 font-body text-[10px] font-bold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
                 >
                   <MessageCircle size={14} />
@@ -1052,9 +1043,9 @@ export default function ClientDetailsPage() {
                     </span>
                   </Link>
 
-                  {/* Message Client */}
+                  {/* Message Client → Consultation */}
                   <Link
-                    href={`/nutritionist/messages/${client.id}`}
+                    href={`/nutritionist/consultations?clientId=${client.id}`}
                     className="flex w-full items-center gap-3 rounded-xl border border-[#2D312E]/[0.07] px-4 py-3 text-left transition hover:bg-[#FAF9F6]"
                   >
                     <MessageCircle

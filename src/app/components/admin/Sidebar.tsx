@@ -7,6 +7,7 @@ import { clearSession } from '@/app/lib/api';
 import {
   LayoutDashboard,
   Users,
+   UserCircle,
   Stethoscope,
   UtensilsCrossed,
   Store,
@@ -36,6 +37,7 @@ type SidebarProps = {
 const MENU_ITEMS: MenuItem[] = [
   { name: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
   { name: 'Users', icon: Users, path: '/admin/users' },
+  { name: 'Clients', icon: UserCircle, path: '/admin/clients' }, 
   { name: 'Nutritionists', icon: Stethoscope, path: '/admin/nutritionists', badgeKey: 'pendingVerifications' },
   { name: 'Food Database', icon: UtensilsCrossed, path: '/admin/food' },
   { name: 'Food Vendors', icon: Store, path: '/admin/food-vendors', badgeKey: 'pendingVendors' },

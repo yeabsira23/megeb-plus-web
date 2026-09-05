@@ -2,6 +2,8 @@
 
 import { useState, FormEvent } from 'react';
 import { Mail, Check, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { sendOtp } from "@/app/libs/api/auth";
+
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState<string>('');
@@ -9,28 +11,54 @@ export default function ForgotPasswordPage() {
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError('');
+async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  e.preventDefault();
+  setError('');
 
-    if (!email) {
-      setError('Enter your email to continue.');
-      return;
-    }
+  const trimmedEmail = email.trim();
 
-    setLoading(true);
-
-    try {
-      // TODO: Connect this to the backend password reset API
-      await new Promise((resolve) => setTimeout(resolve, 900));
-
-      setSubmitted(true);
-    } catch (err) {
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  if (!trimmedEmail) {
+    setError('Enter your email to continue.');
+    return;
   }
+
+  setLoading(true);
+
+  try {
+    await sendOtp(trimmedEmail);
+
+    setSubmitted(true);
+  } catch (err) {
+    console.error('Unable to send password reset OTP:', err);
+
+    if (
+      err &&
+      typeof err === 'object' &&
+      'response' in err
+    ) {
+      const errorObj = err as {
+        response?: {
+          data?: {
+            detail?: string;
+            message?: string;
+          };
+        };
+      };
+
+      setError(
+        errorObj.response?.data?.detail ||
+          errorObj.response?.data?.message ||
+          'Unable to send reset instructions. Please try again.'
+      );
+    } else {
+      setError(
+        'Unable to send reset instructions. Please try again.'
+      );
+    }
+  } finally {
+    setLoading(false);
+  }
+}
 
   return (
     <main className="min-h-screen w-full flex bg-[#FAF9F6]">
@@ -285,13 +313,14 @@ export default function ForgotPasswordPage() {
                     Check your email
                   </h2>
 
-                  <p className="font-body text-[#2D312E]/50 text-[13.5px] leading-5">
-                    If an account exists for{' '}
-                    <span className="font-semibold text-[#2D312E]/70">
-                      {email}
-                    </span>
-                    , you'll receive instructions to reset your password.
-                  </p>
+              <p className="font-body text-[#2D312E]/50 text-[13.5px] leading-5">
+                If an account exists for{' '}
+                <span className="font-semibold text-[#2D312E]/70">
+                  {email}
+                </span>
+                , you'll receive a verification code to continue resetting
+                your password.
+              </p>
                 </>
               )}
 

@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { signIn } from 'next-auth/react';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
@@ -13,52 +14,65 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const [email, setEmail] = useState("");
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError('');
+async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  e.preventDefault();
+  setError('');
 
-    if (!identifier || !password) {
-      setError('Enter your email or username and password to continue.');
+  if (!identifier || !password) {
+    setError(
+      'Enter your email or phone number and password to continue.'
+    );
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const result = await signIn('credentials', {
+      identifier,
+      password,
+      redirect: false,
+    });
+
+    if (!result || result.error) {
+      setError(
+        result?.error === 'CredentialsSignin'
+          ? 'Login failed. Check your credentials.'
+          : 'Unable to sign in. Please try again.'
+      );
+
       return;
     }
 
-    setLoading(true);
 
-    try {
-      const response = await axios.post(
-        'http://127.0.0.1:8000/api/auth/login/',
-        {
-          email: identifier,
-          password,
-        }
+    const response = await fetch('/api/auth/session');
+    const session = await response.json();
+
+    const role = session?.user?.role;
+
+    if (role === 'admin') {
+      router.push('/admin/dashboard');
+    } else if (role === 'nutritionist') {
+      router.push('/nutritionist/dashboard');
+    } else {
+      setError(
+        'This account does not have access to the staff portal.'
       );
-
-      localStorage.setItem('access', response.data.access);
-      localStorage.setItem('refresh', response.data.refresh);
-
-      // Redirect based on user role
-      if (response.data.role === 'admin') {
-        router.push('/admin/dashboard');
-      } else if (response.data.role === 'nutritionist') {
-        router.push('/nutritionist/dashboard');
-      } else {
-        setError('Unknown user role.');
-      }
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        setError(
-          err.response?.data?.detail ||
-            'Login failed. Check your credentials.'
-        );
-      } else {
-        setError('Login failed. Check your credentials.');
-      }
-    } finally {
-      setLoading(false);
     }
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      setError(
+        err.response?.data?.detail ||
+          'Login failed. Check your credentials.'
+      );
+    } else {
+      setError('Login failed. Please try again.');
+    }
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <main className="min-h-screen w-full flex bg-[#FAF9F6]">
@@ -260,7 +274,7 @@ export default function LoginPage() {
                     htmlFor="identifier"
                     className="font-body block text-[12.5px] font-semibold text-[#2D312E]/75 mb-1.5"
                   >
-                    Email or username
+                    Email or phone number
                   </label>
 
                   <div className="relative">
@@ -277,7 +291,7 @@ export default function LoginPage() {
                       autoComplete="username"
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
-                      placeholder="you@example.com or username"
+                      placeholder="you@example.com or phone number"
                       className="font-body w-full rounded-xl border border-[#2D312E]/12 bg-[#FAF9F6]/60 pl-10 pr-3.5 text-[14.5px] text-[#2D312E] placeholder:text-[#2D312E]/30 outline-none transition focus:bg-white focus:border-[#3D5A4C] focus:ring-4 focus:ring-[#3D5A4C]/10"
                       style={{
                         paddingTop: '11px',
