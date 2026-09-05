@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -41,9 +40,16 @@ export default function Topbar() {
           aria-label="Notifications"
           className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] text-[#2D312E]/55 transition hover:border-[#3D5A4C]/20 hover:text-[#3D5A4C]"
         >
-          <Bell size={18} />
+          <Link
+            href="/nutritionist/notifications"
+            className="relative rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 hover:text-[#16806B]"
+            aria-label="Notifications"
+          >
+            <Bell size={21} />
 
-          <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#DCC48E]" />
+            {/* Unread indicator */}
+            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
+          </Link>
         </button>
 
         {/* Profile Dropdown */}
@@ -117,4 +123,3 @@ export default function Topbar() {
     </header>
   );
 }
-
