@@ -54,381 +54,6 @@ const MEAL_TYPES: MealType[] = [
   "Dinner",
 ];
 
-/*
- * TEMPORARY FOOD DATABASE
- *
- * Later this data will come from:
- *
- * PostgreSQL → Django REST API → Next.js
- *
- * These values are only for frontend development.
- */
-
-const FOOD_DATABASE: Food[] = [
-  {
-    id: "FOOD-001",
-    name: "Egg",
-    category: "Protein",
-    serving: "1 egg",
-    servingAmount: 1,
-    servingUnit: "egg",
-    calories: 70,
-    protein: 6,
-    carbohydrates: 0.4,
-    fat: 5,
-    fiber: 0,
-  },
-  {
-    id: "FOOD-002",
-    name: "Chicken Breast",
-    category: "Protein",
-    serving: "100 g",
-    servingAmount: 100,
-    servingUnit: "g",
-    calories: 165,
-    protein: 31,
-    carbohydrates: 0,
-    fat: 3.6,
-    fiber: 0,
-  },
-  {
-    id: "FOOD-003",
-    name: "Fish",
-    category: "Protein",
-    serving: "100 g",
-    servingAmount: 100,
-    servingUnit: "g",
-    calories: 130,
-    protein: 26,
-    carbohydrates: 0,
-    fat: 2.5,
-    fiber: 0,
-  },
-  {
-    id: "FOOD-004",
-    name: "Beef",
-    category: "Protein",
-    serving: "100 g",
-    servingAmount: 100,
-    servingUnit: "g",
-    calories: 250,
-    protein: 26,
-    carbohydrates: 0,
-    fat: 17,
-    fiber: 0,
-  },
-  {
-    id: "FOOD-005",
-    name: "Injera",
-    category: "Grains",
-    serving: "100 g",
-    servingAmount: 100,
-    servingUnit: "g",
-    calories: 170,
-    protein: 5,
-    carbohydrates: 35,
-    fat: 1,
-    fiber: 2,
-  },
-  {
-    id: "FOOD-006",
-    name: "Brown Rice",
-    category: "Grains",
-    serving: "100 g",
-    servingAmount: 100,
-    servingUnit: "g",
-    calories: 123,
-    protein: 2.7,
-    carbohydrates: 25.6,
-    fat: 1,
-    fiber: 1.6,
-  },
-  {
-    id: "FOOD-007",
-    name: "Oatmeal",
-    category: "Grains",
-    serving: "100 g",
-    servingAmount: 100,
-    servingUnit: "g",
-    calories: 389,
-    protein: 16.9,
-    carbohydrates: 66.3,
-    fat: 6.9,
-    fiber: 10.6,
-  },
-  {
-    id: "FOOD-008",
-    name: "Whole Wheat Bread",
-    category: "Grains",
-    serving: "1 slice",
-    servingAmount: 1,
-    servingUnit: "slice",
-    calories: 80,
-    protein: 4,
-    carbohydrates: 14,
-    fat: 1.2,
-    fiber: 2.5,
-  },
-  {
-    id: "FOOD-009",
-    name: "Avocado",
-    category: "Fruits",
-    serving: "100 g",
-    servingAmount: 100,
-    servingUnit: "g",
-    calories: 160,
-    protein: 2,
-    carbohydrates: 8.5,
-    fat: 15,
-    fiber: 6.7,
-  },
-  {
-    id: "FOOD-010",
-    name: "Banana",
-    category: "Fruits",
-    serving: "1 medium",
-    servingAmount: 1,
-    servingUnit: "banana",
-    calories: 105,
-    protein: 1.3,
-    carbohydrates: 27,
-    fat: 0.4,
-    fiber: 3.1,
-  },
-  {
-    id: "FOOD-011",
-    name: "Apple",
-    category: "Fruits",
-    serving: "1 medium",
-    servingAmount: 1,
-    servingUnit: "apple",
-    calories: 95,
-    protein: 0.5,
-    carbohydrates: 25,
-    fat: 0.3,
-    fiber: 4.4,
-  },
-  {
-    id: "FOOD-012",
-    name: "Orange",
-    category: "Fruits",
-    serving: "1 medium",
-    servingAmount: 1,
-    servingUnit: "orange",
-    calories: 62,
-    protein: 1.2,
-    carbohydrates: 15.4,
-    fat: 0.2,
-    fiber: 3.1,
-  },
-  {
-    id: "FOOD-013",
-    name: "Tomato",
-    category: "Vegetables",
-    serving: "100 g",
-    servingAmount: 100,
-    servingUnit: "g",
-    calories: 18,
-    protein: 0.9,
-    carbohydrates: 3.9,
-    fat: 0.2,
-    fiber: 1.2,
-  },
-  {
-    id: "FOOD-014",
-    name: "Carrot",
-    category: "Vegetables",
-    serving: "100 g",
-    servingAmount: 100,
-    servingUnit: "g",
-    calories: 41,
-    protein: 0.9,
-    carbohydrates: 9.6,
-    fat: 0.2,
-    fiber: 2.8,
-  },
-  {
-    id: "FOOD-015",
-    name: "Spinach",
-    category: "Vegetables",
-    serving: "100 g",
-    servingAmount: 100,
-    servingUnit: "g",
-    calories: 23,
-    protein: 2.9,
-    carbohydrates: 3.6,
-    fat: 0.4,
-    fiber: 2.2,
-  },
-  {
-    id: "FOOD-016",
-    name: "Broccoli",
-    category: "Vegetables",
-    serving: "100 g",
-    servingAmount: 100,
-    servingUnit: "g",
-    calories: 34,
-    protein: 2.8,
-    carbohydrates: 7,
-    fat: 0.4,
-    fiber: 2.6,
-  },
-  {
-    id: "FOOD-017",
-    name: "Milk",
-    category: "Dairy",
-    serving: "1 cup",
-    servingAmount: 1,
-    servingUnit: "cup",
-    calories: 122,
-    protein: 8.1,
-    carbohydrates: 12,
-    fat: 4.8,
-    fiber: 0,
-  },
-  {
-    id: "FOOD-018",
-    name: "Greek Yogurt",
-    category: "Dairy",
-    serving: "100 g",
-    servingAmount: 100,
-    servingUnit: "g",
-    calories: 59,
-    protein: 10,
-    carbohydrates: 3.6,
-    fat: 0.4,
-    fiber: 0,
-  },
-  {
-    id: "FOOD-019",
-    name: "Lentils",
-    category: "Legumes",
-    serving: "100 g cooked",
-    servingAmount: 100,
-    servingUnit: "g",
-    calories: 116,
-    protein: 9,
-    carbohydrates: 20,
-    fat: 0.4,
-    fiber: 7.9,
-  },
-  {
-    id: "FOOD-020",
-    name: "Chickpeas",
-    category: "Legumes",
-    serving: "100 g cooked",
-    servingAmount: 100,
-    servingUnit: "g",
-    calories: 164,
-    protein: 8.9,
-    carbohydrates: 27.4,
-    fat: 2.6,
-    fiber: 7.6,
-  },
-  {
-    id: "FOOD-021",
-    name: "Almonds",
-    category: "Nuts & Seeds",
-    serving: "30 g",
-    servingAmount: 30,
-    servingUnit: "g",
-    calories: 174,
-    protein: 6.4,
-    carbohydrates: 6.1,
-    fat: 15,
-    fiber: 3.2,
-  },
-  {
-    id: "FOOD-022",
-    name: "Peanuts",
-    category: "Nuts & Seeds",
-    serving: "30 g",
-    servingAmount: 30,
-    servingUnit: "g",
-    calories: 170,
-    protein: 7.3,
-    carbohydrates: 4.8,
-    fat: 14.6,
-    fiber: 2.4,
-  },
-];
-
-/*
- * TEMPORARY MEALS
- *
- * These demonstrate how the Meal Library will look
- * before the backend is connected.
- */
-
-const INITIAL_MEALS: Meal[] = [
-  {
-    id: "MEAL-001",
-    name: "Injera & Eggs Breakfast",
-    type: "Breakfast",
-    ingredients: [
-      {
-        id: "ING-001",
-        foodId: "FOOD-005",
-        quantity: 150,
-      },
-      {
-        id: "ING-002",
-        foodId: "FOOD-001",
-        quantity: 2,
-      },
-      {
-        id: "ING-003",
-        foodId: "FOOD-009",
-        quantity: 50,
-      },
-    ],
-  },
-  {
-    id: "MEAL-002",
-    name: "Chicken Rice Bowl",
-    type: "Lunch",
-    ingredients: [
-      {
-        id: "ING-004",
-        foodId: "FOOD-002",
-        quantity: 150,
-      },
-      {
-        id: "ING-005",
-        foodId: "FOOD-006",
-        quantity: 150,
-      },
-      {
-        id: "ING-006",
-        foodId: "FOOD-013",
-        quantity: 100,
-      },
-      {
-        id: "ING-007",
-        foodId: "FOOD-015",
-        quantity: 50,
-      },
-    ],
-  },
-  {
-    id: "MEAL-003",
-    name: "Greek Yogurt & Banana",
-    type: "Snack",
-    ingredients: [
-      {
-        id: "ING-008",
-        foodId: "FOOD-018",
-        quantity: 150,
-      },
-      {
-        id: "ING-009",
-        foodId: "FOOD-010",
-        quantity: 1,
-      },
-    ],
-  },
-];
-
 type NutritionTotals = {
   calories: number;
   protein: number;
@@ -440,19 +65,26 @@ type NutritionTotals = {
 export default function MealLibraryPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const [meals, setMeals] = useState<Meal[]>(INITIAL_MEALS);
+  // No mock meals.
+  // Meals will be populated from the backend API later.
+  const [meals, setMeals] = useState<Meal[]>([]);
+
+  // No mock foods.
+  // Foods will be populated from the Food Database API later.
+  const [foods, setFoods] = useState<Food[]>([]);
 
   const [search, setSearch] = useState("");
-  const [selectedType, setSelectedType] = useState<"All" | MealType>(
-    "All"
-  );
+  const [selectedType, setSelectedType] =
+    useState<"All" | MealType>("All");
 
   const [showCreateMeal, setShowCreateMeal] = useState(false);
 
   const [mealName, setMealName] = useState("");
-  const [mealType, setMealType] = useState<MealType>("Breakfast");
+  const [mealType, setMealType] =
+    useState<MealType>("Breakfast");
 
-  const [ingredients, setIngredients] = useState<MealIngredient[]>([]);
+  const [ingredients, setIngredients] =
+    useState<MealIngredient[]>([]);
 
   const [foodSearch, setFoodSearch] = useState("");
 
@@ -476,20 +108,20 @@ export default function MealLibraryPage() {
     const query = foodSearch.trim().toLowerCase();
 
     if (!query) {
-      return FOOD_DATABASE;
+      return foods;
     }
 
-    return FOOD_DATABASE.filter(
+    return foods.filter(
       (food) =>
         food.name.toLowerCase().includes(query) ||
         food.category.toLowerCase().includes(query)
     );
-  }, [foodSearch]);
+  }, [foods, foodSearch]);
 
   const calculateIngredientNutrition = (
     ingredient: MealIngredient
   ): NutritionTotals => {
-    const food = FOOD_DATABASE.find(
+    const food = foods.find(
       (item) => item.id === ingredient.foodId
     );
 
@@ -503,7 +135,8 @@ export default function MealLibraryPage() {
       };
     }
 
-    const multiplier = ingredient.quantity / food.servingAmount;
+    const multiplier =
+      ingredient.quantity / food.servingAmount;
 
     return {
       calories: food.calories * multiplier,
@@ -519,13 +152,17 @@ export default function MealLibraryPage() {
   ): NutritionTotals => {
     return mealIngredients.reduce(
       (total, ingredient) => {
-        const nutrition = calculateIngredientNutrition(ingredient);
+        const nutrition =
+          calculateIngredientNutrition(ingredient);
 
         return {
-          calories: total.calories + nutrition.calories,
-          protein: total.protein + nutrition.protein,
+          calories:
+            total.calories + nutrition.calories,
+          protein:
+            total.protein + nutrition.protein,
           carbohydrates:
-            total.carbohydrates + nutrition.carbohydrates,
+            total.carbohydrates +
+            nutrition.carbohydrates,
           fat: total.fat + nutrition.fat,
           fiber: total.fiber + nutrition.fiber,
         };
@@ -540,7 +177,8 @@ export default function MealLibraryPage() {
     );
   };
 
-  const currentMealNutrition = calculateMealNutrition(ingredients);
+  const currentMealNutrition =
+    calculateMealNutrition(ingredients);
 
   function addFood(food: Food) {
     const existingIngredient = ingredients.find(
@@ -554,7 +192,8 @@ export default function MealLibraryPage() {
             ? {
                 ...ingredient,
                 quantity:
-                  ingredient.quantity + food.servingAmount,
+                  ingredient.quantity +
+                  food.servingAmount,
               }
             : ingredient
         )
@@ -597,7 +236,9 @@ export default function MealLibraryPage() {
 
   function removeIngredient(ingredientId: string) {
     setIngredients((current) =>
-      current.filter((ingredient) => ingredient.id !== ingredientId)
+      current.filter(
+        (ingredient) => ingredient.id !== ingredientId
+      )
     );
   }
 
@@ -670,8 +311,8 @@ export default function MealLibraryPage() {
               </h1>
 
               <p className="font-body mt-2 max-w-2xl text-[12px] leading-5 text-[#2D312E]/45">
-                Create reusable meals from foods in the database.
-            
+                Create reusable meals from foods in the
+                database.
               </p>
             </div>
 
@@ -701,10 +342,11 @@ export default function MealLibraryPage() {
                 </h2>
 
                 <p className="font-body mt-1 text-[10px] leading-5 text-[#3D5A4C]/65">
-                  Select foods from the Food Database and enter the
-                  quantity. Calories, protein, carbohydrates, fat and
-                  fiber are calculated automatically. You do not need
-                  to manually enter nutritional values.
+                  Select foods from the Food Database and
+                  enter the quantity. Calories, protein,
+                  carbohydrates, fat and fiber are calculated
+                  automatically. You do not need to manually
+                  enter nutritional values.
                 </p>
               </div>
             </div>
@@ -772,15 +414,17 @@ export default function MealLibraryPage() {
           {filteredMeals.length > 0 ? (
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {filteredMeals.map((meal) => {
-                const nutrition = calculateMealNutrition(
-                  meal.ingredients
-                );
+                const nutrition =
+                  calculateMealNutrition(
+                    meal.ingredients
+                  );
 
                 return (
                   <MealCard
                     key={meal.id}
                     meal={meal}
                     nutrition={nutrition}
+                    foods={foods}
                     onDelete={deleteMeal}
                   />
                 );
@@ -797,8 +441,8 @@ export default function MealLibraryPage() {
               </h2>
 
               <p className="font-body mx-auto mt-2 max-w-sm text-[10px] leading-5 text-[#2D312E]/40">
-                Try a different search or create a new meal for the
-                meal library.
+                Try a different search or create a new meal
+                for the meal library.
               </p>
 
               <button
@@ -833,7 +477,8 @@ export default function MealLibraryPage() {
                         </h2>
 
                         <p className="font-body mt-1 text-[10px] text-[#2D312E]/40">
-                          Build a meal using foods from the database.
+                          Build a meal using foods from the
+                          database.
                         </p>
                       </div>
                     </div>
@@ -841,7 +486,9 @@ export default function MealLibraryPage() {
 
                   <button
                     type="button"
-                    onClick={() => setShowCreateMeal(false)}
+                    onClick={() =>
+                      setShowCreateMeal(false)
+                    }
                     className="rounded-xl p-2 text-[#2D312E]/40 hover:bg-[#F3F5F2] hover:text-[#3D5A4C]"
                     aria-label="Close"
                   >
@@ -886,7 +533,10 @@ export default function MealLibraryPage() {
                             className="w-full appearance-none rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] px-4 py-3 pr-10 font-body text-[11px] outline-none focus:border-[#4E876E]/50 focus:ring-2 focus:ring-[#4E876E]/10"
                           >
                             {MEAL_TYPES.map((type) => (
-                              <option key={type} value={type}>
+                              <option
+                                key={type}
+                                value={type}
+                              >
                                 {type}
                               </option>
                             ))}
@@ -909,7 +559,8 @@ export default function MealLibraryPage() {
                           </h3>
 
                           <p className="font-body mt-1 text-[10px] text-[#2D312E]/40">
-                            Select foods and adjust their quantities.
+                            Select foods and adjust their
+                            quantities.
                           </p>
                         </div>
 
@@ -923,116 +574,123 @@ export default function MealLibraryPage() {
 
                       {ingredients.length > 0 ? (
                         <div className="space-y-3">
-                          {ingredients.map((ingredient) => {
-                            const food = FOOD_DATABASE.find(
-                              (item) =>
-                                item.id === ingredient.foodId
-                            );
-
-                            if (!food) {
-                              return null;
-                            }
-
-                            const nutrition =
-                              calculateIngredientNutrition(
-                                ingredient
+                          {ingredients.map(
+                            (ingredient) => {
+                              const food = foods.find(
+                                (item) =>
+                                  item.id ===
+                                  ingredient.foodId
                               );
 
-                            return (
-                              <div
-                                key={ingredient.id}
-                                className="rounded-xl border border-[#2D312E]/[0.07] bg-[#FAF9F6] p-4"
-                              >
-                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                  <div className="min-w-0">
-                                    <p className="font-body text-[11px] font-bold">
-                                      {food.name}
-                                    </p>
+                              if (!food) {
+                                return null;
+                              }
 
-                                    <p className="font-body mt-1 text-[9px] text-[#2D312E]/40">
-                                      {food.category} · Base serving:{" "}
-                                      {food.serving}
-                                    </p>
+                              const nutrition =
+                                calculateIngredientNutrition(
+                                  ingredient
+                                );
+
+                              return (
+                                <div
+                                  key={ingredient.id}
+                                  className="rounded-xl border border-[#2D312E]/[0.07] bg-[#FAF9F6] p-4"
+                                >
+                                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="min-w-0">
+                                      <p className="font-body text-[11px] font-bold">
+                                        {food.name}
+                                      </p>
+
+                                      <p className="font-body mt-1 text-[9px] text-[#2D312E]/40">
+                                        {food.category} · Base
+                                        serving:{" "}
+                                        {food.serving}
+                                      </p>
+                                    </div>
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        removeIngredient(
+                                          ingredient.id
+                                        )
+                                      }
+                                      className="self-start rounded-lg p-2 text-[#2D312E]/30 transition hover:bg-red-50 hover:text-red-500 sm:self-auto"
+                                      aria-label={`Remove ${food.name}`}
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
                                   </div>
 
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      removeIngredient(
-                                        ingredient.id
-                                      )
-                                    }
-                                    className="self-start rounded-lg p-2 text-[#2D312E]/30 transition hover:bg-red-50 hover:text-red-500 sm:self-auto"
-                                    aria-label={`Remove ${food.name}`}
-                                  >
-                                    <Trash2 size={14} />
-                                  </button>
-                                </div>
+                                  <div className="mt-4 grid gap-3 sm:grid-cols-[160px_1fr] sm:items-center">
+                                    <label>
+                                      <span className="font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/35">
+                                        Quantity
+                                      </span>
 
-                                <div className="mt-4 grid gap-3 sm:grid-cols-[160px_1fr] sm:items-center">
-                                  <label>
-                                    <span className="font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/35">
-                                      Quantity
-                                    </span>
-
-                                    <div className="mt-1 flex items-center overflow-hidden rounded-xl border border-[#2D312E]/[0.08] bg-white">
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        step="0.1"
-                                        value={
-                                          ingredient.quantity
-                                        }
-                                        onChange={(e) =>
-                                          updateIngredientQuantity(
-                                            ingredient.id,
-                                            Number(
-                                              e.target.value
+                                      <div className="mt-1 flex items-center overflow-hidden rounded-xl border border-[#2D312E]/[0.08] bg-white">
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          step="0.1"
+                                          value={
+                                            ingredient.quantity
+                                          }
+                                          onChange={(e) =>
+                                            updateIngredientQuantity(
+                                              ingredient.id,
+                                              Number(
+                                                e.target
+                                                  .value
+                                              )
                                             )
-                                          )
-                                        }
-                                        className="min-w-0 flex-1 bg-transparent px-3 py-2.5 font-body text-[11px] outline-none"
+                                          }
+                                          className="min-w-0 flex-1 bg-transparent px-3 py-2.5 font-body text-[11px] outline-none"
+                                        />
+
+                                        <span className="border-l border-[#2D312E]/[0.06] px-3 font-body text-[9px] text-[#2D312E]/40">
+                                          {
+                                            food.servingUnit
+                                          }
+                                        </span>
+                                      </div>
+                                    </label>
+
+                                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                      <MiniNutrition
+                                        label="Calories"
+                                        value={`${formatNumber(
+                                          nutrition.calories
+                                        )} kcal`}
                                       />
 
-                                      <span className="border-l border-[#2D312E]/[0.06] px-3 font-body text-[9px] text-[#2D312E]/40">
-                                        {food.servingUnit}
-                                      </span>
+                                      <MiniNutrition
+                                        label="Protein"
+                                        value={`${formatNumber(
+                                          nutrition.protein
+                                        )} g`}
+                                      />
+
+                                      <MiniNutrition
+                                        label="Carbs"
+                                        value={`${formatNumber(
+                                          nutrition.carbohydrates
+                                        )} g`}
+                                      />
+
+                                      <MiniNutrition
+                                        label="Fat"
+                                        value={`${formatNumber(
+                                          nutrition.fat
+                                        )} g`}
+                                      />
                                     </div>
-                                  </label>
-
-                                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                                    <MiniNutrition
-                                      label="Calories"
-                                      value={`${formatNumber(
-                                        nutrition.calories
-                                      )} kcal`}
-                                    />
-
-                                    <MiniNutrition
-                                      label="Protein"
-                                      value={`${formatNumber(
-                                        nutrition.protein
-                                      )} g`}
-                                    />
-
-                                    <MiniNutrition
-                                      label="Carbs"
-                                      value={`${formatNumber(
-                                        nutrition.carbohydrates
-                                      )} g`}
-                                    />
-
-                                    <MiniNutrition
-                                      label="Fat"
-                                      value={`${formatNumber(
-                                        nutrition.fat
-                                      )} g`}
-                                    />
                                   </div>
                                 </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            }
+                          )}
                         </div>
                       ) : (
                         <div className="rounded-xl border border-dashed border-[#CCD6C4] bg-[#F8F9F7] px-5 py-10 text-center">
@@ -1045,7 +703,8 @@ export default function MealLibraryPage() {
                           </p>
 
                           <p className="font-body mt-1 text-[10px] text-[#2D312E]/40">
-                            Select foods from the database on the right.
+                            Select foods from the database
+                            on the right.
                           </p>
                         </div>
                       )}
@@ -1060,7 +719,8 @@ export default function MealLibraryPage() {
                       </h3>
 
                       <p className="font-body mt-1 text-[10px] text-[#2D312E]/40">
-                        Choose an ingredient from the Food Database.
+                        Choose an ingredient from the Food
+                        Database.
                       </p>
                     </div>
 
@@ -1096,7 +756,8 @@ export default function MealLibraryPage() {
                               </p>
 
                               <p className="mt-1 font-body text-[8px] text-[#2D312E]/35">
-                                {food.category} · {food.serving}
+                                {food.category} ·{" "}
+                                {food.serving}
                               </p>
                             </div>
 
@@ -1107,11 +768,17 @@ export default function MealLibraryPage() {
 
                           <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
                             <span className="font-body text-[8px] font-semibold text-[#2D312E]/50">
-                              {formatNumber(food.calories)} kcal
+                              {formatNumber(
+                                food.calories
+                              )}{" "}
+                              kcal
                             </span>
 
                             <span className="font-body text-[8px] font-semibold text-[#3D5A4C]">
-                              {formatNumber(food.protein)} g protein
+                              {formatNumber(
+                                food.protein
+                              )}{" "}
+                              g protein
                             </span>
                           </div>
                         </button>
@@ -1146,22 +813,30 @@ export default function MealLibraryPage() {
                       <div className="mt-4 grid grid-cols-2 gap-2">
                         <TotalNutrition
                           label="Protein"
-                          value={currentMealNutrition.protein}
+                          value={
+                            currentMealNutrition.protein
+                          }
                         />
 
                         <TotalNutrition
                           label="Carbs"
-                          value={currentMealNutrition.carbohydrates}
+                          value={
+                            currentMealNutrition.carbohydrates
+                          }
                         />
 
                         <TotalNutrition
                           label="Fat"
-                          value={currentMealNutrition.fat}
+                          value={
+                            currentMealNutrition.fat
+                          }
                         />
 
                         <TotalNutrition
                           label="Fiber"
-                          value={currentMealNutrition.fiber}
+                          value={
+                            currentMealNutrition.fiber
+                          }
                         />
                       </div>
                     </div>
@@ -1172,7 +847,9 @@ export default function MealLibraryPage() {
                 <div className="flex flex-col-reverse gap-3 border-t border-[#2D312E]/[0.06] p-5 sm:flex-row sm:justify-end sm:p-6">
                   <button
                     type="button"
-                    onClick={() => setShowCreateMeal(false)}
+                    onClick={() =>
+                      setShowCreateMeal(false)
+                    }
                     className="flex items-center justify-center rounded-xl border border-[#CCD6C4] px-6 py-3 font-body text-[11px] font-bold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
                   >
                     Cancel
@@ -1203,10 +880,12 @@ export default function MealLibraryPage() {
 function MealCard({
   meal,
   nutrition,
+  foods,
   onDelete,
 }: {
   meal: Meal;
   nutrition: NutritionTotals;
+  foods: Food[];
   onDelete: (mealId: string) => void;
 }) {
   return (
@@ -1261,7 +940,10 @@ function MealCard({
               value={nutrition.carbohydrates}
             />
 
-            <SmallStat label="Fat" value={nutrition.fat} />
+            <SmallStat
+              label="Fat"
+              value={nutrition.fat}
+            />
           </div>
         </div>
       </div>
@@ -1273,7 +955,7 @@ function MealCard({
 
         <div className="mt-3 space-y-2">
           {meal.ingredients.map((ingredient) => {
-            const food = FOOD_DATABASE.find(
+            const food = foods.find(
               (item) => item.id === ingredient.foodId
             );
 
@@ -1291,7 +973,9 @@ function MealCard({
                 </span>
 
                 <span className="font-body text-[9px] font-semibold text-[#2D312E]/35">
-                  {formatNumber(ingredient.quantity)}{" "}
+                  {formatNumber(
+                    ingredient.quantity
+                  )}{" "}
                   {food.servingUnit}
                 </span>
               </div>
