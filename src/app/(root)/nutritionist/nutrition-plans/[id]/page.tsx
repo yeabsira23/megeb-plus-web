@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
@@ -19,6 +18,7 @@ import {
 
 import Sidebar from "@/app/components/nutritionist/Sidebar";
 import Topbar from "@/app/components/nutritionist/Topbar";
+import { apiFetch } from "@/app/lib/api";
 
 type Meal = {
   name: string;
@@ -39,84 +39,73 @@ type NutritionPlan = {
   endDate: string;
   status: "Active" | "Inactive";
   meals: Meal[];
-  recommendations: string[];
+  additional_notes?: string;
 };
-
-const NUTRITION_PLANS: NutritionPlan[] = [
-  {
-    id: "NP-001",
-    clientId: "1",
-    clientName: "Hana Tesfaye",
-    planName: "High-Protein Balanced Diet",
-    description:
-      "A balanced nutrition plan designed to support gradual weight management while providing enough protein, fiber, and essential nutrients.",
-    calories: "1,800 kcal/day",
-    goal: "Weight Management",
-    dietType: ["High Protein", "Low Sugar", "Fiber Rich"],
-    startDate: "Aug 1, 2026",
-    endDate: "Aug 31, 2026",
-    status: "Active",
-
-    meals: [
-      {
-        name: "Breakfast",
-        time: "8:00 AM",
-        foods: [
-          "2 boiled eggs",
-          "Whole grain bread",
-          "Avocado",
-          "Fresh fruit",
-        ],
-      },
-      {
-        name: "Lunch",
-        time: "1:30 PM",
-        foods: [
-          "Grilled chicken breast",
-          "Brown rice",
-          "Mixed vegetables",
-          "Green salad",
-        ],
-      },
-      {
-        name: "Dinner",
-        time: "7:00 PM",
-        foods: [
-          "Grilled fish",
-          "Steamed vegetables",
-          "Sweet potato",
-        ],
-      },
-      {
-        name: "Snacks",
-        time: "11:00 AM / 4:30 PM",
-        foods: [
-          "Greek yogurt",
-          "Handful of almonds",
-          "Apple",
-          "Plain yogurt",
-        ],
-      },
-    ],
-
-    recommendations: [
-      "Drink at least 2.5L of water every day.",
-      "Limit added sugar and highly processed foods.",
-      "Include protein with every main meal.",
-      "Do strength training twice per week.",
-    ],
-  },
-];
 
 export default function NutritionPlanDetailsPage() {
   const params = useParams();
   const planId = String(params.id);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [plan, setPlan] = useState<NutritionPlan | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const plan = NUTRITION_PLANS.find(
-    (item) => item.id === planId
-  );
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchPlan() {
+      setIsLoading(true);
+
+      try {
+        const data = await apiFetch<NutritionPlan>(
+          `/nutritionist/nutrition-plans/${planId}`
+        );
+
+        if (isMounted) {
+          setPlan(data);
+        }
+      } catch (err) {
+        console.error("Unable to load nutrition plan:", err);
+
+        if (isMounted) {
+          setPlan(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    fetchPlan();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [planId]);
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-[#FAF9F6] text-[#2D312E]">
+        <MobileHeader setSidebarOpen={setSidebarOpen} />
+
+        <Sidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
+
+        <div className="lg:pl-[250px]">
+          <Topbar />
+
+          <div className="mx-auto max-w-4xl px-5 py-10 sm:px-7 lg:px-8">
+            <p className="font-body text-center text-[12px] text-[#2D312E]/40">
+              Loading nutrition plan…
+            </p>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   if (!plan) {
     return (
@@ -173,7 +162,6 @@ export default function NutritionPlanDetailsPage() {
         <Topbar />
 
         <div className="mx-auto max-w-7xl px-5 py-7 sm:px-7 lg:px-8 lg:py-9">
-
           {/* Back */}
           <Link
             href="/nutritionist/nutrition-plans"
@@ -186,7 +174,6 @@ export default function NutritionPlanDetailsPage() {
           {/* Header */}
           <section className="mb-6 rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm sm:p-6">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-
               <div className="flex items-center gap-4">
                 <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
                   <Utensils size={27} />
@@ -231,7 +218,6 @@ export default function NutritionPlanDetailsPage() {
 
           {/* Summary */}
           <section className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
             <SummaryCard
               icon={<Flame size={17} />}
               label="Daily Calories"
@@ -255,14 +241,11 @@ export default function NutritionPlanDetailsPage() {
               label="End Date"
               value={plan.endDate}
             />
-
           </section>
 
           <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-
             {/* LEFT */}
             <div className="space-y-6">
-
               {/* Description */}
               <section className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm sm:p-6">
                 <div className="mb-4 flex items-center gap-3">
@@ -361,12 +344,10 @@ export default function NutritionPlanDetailsPage() {
                   ))}
                 </div>
               </section>
-
             </div>
 
             {/* RIGHT */}
             <div className="space-y-6">
-
               {/* Nutrition Information */}
               <section className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm sm:p-6">
                 <div className="mb-5 flex items-center gap-3">
@@ -386,7 +367,6 @@ export default function NutritionPlanDetailsPage() {
                 </div>
 
                 <div className="space-y-3">
-
                   <InfoRow
                     label="Daily Calories"
                     value={plan.calories}
@@ -406,11 +386,10 @@ export default function NutritionPlanDetailsPage() {
                     label="End Date"
                     value={plan.endDate}
                   />
-
                 </div>
               </section>
 
-              {/* Recommendations */}
+              {/* Recommendations / Additional Notes */}
               <section className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm sm:p-6">
                 <div className="mb-5 flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
@@ -428,22 +407,16 @@ export default function NutritionPlanDetailsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  {plan.recommendations.map((recommendation) => (
-                    <div
-                      key={recommendation}
-                      className="flex gap-3 rounded-xl bg-[#FAF9F6] p-3"
-                    >
-                      <CheckCircle2
-                        size={14}
-                        className="mt-0.5 flex-shrink-0 text-[#4E876E]"
-                      />
-
-                      <p className="font-body text-[10px] leading-5 text-[#2D312E]/60">
-                        {recommendation}
-                      </p>
-                    </div>
-                  ))}
+                <div className="rounded-xl bg-[#FAF9F6] p-4">
+                  {plan.additional_notes ? (
+                    <p className="font-body text-[10px] leading-5 text-[#2D312E]/60">
+                      {plan.additional_notes}
+                    </p>
+                  ) : (
+                    <p className="font-body text-[10px] leading-5 text-[#2D312E]/40">
+                      No additional notes were provided for this plan.
+                    </p>
+                  )}
                 </div>
               </section>
 
@@ -472,7 +445,6 @@ export default function NutritionPlanDetailsPage() {
                   </div>
                 </Link>
               </section>
-
             </div>
           </div>
         </div>
@@ -555,4 +527,3 @@ function MobileHeader({
     </div>
   );
 }
-

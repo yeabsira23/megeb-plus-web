@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -22,6 +22,7 @@ import {
 
 import Sidebar from "@/app/components/nutritionist/Sidebar";
 import Topbar from "@/app/components/nutritionist/Topbar";
+import { apiFetch } from "@/app/lib/api";
 
 /* =========================================================
    TYPES
@@ -63,207 +64,27 @@ type LibraryMeal = {
   items: MealFood[];
 };
 
-/* =========================================================
-   CLIENT — HANA ONLY
-========================================================= */
-
-const CLIENT = {
-  id: "1",
-  name: "Hana Tesfaye",
-  preferences: "Balanced Ethiopian meals",
-  allergies: "No known allergies",
+type Client = {
+  id: string;
+  name: string;
+  preferences: string;
+  allergies: string;
 };
 
 /* =========================================================
-   FOOD DATABASE
+   EXISTING PLAN (as returned by the API)
 ========================================================= */
 
-const FOOD_DATABASE: Food[] = [
-  {
-    id: "egg",
-    name: "Egg",
-    category: "Protein",
-    calories: 78,
-    protein: 6.3,
-    carbs: 0.6,
-    fat: 5.3,
-    fiber: 0,
-    unitName: "egg",
-    unitBased: true,
-  },
-  {
-    id: "injera",
-    name: "Injera",
-    category: "Grains",
-    calories: 170,
-    protein: 5,
-    carbs: 35,
-    fat: 1,
-    fiber: 4,
-    unitName: "100g",
-    unitBased: false,
-  },
-  {
-    id: "avocado",
-    name: "Avocado",
-    category: "Fruit",
-    calories: 160,
-    protein: 2,
-    carbs: 8.5,
-    fat: 14.7,
-    fiber: 6.7,
-    unitName: "100g",
-    unitBased: false,
-  },
-  {
-    id: "chicken",
-    name: "Chicken Breast",
-    category: "Protein",
-    calories: 165,
-    protein: 31,
-    carbs: 0,
-    fat: 3.6,
-    fiber: 0,
-    unitName: "100g",
-    unitBased: false,
-  },
-  {
-    id: "rice",
-    name: "Cooked Rice",
-    category: "Grains",
-    calories: 130,
-    protein: 2.7,
-    carbs: 28,
-    fat: 0.3,
-    fiber: 0.4,
-    unitName: "100g",
-    unitBased: false,
-  },
-  {
-    id: "lentils",
-    name: "Cooked Lentils",
-    category: "Legumes",
-    calories: 116,
-    protein: 9,
-    carbs: 20,
-    fat: 0.4,
-    fiber: 7.9,
-    unitName: "100g",
-    unitBased: false,
-  },
-  {
-    id: "banana",
-    name: "Banana",
-    category: "Fruit",
-    calories: 105,
-    protein: 1.3,
-    carbs: 27,
-    fat: 0.4,
-    fiber: 3.1,
-    unitName: "banana",
-    unitBased: true,
-  },
-  {
-    id: "yogurt",
-    name: "Plain Yogurt",
-    category: "Dairy",
-    calories: 61,
-    protein: 3.5,
-    carbs: 4.7,
-    fat: 3.3,
-    fiber: 0,
-    unitName: "100g",
-    unitBased: false,
-  },
-];
-
-/* =========================================================
-   MEAL LIBRARY
-========================================================= */
-
-const MEAL_LIBRARY: LibraryMeal[] = [
-  {
-    id: "breakfast-1",
-    name: "Egg & Avocado Breakfast",
-    type: "Breakfast",
-    items: [
-      { id: "1", foodId: "egg", quantity: 2 },
-      { id: "2", foodId: "avocado", quantity: 80 },
-      { id: "3", foodId: "injera", quantity: 60 },
-    ],
-  },
-  {
-    id: "breakfast-2",
-    name: "Yogurt & Banana Bowl",
-    type: "Breakfast",
-    items: [
-      { id: "4", foodId: "yogurt", quantity: 200 },
-      { id: "5", foodId: "banana", quantity: 1 },
-    ],
-  },
-  {
-    id: "lunch-1",
-    name: "Chicken Rice Bowl",
-    type: "Lunch",
-    items: [
-      { id: "6", foodId: "chicken", quantity: 120 },
-      { id: "7", foodId: "rice", quantity: 180 },
-      { id: "8", foodId: "avocado", quantity: 50 },
-    ],
-  },
-  {
-    id: "lunch-2",
-    name: "Lentil Injera Plate",
-    type: "Lunch",
-    items: [
-      { id: "9", foodId: "lentils", quantity: 180 },
-      { id: "10", foodId: "injera", quantity: 120 },
-    ],
-  },
-  {
-    id: "dinner-1",
-    name: "Chicken & Injera",
-    type: "Dinner",
-    items: [
-      { id: "11", foodId: "chicken", quantity: 100 },
-      { id: "12", foodId: "injera", quantity: 100 },
-    ],
-  },
-  {
-    id: "dinner-2",
-    name: "Lentil Rice Bowl",
-    type: "Dinner",
-    items: [
-      { id: "13", foodId: "lentils", quantity: 160 },
-      { id: "14", foodId: "rice", quantity: 150 },
-    ],
-  },
-  {
-    id: "snack-1",
-    name: "Yogurt & Banana",
-    type: "Snack",
-    items: [
-      { id: "15", foodId: "yogurt", quantity: 150 },
-      { id: "16", foodId: "banana", quantity: 1 },
-    ],
-  },
-];
-
-/* =========================================================
-   INITIAL MEALS
-========================================================= */
-
-const INITIAL_MEALS: Meal[] = MEAL_LIBRARY
-  .filter((meal) => meal.id !== "lunch-1")
-  .map((meal, index) => ({
-    ...meal,
-    id: `meal-${index + 1}`,
-    source: "library" as const,
-    items: meal.items.map((item, itemIndex) => ({
-      ...item,
-      id: `food-${index}-${itemIndex}`,
-    })),
-  }));
+type ExistingPlan = {
+  planName: string;
+  goal: string;
+  startDate: string;
+  endDate: string;
+  calories: string;
+  notes: string;
+  client: Client;
+  meals: Meal[];
+};
 
 const GOALS = [
   "Healthy Weight Management",
@@ -317,33 +138,24 @@ export default function EditNutritionPlanPage() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const [planName, setPlanName] = useState(
-    "Healthy Weight Management Plan"
-  );
-  const [goal, setGoal] = useState(
-    "Healthy Weight Management"
-  );
-  const [startDate, setStartDate] = useState("2026-09-01");
-  const [endDate, setEndDate] = useState("2026-09-30");
-  const [calories, setCalories] = useState("1800");
-  const [notes, setNotes] = useState(
-    "Focus on balanced meals, adequate hydration, and consistent meal timing."
-  );
+  const [client, setClient] = useState<Client | null>(null);
+  const [foodDatabase, setFoodDatabase] = useState<Food[]>([]);
+  const [mealLibrary, setMealLibrary] = useState<LibraryMeal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const [planName, setPlanName] = useState("");
+  const [goal, setGoal] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [calories, setCalories] = useState("");
+  const [notes, setNotes] = useState("");
 
   const [mealOptions, setMealOptions] =
     useState<Record<MealType, Meal[]>>({
-      Breakfast: INITIAL_MEALS.filter(
-        (meal) => meal.type === "Breakfast"
-      ),
-      Lunch: INITIAL_MEALS.filter(
-        (meal) => meal.type === "Lunch"
-      ),
-      Dinner: INITIAL_MEALS.filter(
-        (meal) => meal.type === "Dinner"
-      ),
-      Snack: INITIAL_MEALS.filter(
-        (meal) => meal.type === "Snack"
-      ),
+      Breakfast: [],
+      Lunch: [],
+      Dinner: [],
+      Snack: [],
     });
 
   const [activeMealType, setActiveMealType] =
@@ -360,6 +172,66 @@ export default function EditNutritionPlanPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   /* =========================================================
+     LOAD PLAN, CLIENT, FOOD DATABASE & MEAL LIBRARY
+  ========================================================= */
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchData() {
+      setIsLoading(true);
+
+      try {
+        const [plan, foods, library] = await Promise.all([
+          apiFetch<ExistingPlan>(
+            `/nutritionist/nutrition-plans/${planId}`
+          ),
+          apiFetch<Food[]>("/nutritionist/food-database"),
+          apiFetch<LibraryMeal[]>("/nutritionist/meal-library"),
+        ]);
+
+        if (!isMounted) return;
+
+        setClient(plan.client);
+        setPlanName(plan.planName);
+        setGoal(plan.goal);
+        setStartDate(plan.startDate);
+        setEndDate(plan.endDate);
+        setCalories(plan.calories);
+        setNotes(plan.notes);
+        setMealOptions({
+          Breakfast: plan.meals.filter(
+            (meal) => meal.type === "Breakfast"
+          ),
+          Lunch: plan.meals.filter(
+            (meal) => meal.type === "Lunch"
+          ),
+          Dinner: plan.meals.filter(
+            (meal) => meal.type === "Dinner"
+          ),
+          Snack: plan.meals.filter(
+            (meal) => meal.type === "Snack"
+          ),
+        });
+        setFoodDatabase(foods);
+        setMealLibrary(library);
+      } catch (err) {
+        console.error("Unable to load nutrition plan:", err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [planId]);
+
+  /* =========================================================
      FILTERS
   ========================================================= */
 
@@ -367,7 +239,7 @@ export default function EditNutritionPlanPage() {
     () => [
       "All",
       ...Array.from(
-        new Set(FOOD_DATABASE.map((food) => food.category))
+        new Set(foodDatabase.map((food) => food.category))
       ),
     ],
     []
@@ -376,7 +248,7 @@ export default function EditNutritionPlanPage() {
   const filteredLibraryMeals = useMemo(() => {
     const search = librarySearch.trim().toLowerCase();
 
-    return MEAL_LIBRARY.filter(
+    return mealLibrary.filter(
       (meal) =>
         meal.type === activeMealType &&
         (!search ||
@@ -387,7 +259,7 @@ export default function EditNutritionPlanPage() {
   const filteredFoods = useMemo(() => {
     const search = foodSearch.trim().toLowerCase();
 
-    return FOOD_DATABASE.filter(
+    return foodDatabase.filter(
       (food) =>
         (!search ||
           food.name.toLowerCase().includes(search)) &&
@@ -408,7 +280,7 @@ export default function EditNutritionPlanPage() {
   function getMealNutrition(meal: Meal) {
     return meal.items.reduce(
       (total, item) => {
-        const food = FOOD_DATABASE.find(
+        const food = foodDatabase.find(
           (entry) => entry.id === item.foodId
         );
 
@@ -630,7 +502,7 @@ export default function EditNutritionPlanPage() {
             };
           }
 
-          const food = FOOD_DATABASE.find(
+          const food = foodDatabase.find(
             (entry) => entry.id === foodId
           );
 
@@ -725,6 +597,29 @@ export default function EditNutritionPlanPage() {
      RENDER
   ========================================================= */
 
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-[#FAF9F6] text-[#2D312E]">
+        <MobileHeader setSidebarOpen={setSidebarOpen} />
+
+        <Sidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
+
+        <div className="lg:pl-[250px]">
+          <Topbar />
+
+          <div className="mx-auto max-w-7xl px-5 py-10 sm:px-7 lg:px-8">
+            <p className="font-body text-center text-[12px] text-[#2D312E]/40">
+              Loading nutrition plan…
+            </p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[#FAF9F6] text-[#2D312E]">
       <MobileHeader
@@ -789,7 +684,7 @@ export default function EditNutritionPlanPage() {
 
                       <div>
                         <p className="font-body text-[11px] font-bold">
-                          {CLIENT.name}
+                          {client?.name}
                         </p>
 
                         <p className="font-body mt-0.5 text-[8px] text-[#2D312E]/40">
@@ -809,12 +704,12 @@ export default function EditNutritionPlanPage() {
                   <div className="grid gap-4 sm:col-span-2 sm:grid-cols-2">
                     <InfoCard
                       title="Dietary Preferences"
-                      value={CLIENT.preferences}
+                      value={client?.preferences ?? ""}
                     />
 
                     <InfoCard
                       title="Allergies / Restrictions"
-                      value={CLIENT.allergies}
+                      value={client?.allergies ?? ""}
                     />
                   </div>
 
@@ -1029,6 +924,7 @@ export default function EditNutritionPlanPage() {
                             index={index}
                             nutrition={nutrition}
                             isEditing={isEditing}
+                            foodDatabase={foodDatabase}
                             onDelete={() =>
                               deleteMeal(meal.id)
                             }
@@ -1095,7 +991,7 @@ export default function EditNutritionPlanPage() {
                           meal.items.reduce(
                             (total, item) => {
                               const food =
-                                FOOD_DATABASE.find(
+                                foodDatabase.find(
                                   (entry) =>
                                     entry.id ===
                                     item.foodId
@@ -1730,6 +1626,7 @@ function MealCard({
   index,
   nutrition,
   isEditing,
+  foodDatabase,
   onDelete,
   onUpdate,
   onEdit,
@@ -1741,6 +1638,7 @@ function MealCard({
   index: number;
   nutrition: ReturnType<typeof calculateFoodNutrition>;
   isEditing: boolean;
+  foodDatabase: Food[];
   onDelete: () => void;
   onUpdate: (
     id: string,
@@ -1832,7 +1730,7 @@ function MealCard({
         ) : (
           <div className="space-y-2">
             {meal.items.map((item) => {
-              const food = FOOD_DATABASE.find(
+              const food = foodDatabase.find(
                 (entry) => entry.id === item.foodId
               );
 

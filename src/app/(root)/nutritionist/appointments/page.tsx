@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -36,8 +37,8 @@ type Appointment = {
   date: string;
   time: string;
   status: AppointmentStatus;
-  rawDate?: string; // Store original date for sorting
-  rawTime?: string; // Store original time for sorting
+  rawDate?: string;
+  rawTime?: string;
 };
 
 function formatAppointmentType(type: string): string {
@@ -55,9 +56,11 @@ function formatAppointmentType(type: string): string {
 
 function formatAppointmentDate(date: string): string {
   const parsedDate = new Date(`${date}T00:00:00`);
+
   if (Number.isNaN(parsedDate.getTime())) {
     return date;
   }
+
   return parsedDate.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -67,9 +70,11 @@ function formatAppointmentDate(date: string): string {
 
 function formatAppointmentTime(time: string): string {
   const parsedTime = new Date(`1970-01-01T${time}`);
+
   if (Number.isNaN(parsedTime.getTime())) {
     return time;
   }
+
   return parsedTime.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
@@ -92,27 +97,30 @@ function formatAppointmentStatus(status: string): AppointmentStatus {
 }
 
 // Helper function to sort appointments: upcoming first, then past
-function sortAppointmentsByDateTime(appointments: Appointment[]): Appointment[] {
+function sortAppointmentsByDateTime(
+  appointments: Appointment[]
+): Appointment[] {
   const now = new Date();
-  
+
   return [...appointments].sort((a, b) => {
-    // Parse dates and times for comparison
-    const dateA = new Date(`${a.rawDate || a.date}T${a.rawTime || a.time}`);
-    const dateB = new Date(`${b.rawDate || b.date}T${b.rawTime || b.time}`);
-    
-    // Check if appointments are upcoming or past
+    const dateA = new Date(
+      `${a.rawDate || a.date}T${a.rawTime || a.time}`
+    );
+
+    const dateB = new Date(
+      `${b.rawDate || b.date}T${b.rawTime || b.time}`
+    );
+
     const isAUpcoming = dateA >= now;
     const isBUpcoming = dateB >= now;
-    
-    // If one is upcoming and the other is past, upcoming comes first
+
     if (isAUpcoming && !isBUpcoming) return -1;
     if (!isAUpcoming && isBUpcoming) return 1;
-    
-    // If both are upcoming or both are past, sort by date (newest first for upcoming, oldest first for past)
+
     if (isAUpcoming && isBUpcoming) {
-      return dateA.getTime() - dateB.getTime(); // Earliest upcoming first
+      return dateA.getTime() - dateB.getTime();
     } else {
-      return dateB.getTime() - dateA.getTime(); // Most recent past first
+      return dateB.getTime() - dateA.getTime();
     }
   });
 }
@@ -129,7 +137,6 @@ function useAppointments() {
     try {
       const data = await getNutritionistAppointments();
 
-      // Check if data is an array
       if (!Array.isArray(data)) {
         throw new Error("Invalid data format received from server");
       }
@@ -138,18 +145,23 @@ function useAppointments() {
         (appointment: BackendAppointment) => ({
           id: String(appointment.id),
           clientId: appointment.client,
-          name: appointment.client_name || `Client #${appointment.client}`,
-          type: formatAppointmentType(appointment.appointment_type),
+          name:
+            appointment.client_name ||
+            `Client #${appointment.client}`,
+          type: formatAppointmentType(
+            appointment.appointment_type
+          ),
           date: formatAppointmentDate(appointment.date),
           time: formatAppointmentTime(appointment.time),
           status: formatAppointmentStatus(appointment.status),
-          rawDate: appointment.date, // Store original date for sorting
-          rawTime: appointment.time, // Store original time for sorting
+          rawDate: appointment.date,
+          rawTime: appointment.time,
         })
       );
 
-      // Sort appointments: upcoming first, then past
-      const sortedAppointments = sortAppointmentsByDateTime(mappedAppointments);
+      const sortedAppointments =
+        sortAppointmentsByDateTime(mappedAppointments);
+
       setAppointments(sortedAppointments);
     } catch (err) {
       console.error("Unable to load appointments:", err);
@@ -160,60 +172,89 @@ function useAppointments() {
     }
   };
 
-  // FIX: Simply call loadAppointments in useEffect
   useEffect(() => {
     loadAppointments();
-  }, []); // Empty dependency array means it runs once on mount
+  }, []);
 
   return {
     appointments,
     isLoading,
     error,
-    loadAppointments, // Expose reload function
+    loadAppointments,
   };
 }
 
 export default function AppointmentsPage() {
-  const { appointments, isLoading, error, loadAppointments } = useAppointments();
+  const {
+    appointments,
+    isLoading,
+    error,
+    loadAppointments,
+  } = useAppointments();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All appointments");
-  const [openActionId, setOpenActionId] = useState<string | null>(null);
-  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] =
+    useState("All appointments");
+  const [openActionId, setOpenActionId] = useState<string | null>(
+    null
+  );
+  const [actionLoadingId, setActionLoadingId] = useState<
+    string | null
+  >(null);
+  const [actionError, setActionError] = useState<string | null>(
+    null
+  );
+
   const [successPopup, setSuccessPopup] = useState<{
     show: boolean;
     message: string;
     type: "confirm" | "cancel";
-  }>({ show: false, message: "", type: "confirm" });
-
-  // Filter appointments (maintains the sorted order)
-  const filteredAppointments = appointments.filter((appointment) => {
-    const searchText = query.toLowerCase().trim();
-    const matchesSearch =
-      appointment.name.toLowerCase().includes(searchText) ||
-      appointment.type.toLowerCase().includes(searchText);
-    const matchesStatus =
-      statusFilter === "All appointments" ||
-      appointment.status === statusFilter;
-    return matchesSearch && matchesStatus;
+  }>({
+    show: false,
+    message: "",
+    type: "confirm",
   });
+
+  // Filter appointments
+  const filteredAppointments = appointments.filter(
+    (appointment) => {
+      const searchText = query.toLowerCase().trim();
+
+      const matchesSearch =
+        appointment.name
+          .toLowerCase()
+          .includes(searchText) ||
+        appointment.type
+          .toLowerCase()
+          .includes(searchText);
+
+      const matchesStatus =
+        statusFilter === "All appointments" ||
+        appointment.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    }
+  );
 
   // Summary numbers
   const totalAppointments = appointments.length;
+
   const upcomingAppointments = appointments.filter(
     (appointment) =>
-      appointment.status === "Confirmed" || appointment.status === "Pending"
+      appointment.status === "Confirmed" ||
+      appointment.status === "Pending"
   ).length;
+
   const completedAppointments = appointments.filter(
     (appointment) => appointment.status === "Completed"
   ).length;
+
   const pendingAppointments = appointments.filter(
     (appointment) => appointment.status === "Pending"
   ).length;
 
-  // Handle appointment actions with proper error handling
+  // Handle appointment actions
   async function handleAppointmentAction(
     appointmentId: string,
     action: "confirm" | "cancel"
@@ -224,7 +265,7 @@ export default function AppointmentsPage() {
     try {
       if (action === "confirm") {
         await confirmAppointment(Number(appointmentId));
-        // Show success popup for confirmation
+
         setSuccessPopup({
           show: true,
           message: "Appointment confirmed successfully!",
@@ -232,7 +273,7 @@ export default function AppointmentsPage() {
         });
       } else {
         await cancelAppointment(Number(appointmentId));
-        // Show success popup for cancellation
+
         setSuccessPopup({
           show: true,
           message: "Appointment cancelled successfully.",
@@ -240,20 +281,23 @@ export default function AppointmentsPage() {
         });
       }
 
-      // Reload appointments
       await loadAppointments();
       setOpenActionId(null);
-      
-      // Auto-hide popup after 5 seconds
+
       setTimeout(() => {
-        setSuccessPopup({ show: false, message: "", type: "confirm" });
+        setSuccessPopup({
+          show: false,
+          message: "",
+          type: "confirm",
+        });
       }, 5000);
     } catch (err) {
       console.error("Unable to update appointment:", err);
-      
-      // Better error message extraction
-      let errorMessage = "Unable to update the appointment. Please try again.";
-      if (err && typeof err === 'object') {
+
+      let errorMessage =
+        "Unable to update the appointment. Please try again.";
+
+      if (err && typeof err === "object") {
         const errorObj = err as {
           response?: {
             data?: {
@@ -263,6 +307,7 @@ export default function AppointmentsPage() {
           };
           message?: string;
         };
+
         if (errorObj.response?.data?.detail) {
           errorMessage = errorObj.response.data.detail;
         } else if (errorObj.response?.data?.message) {
@@ -271,6 +316,7 @@ export default function AppointmentsPage() {
           errorMessage = errorObj.message;
         }
       }
+
       setActionError(errorMessage);
     } finally {
       setActionLoadingId(null);
@@ -283,25 +329,39 @@ export default function AppointmentsPage() {
       {successPopup.show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
           {/* Backdrop */}
-          <div 
+          <div
             className="absolute inset-0 bg-black/20 backdrop-blur-sm"
-            onClick={() => setSuccessPopup({ show: false, message: "", type: "confirm" })}
+            onClick={() =>
+              setSuccessPopup({
+                show: false,
+                message: "",
+                type: "confirm",
+              })
+            }
           />
-          
+
           {/* Modal */}
           <div className="relative w-full max-w-md animate-in fade-in zoom-in duration-300">
             <div className="relative overflow-hidden rounded-2xl bg-white shadow-2xl">
               {/* Decorative gradient bar */}
-              <div className={`h-1.5 w-full ${
-                successPopup.type === "confirm" 
-                  ? "bg-gradient-to-r from-[#3D5A4C] to-[#4E876E]" 
-                  : "bg-gradient-to-r from-amber-400 to-amber-600"
-              }`} />
-              
+              <div
+                className={`h-1.5 w-full ${
+                  successPopup.type === "confirm"
+                    ? "bg-gradient-to-r from-[#3D5A4C] to-[#4E876E]"
+                    : "bg-gradient-to-r from-amber-400 to-amber-600"
+                }`}
+              />
+
               <div className="p-6">
                 {/* Close button */}
                 <button
-                  onClick={() => setSuccessPopup({ show: false, message: "", type: "confirm" })}
+                  onClick={() =>
+                    setSuccessPopup({
+                      show: false,
+                      message: "",
+                      type: "confirm",
+                    })
+                  }
                   className="absolute right-4 top-4 rounded-full p-1.5 text-[#2D312E]/40 transition hover:bg-[#FAF9F6] hover:text-[#2D312E]"
                 >
                   <X size={18} />
@@ -309,13 +369,18 @@ export default function AppointmentsPage() {
 
                 <div className="flex flex-col items-center text-center">
                   {/* Icon */}
-                  <div className={`mb-4 flex h-16 w-16 items-center justify-center rounded-full ${
-                    successPopup.type === "confirm"
-                      ? "bg-[#E9F0EC] text-[#3D5A4C]"
-                      : "bg-amber-50 text-amber-600"
-                  }`}>
+                  <div
+                    className={`mb-4 flex h-16 w-16 items-center justify-center rounded-full ${
+                      successPopup.type === "confirm"
+                        ? "bg-[#E9F0EC] text-[#3D5A4C]"
+                        : "bg-amber-50 text-amber-600"
+                    }`}
+                  >
                     {successPopup.type === "confirm" ? (
-                      <CheckCircle2 size={32} strokeWidth={1.5} />
+                      <CheckCircle2
+                        size={32}
+                        strokeWidth={1.5}
+                      />
                     ) : (
                       <X size={32} strokeWidth={1.5} />
                     )}
@@ -323,7 +388,9 @@ export default function AppointmentsPage() {
 
                   {/* Title */}
                   <h3 className="font-display text-xl font-semibold text-[#2D312E]">
-                    {successPopup.type === "confirm" ? "Success!" : "Cancelled"}
+                    {successPopup.type === "confirm"
+                      ? "Success!"
+                      : "Cancelled"}
                   </h3>
 
                   {/* Message */}
@@ -333,7 +400,13 @@ export default function AppointmentsPage() {
 
                   {/* Button */}
                   <button
-                    onClick={() => setSuccessPopup({ show: false, message: "", type: "confirm" })}
+                    onClick={() =>
+                      setSuccessPopup({
+                        show: false,
+                        message: "",
+                        type: "confirm",
+                      })
+                    }
                     className={`mt-6 w-full rounded-xl px-6 py-3 font-body text-[12px] font-semibold text-white transition hover:shadow-md ${
                       successPopup.type === "confirm"
                         ? "bg-[#3D5A4C] hover:bg-[#2D312E]"
@@ -355,10 +428,12 @@ export default function AppointmentsPage() {
           <span className="font-display text-[27px] font-bold tracking-tight text-[#DCC48E]">
             Megeb
           </span>
+
           <span className="ml-1 font-display text-[33px] font-black leading-none text-[#DCC48E]">
             +
           </span>
         </div>
+
         <button
           type="button"
           onClick={() => setSidebarOpen(true)}
@@ -370,7 +445,10 @@ export default function AppointmentsPage() {
       </div>
 
       {/* ================= SIDEBAR ================= */}
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+      />
 
       {/* ================= MAIN CONTENT ================= */}
       <div className="lg:pl-[250px]">
@@ -383,17 +461,30 @@ export default function AppointmentsPage() {
               <h1 className="font-display text-[28px] text-[#2D312E]">
                 Appointments
               </h1>
+
               <p className="font-body mt-1 text-[12px] text-[#2D312E]/45">
                 Manage your upcoming and past consultations.
               </p>
             </div>
-            <Link
-              href="/nutritionist/appointments/new"
-              className="flex w-fit items-center gap-2 rounded-xl bg-[#3D5A4C] px-5 py-3 font-body text-[12px] font-semibold text-white transition hover:bg-[#2D312E]"
-            >
-              <CalendarDays size={18} />
-              New Appointment
-            </Link>
+
+            {/* ================= HEADER ACTIONS ================= */}
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/nutritionist/appointments/availability"
+                className="flex w-fit items-center gap-2 rounded-xl border border-[#2D312E]/[0.08] bg-white px-5 py-3 font-body text-[12px] font-semibold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
+              >
+                <Clock size={17} />
+                Availability
+              </Link>
+
+              <Link
+                href="/nutritionist/appointments/new"
+                className="flex w-fit items-center gap-2 rounded-xl bg-[#3D5A4C] px-5 py-3 font-body text-[12px] font-semibold text-white transition hover:bg-[#2D312E]"
+              >
+                <CalendarDays size={18} />
+                New Appointment
+              </Link>
+            </div>
           </div>
 
           {/* ================= SUMMARY CARDS ================= */}
@@ -404,18 +495,21 @@ export default function AppointmentsPage() {
               note="This month"
               icon={<CalendarDays size={20} />}
             />
+
             <SummaryCard
               label="Upcoming"
               value={upcomingAppointments.toString()}
               note="Appointments"
               icon={<Clock size={20} />}
             />
+
             <SummaryCard
               label="Completed"
               value={completedAppointments.toString()}
               note="This month"
               icon={<CheckCircle2 size={20} />}
             />
+
             <SummaryCard
               label="Pending"
               value={pendingAppointments.toString()}
@@ -433,27 +527,35 @@ export default function AppointmentsPage() {
                   <h2 className="font-display text-[20px] text-[#2D312E]">
                     Upcoming Appointments
                   </h2>
+
                   <p className="font-body mt-1 text-[11px] text-[#2D312E]/40">
                     Your scheduled online consultations.
                   </p>
                 </div>
+
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <div className="relative">
                     <Search
                       size={15}
                       className="absolute left-3 top-1/2 -translate-y-1/2 text-[#2D312E]/30"
                     />
+
                     <input
                       type="text"
                       value={query}
-                      onChange={(e) => setQuery(e.target.value)}
+                      onChange={(e) =>
+                        setQuery(e.target.value)
+                      }
                       placeholder="Search appointments"
                       className="w-full rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] py-2 pl-9 pr-3 font-body text-[11px] text-[#2D312E] outline-none focus:border-[#3D5A4C] sm:w-52"
                     />
                   </div>
+
                   <select
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
+                    onChange={(e) =>
+                      setStatusFilter(e.target.value)
+                    }
                     className="rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] px-4 py-2 font-body text-[11px] text-[#2D312E]/60 outline-none focus:border-[#3D5A4C]"
                   >
                     <option>All appointments</option>
@@ -483,30 +585,41 @@ export default function AppointmentsPage() {
                     <th className="px-6 py-4 font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/40">
                       Client
                     </th>
+
                     <th className="px-6 py-4 font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/40">
                       Date & Time
                     </th>
+
                     <th className="px-6 py-4 font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/40">
                       Type
                     </th>
+
                     <th className="px-6 py-4 font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/40">
                       Status
                     </th>
+
                     <th className="px-6 py-4 font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/40">
                       Action
                     </th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {isLoading ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-10 text-center font-body text-[12px] text-[#2D312E]/40">
+                      <td
+                        colSpan={5}
+                        className="px-6 py-10 text-center font-body text-[12px] text-[#2D312E]/40"
+                      >
                         Loading appointments…
                       </td>
                     </tr>
                   ) : filteredAppointments.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-10 text-center font-body text-[12px] text-[#2D312E]/40">
+                      <td
+                        colSpan={5}
+                        className="px-6 py-10 text-center font-body text-[12px] text-[#2D312E]/40"
+                      >
                         No appointments found.
                       </td>
                     </tr>
@@ -521,35 +634,45 @@ export default function AppointmentsPage() {
                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
                               <UserRound size={18} />
                             </div>
+
                             <div>
                               <p className="font-body text-[12px] font-bold text-[#2D312E]">
                                 {appointment.name}
                               </p>
+
                               <p className="font-body text-[9px] text-[#2D312E]/35">
                                 Client #{appointment.clientId}
                               </p>
                             </div>
                           </div>
                         </td>
+
                         <td className="px-6 py-5">
                           <p className="font-body text-[11px] font-semibold text-[#2D312E]/75">
                             {appointment.date}
                           </p>
+
                           <div className="mt-1 flex items-center gap-1 text-[#2D312E]/40">
                             <Clock size={12} />
+
                             <span className="font-body text-[9px]">
                               {appointment.time}
                             </span>
                           </div>
                         </td>
+
                         <td className="px-6 py-5">
                           <span className="font-body text-[11px] text-[#2D312E]/60">
                             {appointment.type}
                           </span>
                         </td>
+
                         <td className="px-6 py-5">
-                          <StatusBadge status={appointment.status} />
+                          <StatusBadge
+                            status={appointment.status}
+                          />
                         </td>
+
                         <td className="px-6 py-5">
                           <div className="relative">
                             <button
@@ -566,12 +689,17 @@ export default function AppointmentsPage() {
                             >
                               <MoreHorizontal size={19} />
                             </button>
+
                             {openActionId === appointment.id && (
                               <div className="absolute right-0 z-20 mt-1 w-40 overflow-hidden rounded-xl border border-[#2D312E]/[0.08] bg-white py-1 shadow-lg">
-                                {appointment.status === "Pending" && (
+                                {appointment.status ===
+                                  "Pending" && (
                                   <button
                                     type="button"
-                                    disabled={actionLoadingId === appointment.id}
+                                    disabled={
+                                      actionLoadingId ===
+                                      appointment.id
+                                    }
                                     onClick={() =>
                                       handleAppointmentAction(
                                         appointment.id,
@@ -580,16 +708,23 @@ export default function AppointmentsPage() {
                                     }
                                     className="w-full px-4 py-2.5 text-left font-body text-[11px] text-[#3D5A4C] hover:bg-[#E9F0EC] disabled:opacity-50"
                                   >
-                                    {actionLoadingId === appointment.id
+                                    {actionLoadingId ===
+                                    appointment.id
                                       ? "Updating..."
                                       : "Confirm"}
                                   </button>
                                 )}
-                                {(appointment.status === "Pending" ||
-                                  appointment.status === "Confirmed") && (
+
+                                {(appointment.status ===
+                                  "Pending" ||
+                                  appointment.status ===
+                                    "Confirmed") && (
                                   <button
                                     type="button"
-                                    disabled={actionLoadingId === appointment.id}
+                                    disabled={
+                                      actionLoadingId ===
+                                      appointment.id
+                                    }
                                     onClick={() =>
                                       handleAppointmentAction(
                                         appointment.id,
@@ -598,13 +733,17 @@ export default function AppointmentsPage() {
                                     }
                                     className="w-full px-4 py-2.5 text-left font-body text-[11px] text-red-600 hover:bg-red-50 disabled:opacity-50"
                                   >
-                                    {actionLoadingId === appointment.id
+                                    {actionLoadingId ===
+                                    appointment.id
                                       ? "Updating..."
                                       : "Cancel"}
                                   </button>
                                 )}
-                                {(appointment.status === "Completed" ||
-                                  appointment.status === "Cancelled") && (
+
+                                {(appointment.status ===
+                                  "Completed" ||
+                                  appointment.status ===
+                                    "Cancelled") && (
                                   <p className="px-4 py-2.5 font-body text-[11px] text-[#2D312E]/40">
                                     No actions available
                                   </p>
@@ -641,15 +780,18 @@ export default function AppointmentsPage() {
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
                           <UserRound size={18} />
                         </div>
+
                         <div>
                           <p className="font-body text-[12px] font-bold text-[#2D312E]">
                             {appointment.name}
                           </p>
+
                           <p className="font-body text-[9px] text-[#2D312E]/35">
                             Client #{appointment.clientId}
                           </p>
                         </div>
                       </div>
+
                       <button
                         type="button"
                         className="rounded-lg p-1 text-[#2D312E]/35 hover:bg-[#E9F0EC]"
@@ -658,24 +800,31 @@ export default function AppointmentsPage() {
                         <MoreHorizontal size={20} />
                       </button>
                     </div>
+
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 font-body text-[10px] text-[#2D312E]/60">
                         <CalendarDays size={15} />
                         {appointment.date}
                       </div>
+
                       <div className="flex items-center gap-2 font-body text-[10px] text-[#2D312E]/60">
                         <Clock size={15} />
                         {appointment.time}
                       </div>
+
                       <div>
                         <p className="font-body text-[10px] font-semibold uppercase tracking-wider text-[#2D312E]/35">
                           Type
                         </p>
+
                         <p className="mt-1 font-body text-[10px] text-[#2D312E]/60">
                           {appointment.type}
                         </p>
                       </div>
-                      <StatusBadge status={appointment.status} />
+
+                      <StatusBadge
+                        status={appointment.status}
+                      />
                     </div>
                   </div>
                 ))
@@ -689,6 +838,7 @@ export default function AppointmentsPage() {
 }
 
 /* ================= SUMMARY CARD ================= */
+
 function SummaryCard({
   label,
   value,
@@ -706,18 +856,30 @@ function SummaryCard({
         <p className="font-body text-[11px] font-semibold text-[#2D312E]/45">
           {label}
         </p>
+
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
           {icon}
         </div>
       </div>
-      <h2 className="font-display text-[27px] text-[#2D312E]">{value}</h2>
-      <p className="font-body mt-1 text-[10px] text-[#4E876E]">{note}</p>
+
+      <h2 className="font-display text-[27px] text-[#2D312E]">
+        {value}
+      </h2>
+
+      <p className="font-body mt-1 text-[10px] text-[#4E876E]">
+        {note}
+      </p>
     </div>
   );
 }
 
 /* ================= STATUS BADGE ================= */
-function StatusBadge({ status }: { status: AppointmentStatus }) {
+
+function StatusBadge({
+  status,
+}: {
+  status: AppointmentStatus;
+}) {
   return (
     <span
       className={`inline-flex rounded-full px-3 py-1 font-body text-[9px] font-bold ${
@@ -734,3 +896,4 @@ function StatusBadge({ status }: { status: AppointmentStatus }) {
     </span>
   );
 }
+

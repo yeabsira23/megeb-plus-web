@@ -44,35 +44,12 @@ function useNutritionPlans() {
       setError(null);
 
       try {
-        /*
-         * Backend API will be connected here later.
-         *
-         * Example:
-         *
-         * const data = await apiFetch<NutritionPlan[]>(
-         *   "/nutritionist/nutrition-plans"
-         * );
-         *
-         * if (isMounted) {
-         *   setPlans(data);
-         * }
-         */
-
-        // Temporary mock data until the backend endpoint is connected.
-        const mockPlans: NutritionPlan[] = [
-          {
-            id: "NP-001",
-            clientName: "Hana Tesfaye",
-            planName: "Healthy Weight Management",
-            goal: "Weight Management",
-            startDate: "Aug 12, 2026",
-            endDate: "Sep 12, 2026",
-            status: "Active",
-          },
-        ];
+        const data = await apiFetch<NutritionPlan[]>(
+          "/nutritionist/nutrition-plans"
+        );
 
         if (isMounted) {
-          setPlans(mockPlans);
+          setPlans(data);
         }
       } catch (err) {
         console.error("Unable to load nutrition plans:", err);

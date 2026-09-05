@@ -1,15 +1,14 @@
+
 "use client";
-import { signOut } from "next-auth/react";
+
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
   CalendarDays,
   ClipboardList,
   MessageSquare,
-  UserRound,
-  LogOut,
   X,
   Utensils,
   Database,
@@ -41,15 +40,14 @@ const MENU_ITEMS = [
     icon: ClipboardList,
     path: "/nutritionist/nutrition-plans",
   },
-  
   {
     name: "Food Database",
     icon: Database,
     path: "/nutritionist/foods",
   },
-   {
+  {
     name: "Meal Library",
-    icon:  Utensils,
+    icon: Utensils,
     path: "/nutritionist/meals",
   },
   {
@@ -64,14 +62,6 @@ export default function Sidebar({
   setSidebarOpen,
 }: SidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
-
-async function logout() {
-  await signOut({
-    redirect: true,
-    callbackUrl: "/auth/login",
-  });
-}
 
   return (
     <>
@@ -90,7 +80,6 @@ async function logout() {
         }`}
       >
         <div className="flex h-full flex-col">
-
           {/* Logo */}
           <div className="flex h-[82px] items-center justify-between border-b border-[#2D312E]/[0.06] px-6">
             <Link
@@ -150,24 +139,9 @@ async function logout() {
               );
             })}
           </nav>
-
-          {/* Logout */}
-          <div className="border-t border-[#2D312E]/[0.06] p-4">
-            <button
-              type="button"
-              onClick={logout}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left font-body text-[13px] text-red-500 transition hover:bg-red-50"
-            >
-              <LogOut
-                className="h-[18px] w-5 shrink-0"
-                strokeWidth={1.75}
-              />
-
-              Sign out
-            </button>
-          </div>
         </div>
       </aside>
     </>
   );
 }
+

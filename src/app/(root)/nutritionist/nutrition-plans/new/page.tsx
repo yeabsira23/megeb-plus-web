@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -21,6 +21,7 @@ import {
 
 import Sidebar from "@/app/components/nutritionist/Sidebar";
 import Topbar from "@/app/components/nutritionist/Topbar";
+import { apiFetch } from "@/app/lib/api";
 
 /* =========================================================
    TYPES
@@ -74,473 +75,6 @@ type MealType =
   | "Snack"
   | "Lunch"
   | "Dinner";
-
-/* =========================================================
-   TEMPORARY CLIENT DATA
-========================================================= */
-
-const TEMPORARY_CLIENTS: Client[] = [
-  {
-    id: "1",
-    name: "Hana Tesfaye",
-    preferences: "High-protein, high-fiber, low-sugar",
-    allergies: "No known allergies",
-  },
-  {
-    id: "2",
-    name: "Selam Alemu",
-    preferences: "Balanced, high-fiber, low-sugar",
-    allergies: "No known allergies",
-  },
-  {
-    id: "3",
-    name: "Meron Kebede",
-    preferences: "Whole foods, high-fiber, balanced",
-    allergies: "Peanuts",
-  },
-  {
-    id: "4",
-    name: "Liya Michael",
-    preferences: "High-calorie, protein-rich, nutrient-dense",
-    allergies: "No known allergies",
-  },
-];
-
-/* =========================================================
-   FOOD DATABASE
-========================================================= */
-
-const FOOD_DATABASE: Food[] = [
-  {
-    id: "food-001",
-    name: "Egg",
-    category: "Protein",
-    unitBased: true,
-    unitName: "egg",
-    gramsPerUnit: 50,
-    calories: 72,
-    protein: 6.3,
-    carbs: 0.4,
-    fat: 4.8,
-    fiber: 0,
-  },
-  {
-    id: "food-002",
-    name: "Injera",
-    category: "Grains",
-    unitBased: true,
-    unitName: "piece",
-    gramsPerUnit: 120,
-    calories: 146,
-    protein: 4.8,
-    carbs: 30,
-    fat: 0.7,
-    fiber: 2.8,
-  },
-  {
-    id: "food-003",
-    name: "Shiro",
-    category: "Legumes",
-    unitBased: false,
-    unitName: "g",
-    gramsPerUnit: 100,
-    calories: 160,
-    protein: 8.5,
-    carbs: 22,
-    fat: 4.5,
-    fiber: 6,
-  },
-  {
-    id: "food-004",
-    name: "Doro Wat",
-    category: "Protein",
-    unitBased: false,
-    unitName: "g",
-    gramsPerUnit: 100,
-    calories: 190,
-    protein: 18,
-    carbs: 5,
-    fat: 10,
-    fiber: 1.2,
-  },
-  {
-    id: "food-005",
-    name: "Tibs",
-    category: "Protein",
-    unitBased: false,
-    unitName: "g",
-    gramsPerUnit: 100,
-    calories: 220,
-    protein: 25,
-    carbs: 3,
-    fat: 11,
-    fiber: 0.8,
-  },
-  {
-    id: "food-006",
-    name: "Chicken Breast",
-    category: "Protein",
-    unitBased: false,
-    unitName: "g",
-    gramsPerUnit: 100,
-    calories: 165,
-    protein: 31,
-    carbs: 0,
-    fat: 3.6,
-    fiber: 0,
-  },
-  {
-    id: "food-007",
-    name: "Fish",
-    category: "Protein",
-    unitBased: false,
-    unitName: "g",
-    gramsPerUnit: 100,
-    calories: 140,
-    protein: 26,
-    carbs: 0,
-    fat: 4,
-    fiber: 0,
-  },
-  {
-    id: "food-008",
-    name: "Lentils",
-    category: "Legumes",
-    unitBased: false,
-    unitName: "g",
-    gramsPerUnit: 100,
-    calories: 116,
-    protein: 9,
-    carbs: 20,
-    fat: 0.4,
-    fiber: 7.9,
-  },
-  {
-    id: "food-009",
-    name: "Brown Rice",
-    category: "Grains",
-    unitBased: false,
-    unitName: "g",
-    gramsPerUnit: 100,
-    calories: 123,
-    protein: 2.7,
-    carbs: 25.6,
-    fat: 1,
-    fiber: 1.6,
-  },
-  {
-    id: "food-010",
-    name: "White Rice",
-    category: "Grains",
-    unitBased: false,
-    unitName: "g",
-    gramsPerUnit: 100,
-    calories: 130,
-    protein: 2.7,
-    carbs: 28,
-    fat: 0.3,
-    fiber: 0.4,
-  },
-  {
-    id: "food-011",
-    name: "Oatmeal",
-    category: "Grains",
-    unitBased: false,
-    unitName: "g",
-    gramsPerUnit: 100,
-    calories: 389,
-    protein: 16.9,
-    carbs: 66.3,
-    fat: 6.9,
-    fiber: 10.6,
-  },
-  {
-    id: "food-012",
-    name: "Greek Yogurt",
-    category: "Dairy",
-    unitBased: false,
-    unitName: "g",
-    gramsPerUnit: 100,
-    calories: 59,
-    protein: 10,
-    carbs: 3.6,
-    fat: 0.4,
-    fiber: 0,
-  },
-  {
-    id: "food-013",
-    name: "Milk",
-    category: "Dairy",
-    unitBased: false,
-    unitName: "ml",
-    gramsPerUnit: 100,
-    calories: 61,
-    protein: 3.2,
-    carbs: 4.8,
-    fat: 3.3,
-    fiber: 0,
-  },
-  {
-    id: "food-014",
-    name: "Avocado",
-    category: "Fruits",
-    unitBased: false,
-    unitName: "g",
-    gramsPerUnit: 100,
-    calories: 160,
-    protein: 2,
-    carbs: 8.5,
-    fat: 14.7,
-    fiber: 6.7,
-  },
-  {
-    id: "food-015",
-    name: "Banana",
-    category: "Fruits",
-    unitBased: true,
-    unitName: "banana",
-    gramsPerUnit: 118,
-    calories: 105,
-    protein: 1.3,
-    carbs: 27,
-    fat: 0.4,
-    fiber: 3.1,
-  },
-  {
-    id: "food-016",
-    name: "Apple",
-    category: "Fruits",
-    unitBased: true,
-    unitName: "apple",
-    gramsPerUnit: 182,
-    calories: 95,
-    protein: 0.5,
-    carbs: 25,
-    fat: 0.3,
-    fiber: 4.4,
-  },
-  {
-    id: "food-017",
-    name: "Spinach",
-    category: "Vegetables",
-    unitBased: false,
-    unitName: "g",
-    gramsPerUnit: 100,
-    calories: 23,
-    protein: 2.9,
-    carbs: 3.6,
-    fat: 0.4,
-    fiber: 2.2,
-  },
-  {
-    id: "food-018",
-    name: "Tomato",
-    category: "Vegetables",
-    unitBased: false,
-    unitName: "g",
-    gramsPerUnit: 100,
-    calories: 18,
-    protein: 0.9,
-    carbs: 3.9,
-    fat: 0.2,
-    fiber: 1.2,
-  },
-  {
-    id: "food-019",
-    name: "Carrot",
-    category: "Vegetables",
-    unitBased: false,
-    unitName: "g",
-    gramsPerUnit: 100,
-    calories: 41,
-    protein: 0.9,
-    carbs: 9.6,
-    fat: 0.2,
-    fiber: 2.8,
-  },
-  {
-    id: "food-020",
-    name: "Almonds",
-    category: "Nuts",
-    unitBased: false,
-    unitName: "g",
-    gramsPerUnit: 100,
-    calories: 579,
-    protein: 21.2,
-    carbs: 21.6,
-    fat: 49.9,
-    fiber: 12.5,
-  },
-];
-
-/* =========================================================
-   TEMPORARY MEAL LIBRARY
-========================================================= */
-
-const TEMPORARY_MEAL_LIBRARY: Meal[] = [
-  {
-    id: "library-001",
-    name: "Eggs with Injera",
-    type: "Breakfast",
-    source: "library",
-    items: [
-      {
-        id: "library-item-001",
-        foodId: "food-001",
-        quantity: 2,
-      },
-      {
-        id: "library-item-002",
-        foodId: "food-002",
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: "library-002",
-    name: "Oatmeal with Banana",
-    type: "Breakfast",
-    source: "library",
-    items: [
-      {
-        id: "library-item-003",
-        foodId: "food-011",
-        quantity: 80,
-      },
-      {
-        id: "library-item-004",
-        foodId: "food-015",
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: "library-003",
-    name: "Greek Yogurt with Apple",
-    type: "Breakfast",
-    source: "library",
-    items: [
-      {
-        id: "library-item-005",
-        foodId: "food-012",
-        quantity: 200,
-      },
-      {
-        id: "library-item-006",
-        foodId: "food-016",
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: "library-004",
-    name: "Shiro with Injera",
-    type: "Lunch",
-    source: "library",
-    items: [
-      {
-        id: "library-item-007",
-        foodId: "food-003",
-        quantity: 150,
-      },
-      {
-        id: "library-item-008",
-        foodId: "food-002",
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: "library-005",
-    name: "Chicken with Brown Rice",
-    type: "Lunch",
-    source: "library",
-    items: [
-      {
-        id: "library-item-009",
-        foodId: "food-006",
-        quantity: 150,
-      },
-      {
-        id: "library-item-010",
-        foodId: "food-009",
-        quantity: 150,
-      },
-    ],
-  },
-  {
-    id: "library-006",
-    name: "Fish with Rice",
-    type: "Dinner",
-    source: "library",
-    items: [
-      {
-        id: "library-item-011",
-        foodId: "food-007",
-        quantity: 150,
-      },
-      {
-        id: "library-item-012",
-        foodId: "food-010",
-        quantity: 150,
-      },
-    ],
-  },
-  {
-    id: "library-007",
-    name: "Doro Wat with Injera",
-    type: "Dinner",
-    source: "library",
-    items: [
-      {
-        id: "library-item-013",
-        foodId: "food-004",
-        quantity: 150,
-      },
-      {
-        id: "library-item-014",
-        foodId: "food-002",
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: "library-008",
-    name: "Apple and Almonds",
-    type: "Snack",
-    source: "library",
-    items: [
-      {
-        id: "library-item-015",
-        foodId: "food-016",
-        quantity: 1,
-      },
-      {
-        id: "library-item-016",
-        foodId: "food-020",
-        quantity: 20,
-      },
-    ],
-  },
-  {
-    id: "library-009",
-    name: "Banana and Yogurt",
-    type: "Snack",
-    source: "library",
-    items: [
-      {
-        id: "library-item-017",
-        foodId: "food-015",
-        quantity: 1,
-      },
-      {
-        id: "library-item-018",
-        foodId: "food-012",
-        quantity: 150,
-      },
-    ],
-  },
-];
 
 /* =========================================================
    CONSTANTS
@@ -618,10 +152,13 @@ function calculateFoodNutrition(
   };
 }
 
-function getMealNutrition(meal: Meal): Nutrition {
+function getMealNutrition(
+  meal: Meal,
+  foodDatabase: Food[]
+): Nutrition {
   return meal.items.reduce<Nutrition>(
     (total, item) => {
-      const food = FOOD_DATABASE.find(
+      const food = foodDatabase.find(
         (entry) => entry.id === item.foodId
       );
 
@@ -664,6 +201,10 @@ function getMealNutrition(meal: Meal): Nutrition {
 export default function CreateNutritionPlanPage() {
   const [sidebarOpen, setSidebarOpen] =
     useState(false);
+
+  const [clients, setClients] = useState<Client[]>([]);
+  const [foodDatabase, setFoodDatabase] = useState<Food[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
   const [selectedClientId, setSelectedClientId] =
     useState("");
@@ -708,9 +249,7 @@ export default function CreateNutritionPlanPage() {
    * meals can be saved into it during this session.
    */
   const [mealLibrary, setMealLibrary] =
-    useState<Meal[]>(
-      TEMPORARY_MEAL_LIBRARY
-    );
+    useState<Meal[]>([]);
 
   const [activeMealType, setActiveMealType] =
     useState<MealType>("Breakfast");
@@ -740,11 +279,49 @@ export default function CreateNutritionPlanPage() {
     useState(false);
 
   /* =========================================================
+     LOAD CLIENTS, FOOD DATABASE & MEAL LIBRARY
+  ========================================================= */
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchData() {
+      setIsLoadingData(true);
+
+      try {
+        const [clientList, foods, library] = await Promise.all([
+          apiFetch<Client[]>("/nutritionist/clients"),
+          apiFetch<Food[]>("/nutritionist/food-database"),
+          apiFetch<Meal[]>("/nutritionist/meal-library"),
+        ]);
+
+        if (!isMounted) return;
+
+        setClients(clientList);
+        setFoodDatabase(foods);
+        setMealLibrary(library);
+      } catch (err) {
+        console.error("Unable to load nutrition plan data:", err);
+      } finally {
+        if (isMounted) {
+          setIsLoadingData(false);
+        }
+      }
+    }
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  /* =========================================================
      SELECTED CLIENT
   ========================================================= */
 
   const selectedClient =
-    TEMPORARY_CLIENTS.find(
+    clients.find(
       (client) =>
         client.id === selectedClientId
     );
@@ -758,10 +335,10 @@ export default function CreateNutritionPlanPage() {
       clientSearch.trim().toLowerCase();
 
     if (!search) {
-      return TEMPORARY_CLIENTS;
+      return clients;
     }
 
-    return TEMPORARY_CLIENTS.filter(
+    return clients.filter(
       (client) =>
         client.name
           .toLowerCase()
@@ -784,7 +361,7 @@ export default function CreateNutritionPlanPage() {
       "All",
       ...Array.from(
         new Set(
-          FOOD_DATABASE.map(
+          foodDatabase.map(
             (food) => food.category
           )
         )
@@ -797,7 +374,7 @@ export default function CreateNutritionPlanPage() {
   ========================================================= */
 
   const filteredFoods = useMemo(() => {
-    return FOOD_DATABASE.filter((food) => {
+    return foodDatabase.filter((food) => {
       const matchesSearch =
         food.name
           .toLowerCase()
@@ -1082,7 +659,7 @@ export default function CreateNutritionPlanPage() {
             }
 
             const food =
-              FOOD_DATABASE.find(
+              foodDatabase.find(
                 (entry) =>
                   entry.id === foodId
               );
@@ -1220,9 +797,7 @@ export default function CreateNutritionPlanPage() {
         const nutritionValues =
           mealOptions[type].map(
             (meal) =>
-              getMealNutrition(
-                meal
-              ).calories
+              getMealNutrition(meal, foodDatabase).calories
           );
 
         const min = Math.min(
@@ -1281,9 +856,7 @@ export default function CreateNutritionPlanPage() {
         selectedMeals.reduce(
           (total, meal) => {
             const nutrition =
-              getMealNutrition(
-                meal
-              );
+              getMealNutrition(meal, foodDatabase);
 
             return {
               calories:
@@ -2063,9 +1636,7 @@ export default function CreateNutritionPlanPage() {
                   ].map(
                     (meal, index) => {
                       const nutrition =
-                        getMealNutrition(
-                          meal
-                        );
+                        getMealNutrition(meal, foodDatabase);
 
                       const isEditing =
                         editingMealId ===
@@ -2210,7 +1781,7 @@ export default function CreateNutritionPlanPage() {
                                     item
                                   ) => {
                                     const food =
-                                      FOOD_DATABASE.find(
+                                      foodDatabase.find(
                                         (
                                           entry
                                         ) =>
@@ -2503,9 +2074,7 @@ export default function CreateNutritionPlanPage() {
                     {filteredLibraryMeals.map(
                       (meal) => {
                         const nutrition =
-                          getMealNutrition(
-                            meal
-                          );
+                          getMealNutrition(meal, foodDatabase);
 
                         const alreadyAdded =
                           mealOptions[

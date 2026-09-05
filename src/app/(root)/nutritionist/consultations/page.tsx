@@ -42,150 +42,6 @@ type Consultation = {
   type: "Online";
 };
 
-const TEMPORARY_CLIENTS: Client[] = [
-  {
-    id: "1",
-    name: "Hana Tesfaye",
-    email: "hana.tesfaye@example.com",
-    status: "Active",
-    lastMessage: "Thank you, I will follow the meal plan.",
-    lastMessageTime: "10:42 AM",
-  },
-  {
-    id: "2",
-    name: "Selam Alemu",
-    email: "selam.alemu@example.com",
-    status: "Active",
-    lastMessage: "Can I replace chicken with fish?",
-    lastMessageTime: "Yesterday",
-  },
-  {
-    id: "3",
-    name: "Meron Kebede",
-    email: "meron.kebede@example.com",
-    status: "Active",
-    lastMessage: "I have uploaded my progress photos.",
-    lastMessageTime: "Monday",
-  },
-  {
-    id: "4",
-    name: "Liya Michael",
-    email: "liya.michael@example.com",
-    status: "Completed",
-    lastMessage: "Thank you for your help.",
-    lastMessageTime: "Aug 20",
-  },
-];
-
-const TEMPORARY_CONSULTATIONS: Consultation[] = [
-  {
-    id: "c1",
-    clientId: "1",
-    date: "2026-08-26",
-    startTime: "2:00 PM",
-    endTime: "2:30 PM",
-    type: "Online",
-  },
-  {
-    id: "c2",
-    clientId: "2",
-    date: "2026-08-27",
-    startTime: "10:00 AM",
-    endTime: "10:30 AM",
-    type: "Online",
-  },
-  {
-    id: "c3",
-    clientId: "3",
-    date: "2026-08-28",
-    startTime: "3:00 PM",
-    endTime: "3:30 PM",
-    type: "Online",
-  },
-  {
-    id: "c4",
-    clientId: "4",
-    date: "2026-08-29",
-    startTime: "11:00 AM",
-    endTime: "11:30 AM",
-    type: "Online",
-  },
-];
-
-const TEMPORARY_MESSAGES: Record<string, Message[]> = {
-  "1": [
-    {
-      id: 1,
-      sender: "client",
-      text: "Hello! I wanted to ask about my nutrition plan.",
-      time: "10:15 AM",
-    },
-    {
-      id: 2,
-      sender: "nutritionist",
-      text: "Hi Hana! Of course. What would you like to know?",
-      time: "10:20 AM",
-    },
-    {
-      id: 3,
-      sender: "client",
-      text: "Can I have fruit as a snack in the afternoon?",
-      time: "10:27 AM",
-    },
-    {
-      id: 4,
-      sender: "nutritionist",
-      text: "Yes. You can have one serving of fruit as your afternoon snack.",
-      time: "10:35 AM",
-    },
-    {
-      id: 5,
-      sender: "client",
-      text: "Thank you, I will follow the meal plan.",
-      time: "10:42 AM",
-    },
-  ],
-
-  "2": [
-    {
-      id: 1,
-      sender: "client",
-      text: "Can I replace chicken with fish?",
-      time: "Yesterday",
-    },
-    {
-      id: 2,
-      sender: "nutritionist",
-      text: "Yes, you can replace chicken with a similar portion of fish.",
-      time: "Yesterday",
-    },
-  ],
-
-  "3": [
-    {
-      id: 1,
-      sender: "client",
-      text: "I have uploaded my progress photos.",
-      time: "Monday",
-    },
-    {
-      id: 2,
-      sender: "nutritionist",
-      text: "Great! I will review them and update your progress.",
-      time: "Monday",
-    },
-  ],
-
-  "4": [
-    {
-      id: 1,
-      sender: "client",
-      text: "Thank you for your help.",
-      time: "Aug 20",
-    },
-  ],
-};
-
 function formatConsultationDate(dateString: string): string {
   const date = new Date(`${dateString}T00:00:00`);
 
@@ -241,13 +97,15 @@ function getDurationInMinutes(
 function ConsultationsContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const [selectedClientId, setSelectedClientId] = useState("1");
+  const [selectedClientId, setSelectedClientId] = useState("");
 
   const [search, setSearch] = useState("");
   const [message, setMessage] = useState("");
 
-  const [messages, setMessages] =
-    useState<Record<string, Message[]>>(TEMPORARY_MESSAGES);
+  // API is not ready yet, so these remain empty.
+  const [clients] = useState<Client[]>([]);
+  const [consultations] = useState<Consultation[]>([]);
+  const [messages, setMessages] = useState<Record<string, Message[]>>({});
 
   const searchParams = useSearchParams();
 
@@ -256,50 +114,55 @@ function ConsultationsContent() {
   useEffect(() => {
     if (
       clientIdFromUrl &&
-      TEMPORARY_CLIENTS.some(
-        (client) => client.id === clientIdFromUrl
-      )
+      clients.some((client) => client.id === clientIdFromUrl)
     ) {
       setSelectedClientId(clientIdFromUrl);
     }
-  }, [clientIdFromUrl]);
+  }, [clientIdFromUrl, clients]);
 
   const selectedClient =
-    TEMPORARY_CLIENTS.find(
+    clients.find(
       (client) => client.id === selectedClientId
-    ) ?? TEMPORARY_CLIENTS[0];
+    ) ?? null;
 
-  const selectedConsultation =
-    TEMPORARY_CONSULTATIONS.find(
-      (consultation) =>
-        consultation.clientId === selectedClient.id
-    ) ?? TEMPORARY_CONSULTATIONS[0];
+  const selectedConsultation = selectedClient
+    ? consultations.find(
+        (consultation) =>
+          consultation.clientId === selectedClient.id
+      ) ?? null
+    : null;
 
-  const filteredClients = TEMPORARY_CLIENTS.filter(
+  const filteredClients = clients.filter(
     (client) =>
       client.name.toLowerCase().includes(search.toLowerCase()) ||
       client.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  const duration = getDurationInMinutes(
-    selectedConsultation.startTime,
-    selectedConsultation.endTime
+  const duration = selectedConsultation
+    ? getDurationInMinutes(
+        selectedConsultation.startTime,
+        selectedConsultation.endTime
+      )
+    : 0;
+
+  const todayString = new Date().toISOString().split("T")[0];
+
+  const nextConsultation = consultations.find(
+    (consultation) => consultation.date >= todayString
   );
 
-  const nextConsultation =
-    TEMPORARY_CONSULTATIONS.find(
-      (consultation) =>
-        consultation.date >=
-        new Date().toISOString().split("T")[0]
-    ) ?? TEMPORARY_CONSULTATIONS[0];
+  const nextConsultationClient = nextConsultation
+    ? clients.find(
+        (client) => client.id === nextConsultation.clientId
+      )
+    : null;
 
-  const nextConsultationClient =
-    TEMPORARY_CLIENTS.find(
-      (client) => client.id === nextConsultation.clientId
-    );
-
-  function handleSendMessage(e: React.FormEvent<HTMLFormElement>) {
+  function handleSendMessage(
+    e: React.FormEvent<HTMLFormElement>
+  ) {
     e.preventDefault();
+
+    if (!selectedClient) return;
 
     const trimmedMessage = message.trim();
 
@@ -393,14 +256,15 @@ function ConsultationsContent() {
                   </p>
 
                   <p className="font-display mt-1 text-[15px]">
-                    {formatConsultationDate(
-                      nextConsultation.date
-                    )}
-                    , {nextConsultation.startTime}
+                    {nextConsultation
+                      ? `${formatConsultationDate(
+                          nextConsultation.date
+                        )}, ${nextConsultation.startTime}`
+                      : "No upcoming consultation"}
                   </p>
 
                   <p className="font-body mt-0.5 text-[9px] text-[#2D312E]/35">
-                    {nextConsultationClient?.name}
+                    {nextConsultationClient?.name ?? "No client"}
                   </p>
                 </div>
               </div>
@@ -419,7 +283,9 @@ function ConsultationsContent() {
                   </p>
 
                   <p className="font-display mt-1 text-[15px]">
-                    {duration} Minutes
+                    {selectedConsultation
+                      ? `${duration} Minutes`
+                      : "No consultation"}
                   </p>
                 </div>
               </div>
@@ -439,7 +305,7 @@ function ConsultationsContent() {
 
                   <p className="font-display mt-1 text-[15px]">
                     {
-                      TEMPORARY_CLIENTS.filter(
+                      clients.filter(
                         (client) => client.status === "Active"
                       ).length
                     }{" "}
@@ -500,7 +366,7 @@ function ConsultationsContent() {
                   ) : (
                     filteredClients.map((client) => {
                       const isSelected =
-                        client.id === selectedClient.id;
+                        client.id === selectedClient?.id;
 
                       return (
                         <button
@@ -572,202 +438,232 @@ function ConsultationsContent() {
 
               {/* Conversation */}
               <div className="flex min-h-[620px] flex-col">
-                {/* Conversation Header */}
-                <div className="flex flex-col gap-4 border-b border-[#2D312E]/[0.06] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
-                      {selectedClient.name
-                        .split(" ")
-                        .map((name) => name[0])
-                        .join("")}
-                    </div>
+                {!selectedClient ? (
+                  <div className="flex flex-1 items-center justify-center bg-[#FAF9F6] p-6">
+                    <div className="text-center">
+                      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
+                        <MessageCircle size={21} />
+                      </div>
 
-                    <div>
-                      <h2 className="font-display text-[20px]">
-                        {selectedClient.name}
-                      </h2>
+                      <h3 className="font-display mt-4 text-[18px]">
+                        No client selected
+                      </h3>
 
-                      <p className="font-body mt-0.5 text-[9px] text-[#2D312E]/35">
-                        {selectedClient.email}
+                      <p className="font-body mt-1 text-[10px] text-[#2D312E]/40">
+                        Your client consultations will appear here
+                        once they are available.
                       </p>
                     </div>
                   </div>
-
-                  {/* Client Actions */}
-                  <div className="flex gap-2">
-                    <Link
-                      href={`/nutritionist/clients/${selectedClient.id}`}
-                      className="inline-flex items-center gap-2 rounded-xl border border-[#2D312E]/[0.08] px-3 py-2.5 font-body text-[9px] font-bold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
-                    >
-                      <UserRound size={13} />
-                      View Profile
-                    </Link>
-
-                    <Link
-                      href={`/nutritionist/consultations/video/${selectedClient.id}`}
-                      className="inline-flex items-center gap-2 rounded-xl bg-[#3D5A4C] px-3 py-2.5 font-body text-[9px] font-bold text-white transition hover:bg-[#2D312E]"
-                    >
-                      <Video size={13} />
-                      Video Call
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Dynamic Consultation Details */}
-                <div className="border-b border-[#2D312E]/[0.05] bg-[#FAF9F6] px-5 py-3">
-                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-                    <span className="flex items-center gap-1.5 font-body text-[9px] text-[#2D312E]/45">
-                      <CalendarDays
-                        size={13}
-                        className="text-[#4E876E]"
-                      />
-
-                      {formatConsultationDate(
-                        selectedConsultation.date
-                      )}
-                    </span>
-
-                    <span className="flex items-center gap-1.5 font-body text-[9px] text-[#2D312E]/45">
-                      <Clock
-                        size={13}
-                        className="text-[#4E876E]"
-                      />
-
-                      {selectedConsultation.startTime} –{" "}
-                      {selectedConsultation.endTime}
-                    </span>
-
-                    <span className="flex items-center gap-1.5 font-body text-[9px] text-[#2D312E]/45">
-                      <Video
-                        size={13}
-                        className="text-[#4E876E]"
-                      />
-
-                      {selectedConsultation.type} Consultation
-                    </span>
-                  </div>
-                </div>
-
-                {/* Messages */}
-                <div className="flex-1 space-y-4 overflow-y-auto bg-[#FAF9F6] p-5 sm:p-6">
-                  {(messages[selectedClient.id] ?? []).length ===
-                  0 ? (
-                    <div className="flex min-h-[350px] items-center justify-center">
-                      <div className="text-center">
-                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
-                          <MessageCircle size={21} />
+                ) : (
+                  <>
+                    {/* Conversation Header */}
+                    <div className="flex flex-col gap-4 border-b border-[#2D312E]/[0.06] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
+                          {selectedClient.name
+                            .split(" ")
+                            .map((name) => name[0])
+                            .join("")}
                         </div>
 
-                        <h3 className="font-display mt-4 text-[18px]">
-                          No messages yet
-                        </h3>
+                        <div>
+                          <h2 className="font-display text-[20px]">
+                            {selectedClient.name}
+                          </h2>
 
-                        <p className="font-body mt-1 text-[10px] text-[#2D312E]/40">
-                          Start the conversation with{" "}
-                          {selectedClient.name}.
-                        </p>
+                          <p className="font-body mt-0.5 text-[9px] text-[#2D312E]/35">
+                            {selectedClient.email}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Client Actions */}
+                      <div className="flex gap-2">
+                        <Link
+                          href={`/nutritionist/clients/${selectedClient.id}`}
+                          className="inline-flex items-center gap-2 rounded-xl border border-[#2D312E]/[0.08] px-3 py-2.5 font-body text-[9px] font-bold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
+                        >
+                          <UserRound size={13} />
+                          View Profile
+                        </Link>
+
+                        <Link
+                          href={`/nutritionist/consultations/video/${selectedClient.id}`}
+                          className="inline-flex items-center gap-2 rounded-xl bg-[#3D5A4C] px-3 py-2.5 font-body text-[9px] font-bold text-white transition hover:bg-[#2D312E]"
+                        >
+                          <Video size={13} />
+                          Video Call
+                        </Link>
                       </div>
                     </div>
-                  ) : (
-                    (messages[selectedClient.id] ?? []).map(
-                      (item) => (
-                        <div
-                          key={item.id}
-                          className={`flex ${
-                            item.sender === "nutritionist"
-                              ? "justify-end"
-                              : "justify-start"
-                          }`}
-                        >
-                          <div
-                            className={`flex max-w-[80%] flex-col sm:max-w-[65%] ${
-                              item.sender === "nutritionist"
-                                ? "items-end"
-                                : "items-start"
-                            }`}
-                          >
-                            <div
-                              className={`rounded-2xl px-4 py-3 ${
-                                item.sender === "nutritionist"
-                                  ? "rounded-br-md bg-[#3D5A4C] text-white"
-                                  : "rounded-bl-md border border-[#2D312E]/[0.06] bg-white text-[#2D312E]"
-                              }`}
-                            >
-                              <p className="font-body text-[11px] leading-5">
-                                {item.text}
-                              </p>
+
+                    {/* Dynamic Consultation Details */}
+                    <div className="border-b border-[#2D312E]/[0.05] bg-[#FAF9F6] px-5 py-3">
+                      <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                        {selectedConsultation ? (
+                          <>
+                            <span className="flex items-center gap-1.5 font-body text-[9px] text-[#2D312E]/45">
+                              <CalendarDays
+                                size={13}
+                                className="text-[#4E876E]"
+                              />
+
+                              {formatConsultationDate(
+                                selectedConsultation.date
+                              )}
+                            </span>
+
+                            <span className="flex items-center gap-1.5 font-body text-[9px] text-[#2D312E]/45">
+                              <Clock
+                                size={13}
+                                className="text-[#4E876E]"
+                              />
+
+                              {selectedConsultation.startTime} –{" "}
+                              {selectedConsultation.endTime}
+                            </span>
+
+                            <span className="flex items-center gap-1.5 font-body text-[9px] text-[#2D312E]/45">
+                              <Video
+                                size={13}
+                                className="text-[#4E876E]"
+                              />
+
+                              {selectedConsultation.type} Consultation
+                            </span>
+                          </>
+                        ) : (
+                          <span className="font-body text-[9px] text-[#2D312E]/40">
+                            No consultation scheduled
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Messages */}
+                    <div className="flex-1 space-y-4 overflow-y-auto bg-[#FAF9F6] p-5 sm:p-6">
+                      {(messages[selectedClient.id] ?? []).length ===
+                      0 ? (
+                        <div className="flex min-h-[350px] items-center justify-center">
+                          <div className="text-center">
+                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
+                              <MessageCircle size={21} />
                             </div>
 
-                            <span
-                              className={`mt-1 font-body text-[9px] text-[#2D312E]/35 ${
-                                item.sender === "nutritionist"
-                                  ? "mr-1"
-                                  : "ml-1"
-                              }`}
-                            >
-                              {item.time}
-                            </span>
+                            <h3 className="font-display mt-4 text-[18px]">
+                              No messages yet
+                            </h3>
+
+                            <p className="font-body mt-1 text-[10px] text-[#2D312E]/40">
+                              Start the conversation with{" "}
+                              {selectedClient.name}.
+                            </p>
                           </div>
                         </div>
-                      )
-                    )
-                  )}
-                </div>
+                      ) : (
+                        (messages[selectedClient.id] ?? []).map(
+                          (item) => (
+                            <div
+                              key={item.id}
+                              className={`flex ${
+                                item.sender === "nutritionist"
+                                  ? "justify-end"
+                                  : "justify-start"
+                              }`}
+                            >
+                              <div
+                                className={`flex max-w-[80%] flex-col sm:max-w-[65%] ${
+                                  item.sender === "nutritionist"
+                                    ? "items-end"
+                                    : "items-start"
+                                }`}
+                              >
+                                <div
+                                  className={`rounded-2xl px-4 py-3 ${
+                                    item.sender === "nutritionist"
+                                      ? "rounded-br-md bg-[#3D5A4C] text-white"
+                                      : "rounded-bl-md border border-[#2D312E]/[0.06] bg-white text-[#2D312E]"
+                                  }`}
+                                >
+                                  <p className="font-body text-[11px] leading-5">
+                                    {item.text}
+                                  </p>
+                                </div>
 
-                {/* Message Input */}
-                <form
-                  onSubmit={handleSendMessage}
-                  className="border-t border-[#2D312E]/[0.06] bg-white p-4 sm:p-5"
-                >
-                  <div className="flex items-end gap-3">
-                    <textarea
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (
-                          e.key === "Enter" &&
-                          !e.shiftKey
-                        ) {
-                          e.preventDefault();
+                                <span
+                                  className={`mt-1 font-body text-[9px] text-[#2D312E]/35 ${
+                                    item.sender === "nutritionist"
+                                      ? "mr-1"
+                                      : "ml-1"
+                                  }`}
+                                >
+                                  {item.time}
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        )
+                      )}
+                    </div>
 
-                          const form = e.currentTarget.form;
-
-                          if (form) {
-                            form.requestSubmit();
-                          }
-                        }
-                      }}
-                      placeholder={`Write a message to ${selectedClient.name}...`}
-                      rows={2}
-                      className="min-h-[48px] flex-1 resize-none rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] px-4 py-3 font-body text-[11px] leading-5 text-[#2D312E] outline-none placeholder:text-[#2D312E]/30 focus:border-[#4E876E]/50 focus:ring-2 focus:ring-[#4E876E]/10"
-                    />
-
-                    <button
-                      type="submit"
-                      disabled={!message.trim()}
-                      className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[#3D5A4C] text-white transition hover:bg-[#2D312E] disabled:cursor-not-allowed disabled:opacity-40"
-                      aria-label="Send message"
+                    {/* Message Input */}
+                    <form
+                      onSubmit={handleSendMessage}
+                      className="border-t border-[#2D312E]/[0.06] bg-white p-4 sm:p-5"
                     >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="m22 2-7 20-4-9-9-4Z" />
-                        <path d="M22 2 11 13" />
-                      </svg>
-                    </button>
-                  </div>
+                      <div className="flex items-end gap-3">
+                        <textarea
+                          value={message}
+                          onChange={(e) => setMessage(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (
+                              e.key === "Enter" &&
+                              !e.shiftKey
+                            ) {
+                              e.preventDefault();
 
-                  <p className="font-body mt-2 text-[9px] text-[#2D312E]/30">
-                    Press Enter to send • Shift + Enter for a new line
-                  </p>
-                </form>
+                              const form = e.currentTarget.form;
+
+                              if (form) {
+                                form.requestSubmit();
+                              }
+                            }
+                          }}
+                          placeholder={`Write a message to ${selectedClient.name}...`}
+                          rows={2}
+                          className="min-h-[48px] flex-1 resize-none rounded-xl border border-[#2D312E]/[0.08] bg-[#FAF9F6] px-4 py-3 font-body text-[11px] leading-5 text-[#2D312E] outline-none placeholder:text-[#2D312E]/30 focus:border-[#4E876E]/50 focus:ring-2 focus:ring-[#4E876E]/10"
+                        />
+
+                        <button
+                          type="submit"
+                          disabled={!message.trim()}
+                          className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[#3D5A4C] text-white transition hover:bg-[#2D312E] disabled:cursor-not-allowed disabled:opacity-40"
+                          aria-label="Send message"
+                        >
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="m22 2-7 20-4-9-9-4Z" />
+                            <path d="M22 2 11 13" />
+                          </svg>
+                        </button>
+                      </div>
+
+                      <p className="font-body mt-2 text-[9px] text-[#2D312E]/30">
+                        Press Enter to send • Shift + Enter for a new
+                        line
+                      </p>
+                    </form>
+                  </>
+                )}
               </div>
             </div>
           </section>

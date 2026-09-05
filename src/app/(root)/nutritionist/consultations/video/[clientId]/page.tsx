@@ -1,3 +1,4 @@
+
 "use client";
 
 import { JitsiMeeting } from "@jitsi/react-sdk";
@@ -5,61 +6,33 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, UserRound, Video } from "lucide-react";
 import { useMemo } from "react";
 
-type Client = {
-  id: string;
-  name: string;
-  email: string;
-};
-
-const TEMPORARY_CLIENTS: Client[] = [
-  {
-    id: "1",
-    name: "Hana Tesfaye",
-    email: "hana.tesfaye@example.com",
-  },
-  {
-    id: "2",
-    name: "Selam Alemu",
-    email: "selam.alemu@example.com",
-  },
-  {
-    id: "3",
-    name: "Meron Kebede",
-    email: "meron.kebede@example.com",
-  },
-  {
-    id: "4",
-    name: "Liya Michael",
-    email: "liya.michael@example.com",
-  },
-];
-
 export default function VideoConsultationPage() {
   const params = useParams();
   const router = useRouter();
 
   const clientId = params.clientId as string;
 
-  const client =
-    TEMPORARY_CLIENTS.find((item) => item.id === clientId) ??
-    TEMPORARY_CLIENTS[0];
+  /*
+   * The client API is not ready yet.
+   * The client ID comes directly from the URL.
+   */
+  const clientName = `Client ${clientId}`;
 
   /*
    * Each client gets their own consultation room.
    *
-   * Hana  -> megeb-consultation-1
-   * Selam -> megeb-consultation-2
-   * Meron -> megeb-consultation-3
-   * Liya  -> megeb-consultation-4
+   * Example:
+   * /nutritionist/consultations/video/1
+   * -> megeb-consultation-1
    */
   const roomName = useMemo(
-    () => `megeb-consultation-${client.id}`,
-    [client.id]
+    () => `megeb-consultation-${clientId}`,
+    [clientId]
   );
 
   function goBack() {
     router.push(
-      `/nutritionist/consultations?clientId=${client.id}`
+      `/nutritionist/consultations?clientId=${clientId}`
     );
   }
 
@@ -103,7 +76,7 @@ export default function VideoConsultationPage() {
 
           <div>
             <p className="font-body text-[10px] font-semibold text-white">
-              {client.name}
+              {clientName}
             </p>
 
             <p className="font-body text-[8px] text-white/40">
@@ -155,3 +128,4 @@ export default function VideoConsultationPage() {
     </main>
   );
 }
+
