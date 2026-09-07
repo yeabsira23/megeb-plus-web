@@ -24,68 +24,154 @@ import {
 
 import Sidebar from "@/app/components/nutritionist/Sidebar";
 import Topbar from "@/app/components/nutritionist/Topbar";
+import apiClient from "@/app/libs/api/client";
 
-type ClientStatus = "Active" | "Inactive";
+type NutritionPlan = {
+  id: number;
+  plan_name: string;
+  status: string;
+  start_date: string;
+  end_date: string;
+};
+
+type HealthProfile = {
+  age: number | null;
+  gender: string | null;
+  height: string | null;
+  weight: string | null;
+  activity_level: string | null;
+  medical_conditions: string[];
+  health_goal: string | null;
+  diet_preference: string | null;
+};
 
 type Appointment = {
+  id: number;
   date: string;
   time: string;
-  type: string;
-  status: "Completed" | "Upcoming";
-  notes: string;
+  appointment_type: string;
+  mode: string;
+  status: string;
 };
 
-type ClientDetails = {
-  id: string;
-  name: string;
-  age: number;
-  gender: string;
-  phone: string;
+type Client = {
+  id: number;
+  full_name: string;
   email: string;
-  status: ClientStatus;
-
-  height: string;
-  currentWeight: string;
-  targetWeight: string;
-  bmi: string;
-
-  goal: string;
-  goalDescription: string;
-
-  medicalCondition: string;
-  activityLevel: string;
-  allergies: string;
-
-  nutritionPlanId: string;
-  nutritionPlan: string;
-  calories: string;
-  dietType: string[];
-
-  progress: {
-    startingWeight: string;
-    currentWeight: string;
-    weightLost: string;
-  };
-
-  nextAppointment: {
-    date: string;
-    time: string;
-  };
-
+  phone: string;
+  profile_picture: string | null;
+  is_verified: boolean;
+  preferences: string[];
+  allergies: string[];
+  nutrition_plans: NutritionPlan[];
+  health_profile: HealthProfile | null;
   appointments: Appointment[];
-
-  notes: string;
 };
 
-/*
- * Backend client endpoint is not available yet.
- *
- * This hook is intentionally kept without mock data.
- * Once the backend endpoint is ready, the API call can
- * be added here without changing the UI below.
- */
+type ClientNote = {
+  id: number;
+  nutritionist: number;
+  client: number;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+};
+
+function formatText(value: string | null | undefined) {
+  if (!value) return "Not provided";
+
+  return value
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatDate(date: string) {
+  if (!date) return "Not scheduled";
+
+  const parsed = new Date(`${date}T00:00:00`);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return date;
+  }
+
+  return parsed.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatTime(time: string) {
+  if (!time) return "";
+
+  const [hours, minutes] = time.split(":");
+
+  const hour = Number(hours);
+
+  if (Number.isNaN(hour)) {
+    return time;
+  }
+
+  const suffix = hour >= 12 ? "PM" : "AM";
+  const formattedHour = hour % 12 || 12;
+
+  return `${formattedHour}:${minutes} ${suffix}`;
+}
+
+function calculateBMI(
+  height: string | null | undefined,
+  weight: string | null | undefined
+) {
+  const heightNumber = Number(height);
+  const weightNumber = Number(weight);
+
+  if (!heightNumber || !weightNumber) {
+    return null;
+  }
+
+  const heightMeters = heightNumber / 100;
+  const bmi = weightNumber / (heightMeters * heightMeters);
+
+  return bmi.toFixed(1);
+}
+
+function calculateWeightLost(
+  startingWeight: string | null | undefined,
+  currentWeight: string | null | undefined
+) {
+  const starting = Number(startingWeight);
+  const current = Number(currentWeight);
+
+  if (!starting || !current) {
+    return null;
+  }
+
+  const lost = starting - current;
+
+  return `${lost.toFixed(1)} kg`;
+}
+
+function calculateProgress(
+  currentWeight: string | null | undefined,
+  targetWeight: string | null | undefined,
+  startingWeight: string | null | undefined
+) {
+  const current = Number(currentWeight);
+  const target = Number(targetWeight);
+  const starting = Number(startingWeight);
+
+  if (!current || !target || !starting || starting === target) {
+    return 0;
+  }
+
+  const progress = ((starting - current) / (starting - target)) * 100;
+
+  return Math.min(100, Math.max(0, progress));
+}
+
 function useClient(clientId: string) {
-  const [client, setClient] = useState<ClientDetails | null>(null);
+  const [client, setClient] = useState<Client | null>(null);
+  const [note, setNote] = useState<ClientNote | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -94,21 +180,37 @@ function useClient(clientId: string) {
     async function loadClient() {
       setIsLoading(true);
 
-      /*
-       * Client API endpoint is not available yet.
-       * No mock data is used here.
-       */
+      try {
+        const [clientResponse, notesResponse] = await Promise.all([
+          apiClient.get(`/api/nutritionists/clients/${clientId}/`),
+          apiClient
+            .get(`/api/nutritionists/clients/${clientId}/notes/`)
+            .catch(() => ({ data: null })),
+        ]);
 
-      if (isMounted) {
-        setClient(null);
-        setIsLoading(false);
+        console.log("CLIENT DETAILS:", clientResponse.data);
+        console.log("CLIENT NOTES:", notesResponse.data);
+
+        if (isMounted) {
+          setClient(clientResponse.data);
+          setNote(notesResponse.data);
+        }
+      } catch (error) {
+        console.error("Unable to load client:", error);
+
+        if (isMounted) {
+          setClient(null);
+          setNote(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     }
 
     if (clientId) {
       loadClient();
-    } else {
-      setIsLoading(false);
     }
 
     return () => {
@@ -118,6 +220,7 @@ function useClient(clientId: string) {
 
   return {
     client,
+    note,
     isLoading,
   };
 }
@@ -126,7 +229,7 @@ export default function ClientDetailsPage() {
   const params = useParams();
   const clientId = String(params.id);
 
-  const { client, isLoading } = useClient(clientId);
+  const { client, note, isLoading } = useClient(clientId);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -205,6 +308,62 @@ export default function ClientDetailsPage() {
     );
   }
 
+  const health = client.health_profile;
+
+  const activePlan =
+    client.nutrition_plans?.find(
+      (plan) => plan.status?.toLowerCase() === "active"
+    ) ?? client.nutrition_plans?.[0];
+
+  const bmi = calculateBMI(
+    health?.height,
+    health?.weight
+  );
+
+  const targetWeight =
+    activePlan && health?.weight
+      ? null
+      : null;
+
+  const upcomingAppointments = [...(client.appointments || [])]
+    .filter((appointment) =>
+      ["confirmed", "pending"].includes(
+        appointment.status?.toLowerCase()
+      )
+    )
+    .sort(
+      (a, b) =>
+        new Date(`${a.date}T${a.time}`).getTime() -
+        new Date(`${b.date}T${b.time}`).getTime()
+    );
+
+  const nextAppointment = upcomingAppointments[0];
+
+  const completedAppointments = (client.appointments || []).filter(
+    (appointment) =>
+      appointment.status?.toLowerCase() === "completed"
+  );
+
+  const currentWeight = health?.weight
+    ? `${Number(health.weight).toFixed(1)} kg`
+    : "Not provided";
+
+  const height = health?.height
+    ? `${Number(health.height).toFixed(0)} cm`
+    : "Not provided";
+
+  const medicalCondition =
+    health?.medical_conditions?.length
+      ? health.medical_conditions.map(formatText).join(", ")
+      : "None reported";
+
+  const allergies =
+    client.allergies?.length
+      ? client.allergies.map(formatText).join(", ")
+      : "No known allergies";
+
+  const goal = formatText(health?.health_goal);
+
   return (
     <main className="min-h-screen bg-[#FAF9F6] text-[#2D312E]">
       <MobileHeader setSidebarOpen={setSidebarOpen} />
@@ -218,8 +377,7 @@ export default function ClientDetailsPage() {
         <Topbar />
 
         <div className="mx-auto max-w-7xl px-5 py-7 sm:px-7 lg:px-8 lg:py-9">
-
-          {/* Back */}
+          {/* BACK */}
           <Link
             href="/nutritionist/clients"
             className="mb-6 inline-flex items-center gap-2 font-body text-[11px] font-semibold text-[#4E876E] transition hover:text-[#3D5A4C]"
@@ -228,34 +386,40 @@ export default function ClientDetailsPage() {
             Back to Clients
           </Link>
 
-          {/* Client Header */}
+          {/* CLIENT HEADER */}
           <section className="mb-6 rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm sm:p-6">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-
               <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
-                  <UserRound size={27} />
+                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E9F0EC] text-[#3D5A4C]">
+                  {client.profile_picture ? (
+                    <img
+                      src={client.profile_picture}
+                      alt={client.full_name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <UserRound size={27} />
+                  )}
                 </div>
 
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h1 className="font-display text-[26px] text-[#2D312E]">
-                      {client.name}
+                      {client.full_name}
                     </h1>
 
-                    <span
-                      className={`rounded-full px-2.5 py-1 font-body text-[9px] font-bold ${
-                        client.status === "Active"
-                          ? "bg-[#E9F0EC] text-[#3D5A4C]"
-                          : "bg-red-50 text-red-500"
-                      }`}
-                    >
-                      {client.status}
+                    <span className="rounded-full bg-[#E9F0EC] px-2.5 py-1 font-body text-[9px] font-bold text-[#3D5A4C]">
+                      {client.is_verified
+                        ? "Verified"
+                        : "Client"}
                     </span>
                   </div>
 
                   <p className="font-body mt-1 text-[11px] text-[#2D312E]/45">
-                    {client.age} years old • {client.gender}
+                    {health?.age
+                      ? `${health.age} years old`
+                      : "Age not provided"}{" "}
+                    • {formatText(health?.gender)}
                   </p>
 
                   <div className="mt-2 flex flex-wrap gap-4">
@@ -266,7 +430,7 @@ export default function ClientDetailsPage() {
                       />
 
                       <span className="font-body text-[10px] text-[#2D312E]/55">
-                        {client.phone}
+                        {client.phone || "Not provided"}
                       </span>
                     </div>
 
@@ -277,17 +441,15 @@ export default function ClientDetailsPage() {
                       />
 
                       <span className="font-body text-[10px] text-[#2D312E]/55">
-                        {client.email}
+                        {client.email || "Not provided"}
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Header Actions */}
+              {/* HEADER ACTIONS */}
               <div className="flex flex-wrap gap-2">
-
-                {/* Message → Consultation */}
                 <Link
                   href={`/nutritionist/consultations?clientId=${client.id}`}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#CCD6C4] px-4 py-2.5 font-body text-[10px] font-bold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
@@ -303,15 +465,13 @@ export default function ClientDetailsPage() {
                   <CalendarDays size={14} />
                   Schedule
                 </Link>
-
               </div>
             </div>
           </section>
 
-          {/* Summary Cards */}
+          {/* SUMMARY CARDS */}
           <section className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
-            {/* Goal */}
+            {/* GOAL */}
             <div className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
@@ -324,11 +484,11 @@ export default function ClientDetailsPage() {
               </div>
 
               <p className="font-display mt-4 text-[18px] text-[#2D312E]">
-                {client.goal}
+                {goal}
               </p>
 
               <p className="font-body mt-1 text-[10px] leading-5 text-[#2D312E]/40">
-                {client.goalDescription}
+                Current health goal from the client profile.
               </p>
             </div>
 
@@ -345,15 +505,15 @@ export default function ClientDetailsPage() {
               </div>
 
               <p className="font-display mt-4 text-[26px] text-[#3D5A4C]">
-                {client.bmi}
+                {bmi ?? "—"}
               </p>
 
               <p className="font-body mt-1 text-[10px] text-[#2D312E]/40">
-                Current body mass index
+                Calculated from current height and weight
               </p>
             </div>
 
-            {/* Weight Progress */}
+            {/* CURRENT WEIGHT */}
             <div className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
@@ -361,20 +521,20 @@ export default function ClientDetailsPage() {
                 </div>
 
                 <span className="font-body text-[9px] font-semibold uppercase tracking-wider text-[#2D312E]/30">
-                  Progress
+                  Weight
                 </span>
               </div>
 
               <p className="font-display mt-4 text-[22px] text-[#3D5A4C]">
-                {client.progress.weightLost}
+                {currentWeight}
               </p>
 
               <p className="font-body mt-1 text-[10px] text-[#2D312E]/40">
-                Weight lost since starting
+                Current recorded weight
               </p>
             </div>
 
-            {/* Next Appointment */}
+            {/* NEXT APPOINTMENT */}
             <div className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
@@ -387,23 +547,24 @@ export default function ClientDetailsPage() {
               </div>
 
               <p className="font-display mt-4 text-[18px] text-[#2D312E]">
-                {client.nextAppointment.date}
+                {nextAppointment
+                  ? formatDate(nextAppointment.date)
+                  : "Not scheduled"}
               </p>
 
               <p className="font-body mt-1 text-[10px] text-[#2D312E]/40">
-                {client.nextAppointment.time ||
-                  "No appointment scheduled"}
+                {nextAppointment
+                  ? formatTime(nextAppointment.time)
+                  : "No upcoming appointment"}
               </p>
             </div>
           </section>
 
-          {/* Main Grid */}
+          {/* MAIN GRID */}
           <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-
-            {/* LEFT COLUMN */}
+            {/* LEFT */}
             <div className="space-y-6">
-
-              {/* Health Overview */}
+              {/* HEALTH OVERVIEW */}
               <section className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm sm:p-6">
                 <div className="mb-5 flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
@@ -422,7 +583,7 @@ export default function ClientDetailsPage() {
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-
+                  {/* HEIGHT */}
                   <div className="rounded-xl bg-[#FAF9F6] p-4">
                     <div className="flex items-center gap-2">
                       <Ruler
@@ -436,10 +597,11 @@ export default function ClientDetailsPage() {
                     </div>
 
                     <p className="font-display mt-2 text-[17px]">
-                      {client.height}
+                      {height}
                     </p>
                   </div>
 
+                  {/* WEIGHT */}
                   <div className="rounded-xl bg-[#FAF9F6] p-4">
                     <div className="flex items-center gap-2">
                       <Scale
@@ -453,27 +615,11 @@ export default function ClientDetailsPage() {
                     </div>
 
                     <p className="font-display mt-2 text-[17px]">
-                      {client.currentWeight}
+                      {currentWeight}
                     </p>
                   </div>
 
-                  <div className="rounded-xl bg-[#FAF9F6] p-4">
-                    <div className="flex items-center gap-2">
-                      <Target
-                        size={14}
-                        className="text-[#4E876E]"
-                      />
-
-                      <p className="font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/35">
-                        Target Weight
-                      </p>
-                    </div>
-
-                    <p className="font-display mt-2 text-[17px]">
-                      {client.targetWeight}
-                    </p>
-                  </div>
-
+                  {/* ACTIVITY */}
                   <div className="rounded-xl bg-[#FAF9F6] p-4">
                     <div className="flex items-center gap-2">
                       <Activity
@@ -487,117 +633,77 @@ export default function ClientDetailsPage() {
                     </div>
 
                     <p className="font-display mt-2 text-[17px]">
-                      {client.activityLevel}
+                      {formatText(health?.activity_level)}
+                    </p>
+                  </div>
+
+                  {/* DIET */}
+                  <div className="rounded-xl bg-[#FAF9F6] p-4">
+                    <div className="flex items-center gap-2">
+                      <Utensils
+                        size={14}
+                        className="text-[#4E876E]"
+                      />
+
+                      <p className="font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/35">
+                        Diet Preference
+                      </p>
+                    </div>
+
+                    <p className="font-display mt-2 text-[17px]">
+                      {formatText(health?.diet_preference)}
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-
+                  {/* MEDICAL */}
                   <div className="rounded-xl border border-[#2D312E]/[0.06] p-4">
                     <p className="font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/30">
                       Medical Condition
                     </p>
 
                     <p className="font-body mt-2 text-[11px] font-semibold text-[#2D312E]/70">
-                      {client.medicalCondition}
+                      {medicalCondition}
                     </p>
                   </div>
 
+                  {/* ALLERGIES */}
                   <div className="rounded-xl border border-[#2D312E]/[0.06] p-4">
                     <p className="font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/30">
                       Allergies
                     </p>
 
                     <p className="font-body mt-2 text-[11px] font-semibold text-[#2D312E]/70">
-                      {client.allergies}
+                      {allergies}
                     </p>
                   </div>
-
                 </div>
+
+                {/* PREFERENCES */}
+                {client.preferences?.length > 0 && (
+                  <div className="mt-4 rounded-xl border border-[#2D312E]/[0.06] p-4">
+                    <p className="font-body text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/30">
+                      Preferences
+                    </p>
+
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {client.preferences.map((preference) => (
+                        <span
+                          key={preference}
+                          className="rounded-full border border-[#CCD6C4] bg-[#E9F0EC] px-3 py-1.5 font-body text-[9px] font-semibold text-[#3D5A4C]"
+                        >
+                          {formatText(preference)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </section>
 
-              {/* Weight Progress */}
-              <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#2D312E] via-[#3D5A4C] to-[#4D6B5C] p-5 shadow-[0_18px_40px_-20px_rgba(45,49,46,0.35)] sm:p-6">
-                {/* Decorative elements */}
-                <div className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full border border-[#DCC48E]/15" />
-
-                <div className="pointer-events-none absolute -bottom-20 right-16 h-40 w-40 rounded-full bg-[#DCC48E]/10 blur-2xl" />
-
-                <div className="relative">
-                  <div className="mb-5 flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white">
-                      <Weight size={17} />
-                    </div>
-
-                    <div>
-                      <h2 className="font-display text-[19px] text-white">
-                        Weight Progress
-                      </h2>
-
-                      <p className="font-body text-[10px] text-white/60">
-                        Client progress toward target weight
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mb-5 flex items-end justify-between">
-                    <div>
-                      <p className="font-body text-[9px] font-bold uppercase tracking-wider text-white/50">
-                        Starting Weight
-                      </p>
-
-                      <p className="font-display mt-1 text-[20px] text-white">
-                        {client.progress.startingWeight}
-                      </p>
-                    </div>
-
-                    <div className="text-center">
-                      <p className="font-body text-[9px] font-bold uppercase tracking-wider text-[#DCC48E]/80">
-                        Lost
-                      </p>
-
-                      <p className="font-display mt-1 text-[20px] text-[#DCC48E]">
-                        {client.progress.weightLost}
-                      </p>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="font-body text-[9px] font-bold uppercase tracking-wider text-white/50">
-                        Current
-                      </p>
-
-                      <p className="font-display mt-1 text-[20px] text-white">
-                        {client.progress.currentWeight}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="h-2.5 overflow-hidden rounded-full bg-white/15">
-                    <div
-                      className="h-full rounded-full bg-[#DCC48E]"
-                      style={{
-                        width: "62%",
-                      }}
-                    />
-                  </div>
-
-                  <div className="mt-2 flex justify-between">
-                    <span className="font-body text-[9px] text-white/45">
-                      {client.progress.startingWeight}
-                    </span>
-
-                    <span className="font-body text-[9px] font-semibold text-[#DCC48E]">
-                      Target {client.targetWeight}
-                    </span>
-                  </div>
-                </div>
-              </section>
-
-              {/* Appointments */}
+              {/* APPOINTMENTS */}
               <section className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm sm:p-6">
                 <div className="mb-5 flex items-center justify-between">
-
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
                       <CalendarDays size={17} />
@@ -622,64 +728,117 @@ export default function ClientDetailsPage() {
                   </Link>
                 </div>
 
-                <div className="space-y-3">
-                  {client.appointments.map((appointment, index) => (
-                    <div
-                      key={`${appointment.date}-${index}`}
-                      className="rounded-xl border border-[#2D312E]/[0.06] p-4"
-                    >
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                {client.appointments?.length > 0 ? (
+                  <div className="space-y-3">
+                    {client.appointments.slice(0, 5).map(
+                      (appointment) => {
+                        const isUpcoming =
+                          ["confirmed", "pending"].includes(
+                            appointment.status?.toLowerCase()
+                          );
 
-                        <div className="flex gap-3">
+                        return (
                           <div
-                            className={`mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${
-                              appointment.status === "Upcoming"
-                                ? "bg-[#E9F0EC] text-[#3D5A4C]"
-                                : "bg-[#FAF9F6] text-[#2D312E]/45"
-                            }`}
+                            key={appointment.id}
+                            className="rounded-xl border border-[#2D312E]/[0.06] p-4"
                           >
-                            {appointment.status === "Upcoming" ? (
-                              <Clock3 size={14} />
-                            ) : (
-                              <CheckCircle2 size={14} />
-                            )}
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                              <div className="flex gap-3">
+                                <div
+                                  className={`mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${
+                                    isUpcoming
+                                      ? "bg-[#E9F0EC] text-[#3D5A4C]"
+                                      : "bg-[#FAF9F6] text-[#2D312E]/45"
+                                  }`}
+                                >
+                                  {isUpcoming ? (
+                                    <Clock3 size={14} />
+                                  ) : (
+                                    <CheckCircle2 size={14} />
+                                  )}
+                                </div>
+
+                                <div>
+                                  <p className="font-body text-[11px] font-bold text-[#2D312E]">
+                                    {formatText(
+                                      appointment.appointment_type
+                                    )}
+                                  </p>
+
+                                  <p className="mt-1 font-body text-[10px] text-[#2D312E]/40">
+                                    {formatDate(
+                                      appointment.date
+                                    )}{" "}
+                                    •{" "}
+                                    {formatTime(
+                                      appointment.time
+                                    )}
+                                  </p>
+
+                                  <p className="mt-1 font-body text-[9px] text-[#2D312E]/35">
+                                    {formatText(appointment.mode)}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <span
+                                className={`self-start rounded-full px-2.5 py-1 font-body text-[9px] font-bold ${
+                                  isUpcoming
+                                    ? "bg-[#E9F0EC] text-[#3D5A4C]"
+                                    : appointment.status?.toLowerCase() ===
+                                      "cancelled"
+                                    ? "bg-red-50 text-red-500"
+                                    : "bg-[#FAF9F6] text-[#2D312E]/50"
+                                }`}
+                              >
+                                {formatText(appointment.status)}
+                              </span>
+                            </div>
                           </div>
+                        );
+                      }
+                    )}
+                  </div>
+                ) : (
+                  <div className="rounded-xl bg-[#FAF9F6] px-4 py-8 text-center">
+                    <CalendarDays
+                      size={22}
+                      className="mx-auto text-[#4E876E]"
+                    />
 
-                          <div>
-                            <p className="font-body text-[11px] font-bold text-[#2D312E]">
-                              {appointment.type}
-                            </p>
+                    <p className="font-body mt-3 text-[11px] text-[#2D312E]/45">
+                      No appointments found.
+                    </p>
+                  </div>
+                )}
 
-                            <p className="mt-1 font-body text-[10px] text-[#2D312E]/40">
-                              {appointment.date} • {appointment.time}
-                            </p>
-                          </div>
-                        </div>
+                <div className="mt-4 rounded-xl bg-[#FAF9F6] p-4">
+                  <div className="flex justify-between">
+                    <span className="font-body text-[10px] text-[#2D312E]/45">
+                      Total appointments
+                    </span>
 
-                        <span
-                          className={`self-start rounded-full px-2.5 py-1 font-body text-[9px] font-bold ${
-                            appointment.status === "Upcoming"
-                              ? "bg-[#E9F0EC] text-[#3D5A4C]"
-                              : "bg-[#FAF9F6] text-[#2D312E]/50"
-                          }`}
-                        >
-                          {appointment.status}
-                        </span>
-                      </div>
+                    <span className="font-body text-[10px] font-bold text-[#3D5A4C]">
+                      {client.appointments?.length || 0}
+                    </span>
+                  </div>
 
-                      <p className="mt-3 border-t border-[#2D312E]/[0.05] pt-3 font-body text-[10px] leading-5 text-[#2D312E]/50">
-                        {appointment.notes}
-                      </p>
-                    </div>
-                  ))}
+                  <div className="mt-2 flex justify-between">
+                    <span className="font-body text-[10px] text-[#2D312E]/45">
+                      Completed
+                    </span>
+
+                    <span className="font-body text-[10px] font-bold text-[#3D5A4C]">
+                      {completedAppointments.length}
+                    </span>
+                  </div>
                 </div>
               </section>
             </div>
 
-            {/* RIGHT COLUMN */}
+            {/* RIGHT */}
             <div className="space-y-6">
-
-              {/* Current Nutrition Plan */}
+              {/* CURRENT NUTRITION PLAN */}
               <section className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm sm:p-6">
                 <div className="mb-5 flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
@@ -697,41 +856,50 @@ export default function ClientDetailsPage() {
                   </div>
                 </div>
 
-                <div className="rounded-xl bg-[#E9F0EC] p-4">
-                  <p className="font-body text-[9px] font-bold uppercase tracking-wider text-[#3D5A4C]/60">
-                    Nutrition Plan
-                  </p>
+                {activePlan ? (
+                  <>
+                    <div className="rounded-xl bg-[#E9F0EC] p-4">
+                      <p className="font-body text-[9px] font-bold uppercase tracking-wider text-[#3D5A4C]/60">
+                        Nutrition Plan
+                      </p>
 
-                  <h3 className="font-display mt-2 text-[18px] text-[#3D5A4C]">
-                    {client.nutritionPlan}
-                  </h3>
+                      <h3 className="font-display mt-2 text-[18px] text-[#3D5A4C]">
+                        {activePlan.plan_name}
+                      </h3>
 
-                  <p className="font-body mt-1 text-[10px] text-[#3D5A4C]/60">
-                    Daily target: {client.calories}
-                  </p>
-                </div>
+                      <p className="font-body mt-1 text-[10px] text-[#3D5A4C]/60">
+                        {formatDate(activePlan.start_date)} —{" "}
+                        {formatDate(activePlan.end_date)}
+                      </p>
 
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {client.dietType.map((type) => (
-                    <span
-                      key={type}
-                      className="rounded-full border border-[#CCD6C4] bg-white px-3 py-1.5 font-body text-[9px] font-semibold text-[#3D5A4C]"
+                      <span className="mt-3 inline-flex rounded-full bg-white px-2.5 py-1 font-body text-[9px] font-bold text-[#3D5A4C]">
+                        {formatText(activePlan.status)}
+                      </span>
+                    </div>
+
+                    <Link
+                      href={`/nutritionist/nutrition-plans/${activePlan.id}`}
+                      className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-[#CCD6C4] py-3 font-body text-[10px] font-bold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
                     >
-                      {type}
-                    </span>
-                  ))}
-                </div>
+                      <FileText size={14} />
+                      View Full Meal Plan
+                    </Link>
+                  </>
+                ) : (
+                  <div className="rounded-xl bg-[#FAF9F6] px-4 py-8 text-center">
+                    <Utensils
+                      size={22}
+                      className="mx-auto text-[#4E876E]"
+                    />
 
-                <Link
-                  href={`/nutritionist/nutrition-plans/${client.nutritionPlanId}`}
-                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-[#CCD6C4] py-3 font-body text-[10px] font-bold text-[#3D5A4C] transition hover:bg-[#E9F0EC]"
-                >
-                  <FileText size={14} />
-                  View Full Meal Plan
-                </Link>
+                    <p className="font-body mt-3 text-[11px] text-[#2D312E]/45">
+                      No nutrition plan assigned.
+                    </p>
+                  </div>
+                )}
               </section>
 
-              {/* Nutritionist Notes */}
+              {/* NUTRITIONIST NOTES */}
               <section className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm sm:p-6">
                 <div className="mb-5 flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]">
@@ -751,7 +919,8 @@ export default function ClientDetailsPage() {
 
                 <div className="rounded-xl bg-[#FAF9F6] p-4">
                   <p className="font-body text-[11px] leading-6 text-[#2D312E]/65">
-                    {client.notes}
+                    {note?.notes ||
+                      "No notes have been added for this client yet."}
                   </p>
                 </div>
 
@@ -759,11 +928,11 @@ export default function ClientDetailsPage() {
                   href={`/nutritionist/clients/${client.id}/notes`}
                   className="mt-4 flex w-full items-center justify-center rounded-xl bg-[#3D5A4C] py-3 font-body text-[10px] font-bold text-white transition hover:bg-[#334B40]"
                 >
-                  Update Notes
+                  {note?.notes ? "Update Notes" : "Add Notes"}
                 </Link>
               </section>
 
-              {/* Quick Actions */}
+              {/* QUICK ACTIONS */}
               <section className="rounded-2xl border border-[#2D312E]/[0.07] bg-white p-5 shadow-sm sm:p-6">
                 <h2 className="font-display text-[19px]">
                   Quick Actions
@@ -774,23 +943,22 @@ export default function ClientDetailsPage() {
                 </p>
 
                 <div className="mt-5 space-y-2">
+                  {activePlan && (
+                    <Link
+                      href={`/nutritionist/nutrition-plans/${activePlan.id}/edit`}
+                      className="flex w-full items-center gap-3 rounded-xl border border-[#2D312E]/[0.07] px-4 py-3 text-left transition hover:bg-[#FAF9F6]"
+                    >
+                      <Utensils
+                        size={15}
+                        className="text-[#4E876E]"
+                      />
 
-                  {/* Update Meal Plan */}
-                  <Link
-                    href={`/nutritionist/nutrition-plans/${client.nutritionPlanId}/edit`}
-                    className="flex w-full items-center gap-3 rounded-xl border border-[#2D312E]/[0.07] px-4 py-3 text-left transition hover:bg-[#FAF9F6]"
-                  >
-                    <Utensils
-                      size={15}
-                      className="text-[#4E876E]"
-                    />
+                      <span className="font-body text-[10px] font-semibold text-[#2D312E]/70">
+                        Update Meal Plan
+                      </span>
+                    </Link>
+                  )}
 
-                    <span className="font-body text-[10px] font-semibold text-[#2D312E]/70">
-                      Update Meal Plan
-                    </span>
-                  </Link>
-
-                  {/* Schedule Appointment */}
                   <Link
                     href={`/nutritionist/appointments/new?clientId=${client.id}`}
                     className="flex w-full items-center gap-3 rounded-xl border border-[#2D312E]/[0.07] px-4 py-3 text-left transition hover:bg-[#FAF9F6]"
@@ -805,7 +973,6 @@ export default function ClientDetailsPage() {
                     </span>
                   </Link>
 
-                  {/* Message Client → Consultation */}
                   <Link
                     href={`/nutritionist/consultations?clientId=${client.id}`}
                     className="flex w-full items-center gap-3 rounded-xl border border-[#2D312E]/[0.07] px-4 py-3 text-left transition hover:bg-[#FAF9F6]"
@@ -819,7 +986,6 @@ export default function ClientDetailsPage() {
                       Message Client
                     </span>
                   </Link>
-
                 </div>
               </section>
             </div>

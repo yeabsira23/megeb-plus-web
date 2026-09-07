@@ -1,28 +1,28 @@
 import axios, {
   AxiosError,
   InternalAxiosRequestConfig,
-} from 'axios';
+} from "axios";
 
-import { getSession } from 'next-auth/react';
+import { getSession } from "next-auth/react";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
-  'https://megeb-plus-backend.vercel.app';
+  "https://megeb-plus-backend.vercel.app";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 /**
- * Add the current Auth.js access token
+ * Attach the current Auth.js access token
  * to authenticated API requests.
  */
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const session = await getSession();
 
       const accessToken = session?.accessToken;
@@ -38,11 +38,7 @@ apiClient.interceptors.request.use(
 );
 
 /**
- * If Django returns 401, get the latest Auth.js
- * session and retry the request once.
- *
- * Auth.js is responsible for refreshing the
- * Django access token through src/auth.ts.
+ * Retry once when Django returns 401.
  */
 apiClient.interceptors.response.use(
   (response) => response,
@@ -54,9 +50,6 @@ apiClient.interceptors.response.use(
         })
       | undefined;
 
-    /**
-     * Only handle authentication failures.
-     */
     if (
       error.response?.status !== 401 ||
       !originalRequest ||
@@ -65,39 +58,21 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    /**
-     * Axios requests made on the server do not
-     * have access to the client-side session.
-     */
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return Promise.reject(error);
     }
 
     originalRequest._retry = true;
 
     try {
-      /**
-       * Get the current session.
-       *
-       * If the Django access token has expired,
-       * Auth.js should refresh it through the
-       * jwt callback in src/auth.ts.
-       */
       const session = await getSession();
 
-      const newAccessToken =
-        session?.accessToken;
+      const newAccessToken = session?.accessToken;
 
       if (!newAccessToken) {
-        throw new Error(
-          'No authenticated session found.'
-        );
+        throw new Error("No authenticated session found.");
       }
 
-      /**
-       * Retry the original request using
-       * the latest Django access token.
-       */
       originalRequest.headers.Authorization =
         `Bearer ${newAccessToken}`;
 
@@ -107,5 +82,136 @@ apiClient.interceptors.response.use(
     }
   }
 );
+
+/* =========================================================
+   TYPES
+========================================================= */
+
+export interface NutritionPlanSummary {
+  id: number;
+  plan_name: string;
+  status: string;
+  start_date: string;
+  end_date: string;
+}
+
+export interface NutritionistClient {
+  id: number;
+  full_name: string;
+  email: string;
+  phone: string;
+  profile_picture: string | null;
+  is_verified: boolean;
+  preferences: string[];
+  allergies: string[];
+  nutrition_plans: NutritionPlanSummary[];
+}
+
+export interface ClientHealthProfile {
+  age: number;
+  gender: string;
+  height: string;
+  weight: string;
+  activity_level: string;
+  medical_conditions: string[];
+  health_goal: string;
+  diet_preference: string;
+}
+
+export interface ClientAppointment {
+  id: number;
+  date: string;
+  time: string;
+  appointment_type: string;
+  mode: string;
+  status: string;
+}
+
+export interface NutritionistClientDetails
+  extends NutritionistClient {
+  health_profile: ClientHealthProfile | null;
+  appointments: ClientAppointment[];
+}
+
+export interface ClientNote {
+  id: number;
+  nutritionist: number;
+  client: number;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/* =========================================================
+   API FUNCTIONS
+========================================================= */
+
+/**
+ * Get all clients assigned to the nutritionist.
+ *
+ * GET /api/nutritionist/clients/
+ */
+export async function getNutritionistClients(): Promise<
+  NutritionistClient[]
+> {
+  const response =
+    await apiClient.get<NutritionistClient[]>(
+      "/api/nutritionist/clients/"
+    );
+
+  return response.data;
+}
+
+/**
+ * Get a single client's complete profile.
+ *
+ * GET /api/nutritionists/clients/:id/
+ */
+export async function getNutritionistClient(
+  clientId: string | number
+): Promise<NutritionistClientDetails> {
+  const response =
+    await apiClient.get<NutritionistClientDetails>(
+      `/api/nutritionists/clients/${clientId}/`
+    );
+
+  return response.data;
+}
+
+/**
+ * Get private notes for a client.
+ *
+ * GET /api/nutritionists/clients/:id/notes/
+ */
+export async function getClientNotes(
+  clientId: string | number
+): Promise<ClientNote | null> {
+  const response =
+    await apiClient.get<ClientNote | null>(
+      `/api/nutritionists/clients/${clientId}/notes/`
+    );
+
+  return response.data;
+}
+
+/**
+ * Update private notes for a client.
+ *
+ * PATCH /api/nutritionists/clients/:id/notes/
+ */
+export async function updateClientNotes(
+  clientId: string | number,
+  notes: string
+): Promise<ClientNote> {
+  const response =
+    await apiClient.patch<ClientNote>(
+      `/api/nutritionists/clients/${clientId}/notes/`,
+      {
+        notes,
+      }
+    );
+
+  return response.data;
+}
 
 export default apiClient;
