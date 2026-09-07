@@ -60,7 +60,7 @@ export default function PaymentsPage() {
     <div className="space-y-5">
       <div>
         <h1 className="font-display text-[23px] text-[#2D312E]">Payments</h1>
-        <p className="mt-1 text-[12px] text-[#2D312E]/50">Transactions processed across the platform.</p>
+        <p className="mt-1 text-[12px] text-[#2D312E]/70">Transactions processed across the platform.</p>
       </div>
 
       <div className="relative w-full sm:w-72">
@@ -81,25 +81,25 @@ export default function PaymentsPage() {
           <table className="w-full min-w-[600px]">
             <thead>
               <tr className="border-b border-[#2D312E]/[0.05] text-left">
-                <th className="px-5 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">User</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">Amount</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">Method</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">Date</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">Status</th>
+                <th className="px-5 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">User</th>
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Amount</th>
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Method</th>
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Date</th>
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Status</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={5} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/40">Loading payments…</td></tr>
+                <tr><td colSpan={5} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/55">Loading payments…</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={5} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/40">No payments found.</td></tr>
+                <tr><td colSpan={5} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/55">No payments found.</td></tr>
               ) : (
                 filtered.map((payment) => (
                   <tr key={payment.id} className="border-b border-[#2D312E]/[0.04] last:border-0">
                     <td className="px-5 py-4 text-[12px] font-semibold">{payment.user}</td>
-                    <td className="px-3 py-4 text-[11px] text-[#2D312E]/60">{payment.amount}</td>
-                    <td className="px-3 py-4 text-[11px] text-[#2D312E]/60">{payment.method}</td>
-                    <td className="px-3 py-4 text-[11px] text-[#2D312E]/60">{payment.date}</td>
+                    <td className="px-3 py-4 text-[11px] text-[#2D312E]/75">{payment.amount}</td>
+                    <td className="px-3 py-4 text-[11px] text-[#2D312E]/75">{payment.method}</td>
+                    <td className="px-3 py-4 text-[11px] text-[#2D312E]/75">{payment.date}</td>
                     <td className="px-3 py-4">
                       <span
                         className={`rounded-full px-2.5 py-1 text-[9px] font-semibold ${

@@ -50,7 +50,34 @@ function useUsers() {
 
   return { users, isLoading, error, setUsers };
 }
-
+function ToggleSwitch({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={onChange}
+      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 ${
+        checked ? 'bg-[#3D5A4C]' : 'bg-[#2D312E]/20'
+      }`}
+    >
+      <span
+        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
+          checked ? 'translate-x-6' : 'translate-x-1'
+        }`}
+      />
+    </button>
+  );
+}
 export default function UsersPage() {
   const { users, isLoading, error, setUsers } = useUsers();
   const [query, setQuery] = useState('');
@@ -78,7 +105,7 @@ export default function UsersPage() {
     <div className="space-y-5">
       <div>
         <h1 className="font-display text-[23px] text-[#2D312E]">Users</h1>
-        <p className="mt-1 text-[12px] text-[#2D312E]/50">View and manage platform user accounts.</p>
+        <p className="mt-1 text-[12px] text-[#2D312E]/70">View and manage platform user accounts.</p>
       </div>
 
       <div className="relative w-full sm:w-72">
@@ -99,42 +126,40 @@ export default function UsersPage() {
           <table className="w-full min-w-[600px]">
             <thead>
               <tr className="border-b border-[#2D312E]/[0.05] text-left">
-                <th className="px-5 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">Name</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">Email</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">Joined</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40">Status</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/40"></th>
+                <th className="px-5 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Name</th>
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Email</th>
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Joined</th>
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Status</th>
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55"></th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={5} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/40">Loading users…</td></tr>
+                <tr><td colSpan={5} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/55">Loading users…</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={5} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/40">No users found.</td></tr>
+                <tr><td colSpan={5} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/55">No users found.</td></tr>
               ) : (
                 filtered.map((user) => (
                   <tr key={user.id} className="border-b border-[#2D312E]/[0.04] last:border-0">
                     <td className="px-5 py-4 text-[12px] font-semibold">{user.name}</td>
-                    <td className="px-3 py-4 text-[11px] text-[#2D312E]/60">{user.email}</td>
-                    <td className="px-3 py-4 text-[11px] text-[#2D312E]/60">{user.joinedDate}</td>
+                    <td className="px-3 py-4 text-[11px] text-[#2D312E]/75">{user.email}</td>
+                    <td className="px-3 py-4 text-[11px] text-[#2D312E]/75">{user.joinedDate}</td>
                     <td className="px-3 py-4">
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-[9px] font-semibold ${
-                          user.status === 'Active' ? 'bg-[#E9F0EC] text-[#3D5A4C]' : 'bg-red-50 text-red-500'
-                        }`}
-                      >
-                        {user.status}
-                      </span>
-                    </td>
-                    <td className="px-3 py-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() => toggleStatus(user.id)}
-                        className="rounded-lg border border-[#2D312E]/10 px-2.5 py-1.5 text-[10px] font-semibold text-[#2D312E]/70 hover:bg-[#FAF9F6]"
-                      >
-                        {user.status === 'Active' ? 'Suspend' : 'Reactivate'}
-                      </button>
-                    </td>
+  <div className="flex items-center gap-2.5">
+    <ToggleSwitch
+      checked={user.status === 'Active'}
+      onChange={() => toggleStatus(user.id)}
+      label={user.status === 'Active' ? `Suspend ${user.name}` : `Reactivate ${user.name}`}
+    />
+    <span
+      className={`text-[10px] font-semibold ${
+        user.status === 'Active' ? 'text-[#3D5A4C]' : 'text-red-500'
+      }`}
+    >
+      {user.status}
+    </span>
+  </div>
+</td>
                   </tr>
                 ))
               )}

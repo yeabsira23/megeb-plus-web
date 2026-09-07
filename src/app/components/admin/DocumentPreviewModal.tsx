@@ -36,13 +36,13 @@ export default function DocumentPreviewModal({ document, onClose }: DocumentPrev
             </div>
             <div>
               <p className="text-[13px] font-semibold text-[#2D312E]">{document.label}</p>
-              <p className="text-[10.5px] text-[#2D312E]/45">{document.fileName} · Uploaded {document.uploadedDate}</p>
+              <p className="text-[10.5px] text-[#2D312E]/65">{document.fileName} · Uploaded {document.uploadedDate}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-[#2D312E]/40 hover:bg-[#FAF9F6] hover:text-[#2D312E]"
+            className="rounded-lg p-1.5 text-[#2D312E]/55 hover:bg-[#FAF9F6] hover:text-[#2D312E]"
           >
             <X className="h-4 w-4" />
           </button>
@@ -52,10 +52,10 @@ export default function DocumentPreviewModal({ document, onClose }: DocumentPrev
           {!hasRealFile ? (
             <div className="flex h-64 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[#2D312E]/15 text-center">
               <AlertCircle className="h-6 w-6 text-[#2D312E]/30" />
-              <p className="text-[12px] font-medium text-[#2D312E]/50">
+              <p className="text-[12px] font-medium text-[#2D312E]/70">
                 Document preview unavailable
               </p>
-              <p className="max-w-xs text-[11px] text-[#2D312E]/35">
+              <p className="max-w-xs text-[11px] text-[#2D312E]/50">
                 Backend API will serve the real uploaded file here later.
                 This applicant's actual submission isn't connected yet.
               </p>

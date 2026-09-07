@@ -82,7 +82,7 @@ export default function VerificationRequests({ requests: requestsProp }: Verific
       <div className="flex items-center justify-between border-b border-[#2D312E]/[0.06] px-5 py-4">
         <div>
           <h3 className="font-display text-[19px]">Verification requests</h3>
-          <p className="mt-1 text-[11px] text-[#2D312E]/45">Nutritionists awaiting approval</p>
+          <p className="mt-1 text-[11px] text-[#2D312E]/65">Nutritionists awaiting approval</p>
         </div>
         <span className="flex items-center gap-1 rounded-full bg-[#F7EFD9] px-2.5 py-1 text-[10px] font-bold text-[#8A6D2D]">
           <UserCheck className="h-3 w-3" strokeWidth={2.5} />
@@ -104,7 +104,7 @@ export default function VerificationRequests({ requests: requestsProp }: Verific
             </div>
           ))
         ) : requests.length === 0 ? (
-          <p className="px-2 py-6 text-center text-[12px] text-[#2D312E]/40">No pending verification requests.</p>
+          <p className="px-2 py-6 text-center text-[12px] text-[#2D312E]/55">No pending verification requests.</p>
         ) : (
           requests.map((request) => (
             <div key={request.id} className="flex items-center gap-3 rounded-xl p-3 hover:bg-[#FAF9F6]">
@@ -113,7 +113,7 @@ export default function VerificationRequests({ requests: requestsProp }: Verific
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[12px] font-semibold">{request.name}</p>
-                <p className="truncate text-[10px] text-[#2D312E]/45">{request.specialty} · {request.submitted}</p>
+                <p className="truncate text-[10px] text-[#2D312E]/65">{request.specialty} · {request.submitted}</p>
               </div>
               <button
                 type="button"

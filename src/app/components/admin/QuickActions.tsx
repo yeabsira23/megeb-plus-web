@@ -17,7 +17,7 @@ const ACTIONS: QuickAction[] = [
     icon: Stethoscope,
     title: 'Verify nutritionist',
     description: 'Review professional credentials',
-    path: '/admin/nutritionists',
+    path: '/admin/verification-requests',
   },
   {
     icon: UtensilsCrossed,
@@ -50,7 +50,7 @@ export default function QuickActions() {
         <h3 className="font-display text-[19px]">
           Quick actions
         </h3>
-        <p className="mt-1 text-[11px] text-[#2D312E]/45">
+        <p className="mt-1 text-[11px] text-[#2D312E]/65">
           Frequently used administration tools
         </p>
       </div>
@@ -69,7 +69,7 @@ export default function QuickActions() {
               <p className="text-[11px] font-semibold">
                 {title}
               </p>
-              <p className="mt-0.5 text-[9px] text-[#2D312E]/40">
+              <p className="mt-0.5 text-[9px] text-[#2D312E]/55">
                 {description}
               </p>
             </div>

@@ -21,10 +21,24 @@ export default auth((req) => {
       );
     }
   }
+  // admin protection
+  if (pathname.startsWith("/admin")) {
+  if (!session) {
+    return NextResponse.redirect(
+      new URL("/auth/login", req.url)
+    );
+  }
+
+  if (session.user?.role !== "admin") {
+    return NextResponse.redirect(
+      new URL("/auth/login", req.url)
+    );
+  }
+}
 
   return NextResponse.next();
 });
 
 export const config = {
-  matcher: ["/nutritionist/:path*"],
+  matcher: ["/nutritionist/:path*", "/admin/:path*"],
 };

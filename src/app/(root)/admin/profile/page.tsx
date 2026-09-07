@@ -102,7 +102,7 @@ export default function AdminProfilePage() {
     <div className="max-w-2xl space-y-5">
       <div>
         <h1 className="font-display text-[23px] text-[#2D312E]">My Profile</h1>
-        <p className="mt-1 text-[12px] text-[#2D312E]/50">
+        <p className="mt-1 text-[12px] text-[#2D312E]/70">
           View and update your administrator account details.
         </p>
       </div>
@@ -189,7 +189,7 @@ export default function AdminProfilePage() {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-display text-[16px] text-[#2D312E]">Password</h3>
-            <p className="mt-1 text-[11.5px] text-[#2D312E]/50">
+            <p className="mt-1 text-[11.5px] text-[#2D312E]/70">
               Change your account password.
             </p>
           </div>

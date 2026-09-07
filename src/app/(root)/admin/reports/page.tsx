@@ -70,7 +70,7 @@ export default function ReportsPage() {
     <div className="space-y-5">
       <div>
         <h1 className="font-display text-[23px] text-[#2D312E]">Reports & Analytics</h1>
-        <p className="mt-1 text-[12px] text-[#2D312E]/50">Platform performance at a glance.</p>
+        <p className="mt-1 text-[12px] text-[#2D312E]/70">Platform performance at a glance.</p>
       </div>
 
       {error && <p className="text-[12px] font-medium text-red-600">{error}</p>}
@@ -81,11 +81,11 @@ export default function ReportsPage() {
             <div key={index} className="h-24 animate-pulse rounded-2xl border border-[#2D312E]/[0.06] bg-[#E9F0EC]" />
           ))
         ) : metrics.length === 0 ? (
-          <p className="col-span-full text-[12px] text-[#2D312E]/40">No metrics available yet.</p>
+          <p className="col-span-full text-[12px] text-[#2D312E]/55">No metrics available yet.</p>
         ) : (
           metrics.map((metric) => (
             <div key={metric.label} className="rounded-2xl border border-[#2D312E]/[0.06] bg-white p-5 shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#2D312E]/40">{metric.label}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#2D312E]/55">{metric.label}</p>
               <p className="mt-1 font-display text-[22px]">{metric.value}</p>
               <p className="mt-1 text-[10px] font-semibold text-[#4E876E]">{metric.change}</p>
             </div>
@@ -95,16 +95,16 @@ export default function ReportsPage() {
 
       <section className="rounded-2xl border border-[#2D312E]/[0.06] bg-white p-5 shadow-sm lg:p-6">
         <h3 className="font-display text-[17px] text-[#2D312E]">Monthly sign-ups</h3>
-        <p className="mt-1 text-[11px] text-[#2D312E]/45">New users per month</p>
+        <p className="mt-1 text-[11px] text-[#2D312E]/65">New users per month</p>
 
         <div className="mt-6 flex h-40 items-end gap-3">
           {monthlySignups.length === 0 ? (
-            <p className="text-[12px] text-[#2D312E]/40">No data yet.</p>
+            <p className="text-[12px] text-[#2D312E]/55">No data yet.</p>
           ) : (
             monthlySignups.map((point) => (
               <div key={point.month} className="flex flex-1 flex-col items-center gap-2">
                 <div className="w-full rounded-t-md bg-[#3D5A4C]" style={{ height: `${(point.value / maxValue) * 100}%` }} />
-                <span className="text-[9px] text-[#2D312E]/40">{point.month}</span>
+                <span className="text-[9px] text-[#2D312E]/55">{point.month}</span>
               </div>
             ))
           )}

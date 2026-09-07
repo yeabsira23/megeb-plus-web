@@ -137,7 +137,7 @@ export default function FoodVendorsPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-[23px] text-[#2D312E]">Food Vendors</h1>
-          <p className="mt-1 text-[12px] text-[#2D312E]/50">
+          <p className="mt-1 text-[12px] text-[#2D312E]/70">
             Review and verify food vendor business registrations.
           </p>
         </div>
@@ -159,7 +159,7 @@ export default function FoodVendorsPage() {
               className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition ${
                 statusFilter === status
                   ? 'bg-[#3D5A4C] text-white'
-                  : 'bg-white text-[#2D312E]/60 border border-[#2D312E]/10 hover:bg-[#FAF9F6]'
+                  : 'bg-white text-[#2D312E]/75 border border-[#2D312E]/10 hover:bg-[#FAF9F6]'
               }`}
             >
               {status}
@@ -182,11 +182,11 @@ export default function FoodVendorsPage() {
 
       <section className="overflow-hidden rounded-2xl border border-[#2D312E]/[0.06] bg-white shadow-sm">
         {isLoading ? (
-          <div className="px-5 py-8 text-center text-[12px] text-[#2D312E]/40">
+          <div className="px-5 py-8 text-center text-[12px] text-[#2D312E]/55">
             Loading food vendor applications…
           </div>
         ) : filtered.length === 0 ? (
-          <div className="px-5 py-8 text-center text-[12px] text-[#2D312E]/40">
+          <div className="px-5 py-8 text-center text-[12px] text-[#2D312E]/55">
             No food vendor applications found.
           </div>
         ) : (
@@ -206,7 +206,7 @@ export default function FoodVendorsPage() {
                       </div>
                       <div>
                         <p className="text-[12.5px] font-semibold">{vendor.businessName}</p>
-                        <p className="text-[10.5px] text-[#2D312E]/45">
+                        <p className="text-[10.5px] text-[#2D312E]/65">
                           {vendor.ownerName} · Applied {vendor.appliedDate}
                         </p>
                       </div>
@@ -230,23 +230,23 @@ export default function FoodVendorsPage() {
                       <div className="grid gap-3 text-[11.5px] sm:grid-cols-2">
                         <div>
                           <p className="font-semibold text-[#2D312E]/70">Email</p>
-                          <p className="mt-0.5 text-[#2D312E]/50">{vendor.email}</p>
+                          <p className="mt-0.5 text-[#2D312E]/70">{vendor.email}</p>
                         </div>
                         <div>
                           <p className="font-semibold text-[#2D312E]/70">Phone</p>
-                          <p className="mt-0.5 text-[#2D312E]/50">{vendor.phone}</p>
+                          <p className="mt-0.5 text-[#2D312E]/70">{vendor.phone}</p>
                         </div>
                         <div>
                           <p className="font-semibold text-[#2D312E]/70">Business License #</p>
-                          <p className="mt-0.5 text-[#2D312E]/50">{vendor.businessLicenseNumber}</p>
+                          <p className="mt-0.5 text-[#2D312E]/70">{vendor.businessLicenseNumber}</p>
                         </div>
                         <div>
                           <p className="font-semibold text-[#2D312E]/70">Food Safety Certificate #</p>
-                          <p className="mt-0.5 text-[#2D312E]/50">{vendor.foodSafetyCertNumber}</p>
+                          <p className="mt-0.5 text-[#2D312E]/70">{vendor.foodSafetyCertNumber}</p>
                         </div>
                         <div className="sm:col-span-2">
                           <p className="font-semibold text-[#2D312E]/70">Business Address</p>
-                          <p className="mt-0.5 text-[#2D312E]/50">{vendor.address}</p>
+                          <p className="mt-0.5 text-[#2D312E]/70">{vendor.address}</p>
                         </div>
                       </div>
 
@@ -263,7 +263,7 @@ export default function FoodVendorsPage() {
                               <FileText className="h-4 w-4 shrink-0 text-[#4E876E]" />
                               <div className="min-w-0">
                                 <p className="truncate text-[11px] font-semibold text-[#2D312E]">{doc.label}</p>
-                                <p className="truncate text-[9.5px] text-[#2D312E]/40">{doc.fileName}</p>
+                                <p className="truncate text-[9.5px] text-[#2D312E]/55">{doc.fileName}</p>
                               </div>
                             </button>
                           ))}
