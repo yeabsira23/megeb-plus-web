@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, Check, X, UserCheck, FileText, Mail, BriefcaseBusiness, IdCard, Award, FileCheck2, GraduationCap } from 'lucide-react';
 import DocumentPreviewModal, { SubmittedDocument } from '@/app/components/admin/DocumentPreviewModal';
@@ -157,10 +158,9 @@ function getInitial(name: string): string {
   return name.trim().charAt(0).toUpperCase();
 }
 
-export default function VerificationRequestsPage() {
+function VerificationRequestsContent() {
   const searchParams = useSearchParams();
-  const [requests, setRequests] = useState<VerificationRequestDetail[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [requests, setRequests] = useState<VerificationRequestDetail[]>(() => loadRequests());
 
   const rawStatus = searchParams.get('status');
   const capitalizedStatus = rawStatus ? rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1) : null;
@@ -173,15 +173,6 @@ export default function VerificationRequestsPage() {
   const [query, setQuery] = useState(initialSearch);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [previewDoc, setPreviewDoc] = useState<SubmittedDocument | null>(null);
-
-  useEffect(() => {
-    // Backend API will be connected here later.
-    // const data = await apiFetch<VerificationRequestDetail[]>('/admin/verification-requests');
-    const data = loadRequests();
-    setRequests(data);
-    saveRequests(data); // ensure the key exists on first load
-    setIsLoading(false);
-  }, []);
 
   const filtered = requests.filter((request) => {
     const matchesStatus = statusFilter === 'All' || request.status === statusFilter;
@@ -247,9 +238,7 @@ export default function VerificationRequestsPage() {
       </div>
 
       <section className="overflow-hidden rounded-2xl border border-[#2D312E]/[0.06] bg-white shadow-sm">
-        {isLoading ? (
-          <div className="px-5 py-8 text-center text-[12px] text-[#2D312E]/50">Loading verification requests…</div>
-        ) : filtered.length === 0 ? (
+        {filtered.length === 0 ? (
           <div className="px-5 py-8 text-center text-[12px] text-[#2D312E]/50">No verification requests found.</div>
         ) : (
           <div className="divide-y divide-[#2D312E]/[0.05]">
@@ -401,3 +390,13 @@ function DetailField({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+export default function VerificationRequestsPage() {
+  return (
+    <Suspense fallback={<div className="px-5 py-8 text-center text-[12px] text-[#2D312E]/50">Loading verification requests…</div>}>
+      <VerificationRequestsContent />
+    </Suspense>
+  );
+}
+
+
