@@ -1,64 +1,84 @@
-                         'use client';
+'use client';
 
 import { useState, FormEvent } from 'react';
 import { Mail, Check, ArrowLeft, ShieldCheck } from 'lucide-react';
-import { sendOtp } from "@/app/libs/api/auth";
-
+import { useRouter } from 'next/navigation';
+import { sendEmailOtp } from '@/app/libs/api/auth';
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
+
   const [email, setEmail] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [submitted, setSubmitted] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-  e.preventDefault();
-  setError('');
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError('');
 
-  const trimmedEmail = email.trim();
+    const trimmedEmail = email.trim();
 
-  if (!trimmedEmail) {
-    setError('Enter your email to continue.');
-    return;
-  }
+    if (!trimmedEmail) {
+      setError('Enter your email to continue.');
+      return;
+    }
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    await sendOtp(trimmedEmail);
+    try {
+      await sendEmailOtp(trimmedEmail, 'password_reset');
 
-    setSubmitted(true);
-  } catch (err) {
-    console.error('Unable to send password reset OTP:', err);
+      /*
+       * The backend has now sent the password-reset OTP.
+       *
+       * Pass the email to the verification page because
+       * the backend does not use cookies/session to remember it.
+       */
+      router.push(
+        `/auth/verify-otp?email=${encodeURIComponent(
+          trimmedEmail
+        )}&purpose=password_reset`
+      );
+    } catch (err) {
+      console.error(
+        'Unable to send password reset OTP:',
+        err
+      );
 
-    if (
-      err &&
-      typeof err === 'object' &&
-      'response' in err
-    ) {
-      const errorObj = err as {
-        response?: {
-          data?: {
-            detail?: string;
-            message?: string;
+      if (
+        err &&
+        typeof err === 'object' &&
+        'response' in err
+      ) {
+        const errorObj = err as {
+          response?: {
+            data?: {
+              detail?: string;
+              message?: string;
+              email?: string[];
+              purpose?: string[];
+            };
           };
         };
-      };
 
-      setError(
-        errorObj.response?.data?.detail ||
-          errorObj.response?.data?.message ||
+        const data = errorObj.response?.data;
+
+        setError(
+          data?.detail ||
+            data?.message ||
+            data?.email?.[0] ||
+            data?.purpose?.[0] ||
+            'Unable to send reset instructions. Please try again.'
+        );
+      } else {
+        setError(
           'Unable to send reset instructions. Please try again.'
-      );
-    } else {
-      setError(
-        'Unable to send reset instructions. Please try again.'
-      );
+        );
+      }
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
   }
-}
 
   return (
     <main className="min-h-screen w-full flex bg-[#FAF9F6]">
@@ -122,14 +142,14 @@ async function handleSubmit(e: FormEvent<HTMLFormElement>) {
 
         {/* BRAND */}
         <div className="flex items-center">
-      <span className="font-display text-[38px] font-bold tracking-tight text-[#DCC48E]">
-        Megeb
-       </span>
+          <span className="font-display text-[38px] font-bold tracking-tight text-[#DCC48E]">
+            Megeb
+          </span>
 
-       <span className="ml-1 font-display text-[44px] font-black leading-none text-[#DCC48E]">
-         +
-       </span>
-      </div>
+          <span className="ml-1 font-display text-[44px] font-black leading-none text-[#DCC48E]">
+            +
+          </span>
+        </div>
 
         {/* LEFT TEXT */}
         <div className="relative z-10 max-w-sm">
@@ -150,7 +170,8 @@ async function handleSubmit(e: FormEvent<HTMLFormElement>) {
           </p>
 
         </div>
-        {/* DECORATIVE SECURITY ICON */}
+
+        {/* SECURITY ICON */}
         <div className="absolute right-[14%] top-[45%]">
 
           <div className="relative">
@@ -162,11 +183,13 @@ async function handleSubmit(e: FormEvent<HTMLFormElement>) {
               <div className="w-[145px] h-[145px] rounded-full border border-white/10 flex items-center justify-center">
 
                 <div className="w-[90px] h-[90px] rounded-full bg-[#DCC48E]/15 border border-[#DCC48E]/30 flex items-center justify-center">
+
                   <ShieldCheck
                     size={46}
                     strokeWidth={1.4}
                     className="text-[#DCC48E]"
                   />
+
                 </div>
 
               </div>
@@ -175,11 +198,13 @@ async function handleSubmit(e: FormEvent<HTMLFormElement>) {
 
             {/* Small gold badge */}
             <div className="absolute -left-4 bottom-2 w-11 h-11 rounded-full bg-[#DCC48E] flex items-center justify-center shadow-lg">
+
               <Check
                 size={20}
                 strokeWidth={2.5}
                 className="text-[#2D312E]"
               />
+
             </div>
 
           </div>
@@ -199,15 +224,17 @@ async function handleSubmit(e: FormEvent<HTMLFormElement>) {
         <div className="w-full max-w-[400px]">
 
           {/* MOBILE LOGO */}
-           <div className="flex items-center md:hidden">
-  <span className="font-display text-[28px] font-bold tracking-tight text-[#DCC48E]">
-    Megeb
-  </span>
+          <div className="flex items-center md:hidden mb-6">
 
-  <span className="ml-1 font-display text-[34px] font-black leading-none text-[#DCC48E]">
-    +
-  </span>
-</div>
+            <span className="font-display text-[28px] font-bold tracking-tight text-[#DCC48E]">
+              Megeb
+            </span>
+
+            <span className="ml-1 font-display text-[34px] font-black leading-none text-[#DCC48E]">
+              +
+            </span>
+
+          </div>
 
           {/* CARD */}
           <div className="bg-white rounded-2xl shadow-[0_24px_48px_-12px_rgba(61,90,76,0.18)] border border-[#2D312E]/[0.06] overflow-hidden">
@@ -217,112 +244,85 @@ async function handleSubmit(e: FormEvent<HTMLFormElement>) {
 
             <div className="p-9">
 
-              {!submitted ? (
-                <>
-                  <p className="font-body text-[11px] tracking-[0.2em] uppercase text-[#4E876E] mb-2 font-semibold">
-                    Password Recovery
-                  </p>
+              {/* HEADER */}
+              <p className="font-body text-[11px] tracking-[0.2em] uppercase text-[#4E876E] mb-2 font-semibold">
+                Password Recovery
+              </p>
 
-                  <h2 className="font-display text-[#2D312E] text-[26px] mb-1">
-                    Forgot password?
-                  </h2>
+              <h2 className="font-display text-[#2D312E] text-[26px] mb-1">
+                Forgot password?
+              </h2>
 
-                  <p className="font-body text-[#2D312E]/50 text-[13.5px] mb-7 leading-5">
-                    Enter your email and we'll help you reset your password.
-                  </p>
+              <p className="font-body text-[#2D312E]/50 text-[13.5px] mb-7 leading-5">
+                Enter your email and we'll send you a verification code.
+              </p>
 
-                  <form
-                    onSubmit={handleSubmit}
-                    className="space-y-4"
-                    noValidate
+              {/* FORM */}
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-4"
+                noValidate
+              >
+
+                {/* EMAIL */}
+                <div>
+
+                  <label
+                    htmlFor="email"
+                    className="font-body block text-[12.5px] font-semibold text-[#2D312E]/75 mb-1.5"
                   >
+                    Email
+                  </label>
 
-                    {/* EMAIL */}
-                    <div>
+                  <div className="relative">
 
-                      <label
-                        htmlFor="email"
-                        className="font-body block text-[12.5px] font-semibold text-[#2D312E]/75 mb-1.5"
-                      >
-                        Email
-                      </label>
-
-                      <div className="relative">
-
-                        <Mail
-                          size={17}
-                          strokeWidth={2}
-                          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4E876E]"
-                        />
-
-                        <input
-                          id="email"
-                          type="email"
-                          autoComplete="email"
-                         value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="you@example.com"
-                          className="font-body w-full rounded-xl border border-[#2D312E]/12 bg-[#FAF9F6]/60 pl-10 pr-3.5 text-[14.5px] text-[#2D312E] placeholder:text-[#2D312E]/30 outline-none transition focus:bg-white focus:border-[#3D5A4C] focus:ring-4 focus:ring-[#3D5A4C]/10"
-                          style={{
-                            paddingTop: '11px',
-                            paddingBottom: '11px',
-                          }}
-                        />
-
-                      </div>
-
-                    </div>
-
-                    {/* ERROR */}
-                    {error && (
-                      <p
-                        role="alert"
-                        className="font-body text-[13px] text-[#EB5757] bg-[#EB5757]/8 border border-[#EB5757]/20 rounded-lg px-3 py-2"
-                      >
-                        {error}
-                      </p>
-                    )}
-
-                    {/* BUTTON */}
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="font-body w-full flex items-center justify-center rounded-xl bg-[#3D5A4C] text-white text-[14.5px] font-semibold py-3 mt-1 transition hover:bg-[#4E876E] hover:shadow-[0_8px_20px_-4px_rgba(61,90,76,0.4)] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-[#3D5A4C]/20"
-                    >
-                      {loading ? 'Sending…' : 'Send reset instructions'}
-                    </button>
-
-                  </form>
-                </>
-              ) : (
-                <>
-                  {/* SUCCESS */}
-                  <div className="w-12 h-12 rounded-full bg-[#E9F0EC] flex items-center justify-center mb-5">
-                    <Check
-                      size={24}
-                      strokeWidth={2.2}
-                      className="text-[#3D5A4C]"
+                    <Mail
+                      size={17}
+                      strokeWidth={2}
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4E876E]"
                     />
+
+                    <input
+                      id="email"
+                      type="email"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      disabled={loading}
+                      className="font-body w-full rounded-xl border border-[#2D312E]/12 bg-[#FAF9F6]/60 pl-10 pr-3.5 text-[14.5px] text-[#2D312E] placeholder:text-[#2D312E]/30 outline-none transition focus:bg-white focus:border-[#3D5A4C] focus:ring-4 focus:ring-[#3D5A4C]/10 disabled:opacity-60"
+                      style={{
+                        paddingTop: '11px',
+                        paddingBottom: '11px',
+                      }}
+                    />
+
                   </div>
 
-                  <p className="font-body text-[11px] tracking-[0.2em] uppercase text-[#4E876E] mb-2 font-semibold">
-                    Request received
+                </div>
+
+                {/* ERROR */}
+                {error && (
+                  <p
+                    role="alert"
+                    className="font-body text-[13px] text-[#EB5757] bg-[#EB5757]/8 border border-[#EB5757]/20 rounded-lg px-3 py-2"
+                  >
+                    {error}
                   </p>
+                )}
 
-                  <h2 className="font-display text-[#2D312E] text-[26px] mb-2">
-                    Check your email
-                  </h2>
+                {/* BUTTON */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="font-body w-full flex items-center justify-center rounded-xl bg-[#3D5A4C] text-white text-[14.5px] font-semibold py-3 mt-1 transition hover:bg-[#4E876E] hover:shadow-[0_8px_20px_-4px_rgba(61,90,76,0.4)] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-[#3D5A4C]/20"
+                >
+                  {loading
+                    ? 'Sending…'
+                    : 'Send verification code'}
+                </button>
 
-              <p className="font-body text-[#2D312E]/50 text-[13.5px] leading-5">
-                If an account exists for{' '}
-                <span className="font-semibold text-[#2D312E]/70">
-                  {email}
-                </span>
-                , you'll receive a verification code to continue resetting
-                your password.
-              </p>
-                </>
-              )}
+              </form>
 
               {/* BACK TO LOGIN */}
               <div className="mt-7 pt-5 border-t border-[#2D312E]/[0.07]">
