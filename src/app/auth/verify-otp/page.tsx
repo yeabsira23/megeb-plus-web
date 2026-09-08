@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, FormEvent, KeyboardEvent, useEffect } from "react";
+import { Suspense, useState, FormEvent, KeyboardEvent, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Check,
@@ -12,7 +13,7 @@ import {
   verifyEmailOtp,
 } from "@/app/libs/api/auth";
 
-export default function VerifyOtpPage() {
+function VerifyOtpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -344,7 +345,6 @@ export default function VerifyOtpPage() {
                       strokeWidth={1.4}
                       className="text-[#DCC48E]"
                     />
-
                   </div>
                 </div>
               </div>
@@ -721,3 +721,12 @@ export default function VerifyOtpPage() {
     </main>
   );
 }
+
+export default function VerifyOtpPage() {
+  return (
+    <Suspense fallback={null}>
+      <VerifyOtpContent />
+    </Suspense>
+  );
+}
+
