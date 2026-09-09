@@ -20,6 +20,7 @@ function VerifyOtpContent() {
   // Email is passed from forgot-password page
   const email = searchParams.get("email") || "";
 
+
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);

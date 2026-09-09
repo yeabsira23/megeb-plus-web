@@ -143,8 +143,80 @@ export interface ClientNote {
 }
 
 /* =========================================================
+   NOTIFICATIONS
+========================================================= */
+
+export type NotificationType =
+  | "appointment"
+  | "message"
+  | "plan"
+  | string;
+
+export interface Notification {
+  id: number;
+  type: NotificationType;
+  title: string;
+  message: string;
+  time: string;
+  dateGroup: string;
+  read: boolean;
+}
+
+export interface MarkAllNotificationsReadResponse {
+  message: string;
+}
+
+/* =========================================================
    API FUNCTIONS
 ========================================================= */
+
+/**
+ * Get all notifications for the authenticated user.
+ *
+ * GET /api/notifications/
+ */
+export async function getNotifications(): Promise<
+  Notification[]
+> {
+  const response =
+    await apiClient.get<Notification[]>(
+      "/api/notifications/"
+    );
+
+  return response.data;
+}
+
+/**
+ * Mark a single notification as read.
+ *
+ * PATCH /api/notifications/{id}/read/
+ */
+export async function markNotificationAsRead(
+  notificationId: number
+): Promise<Notification> {
+  const response =
+    await apiClient.patch<Notification>(
+      `/api/notifications/${notificationId}/read/`
+    );
+
+  return response.data;
+}
+
+/**
+ * Mark all notifications as read.
+ *
+ * POST /api/notifications/mark-all-read/
+ */
+export async function markAllNotificationsAsRead(): Promise<
+  MarkAllNotificationsReadResponse
+> {
+  const response =
+    await apiClient.post<MarkAllNotificationsReadResponse>(
+      "/api/notifications/mark-all-read/"
+    );
+
+  return response.data;
+}
 
 /**
  * Get all clients assigned to the nutritionist.
@@ -215,3 +287,4 @@ export async function updateClientNotes(
 }
 
 export default apiClient;
+
