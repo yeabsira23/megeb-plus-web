@@ -250,6 +250,66 @@ export async function getNutritionistClient(
   return response.data;
 }
 
+
+
+/* =========================================================
+   NUTRITIONIST PROFILE
+========================================================= */
+
+export interface NutritionistProfileResponse {
+  id: number;
+  user: number;
+  full_name: string;
+  email: string;
+  bio: string;
+  specialization: string;
+  qualification: string;
+  years_of_experience: number;
+  license_number: string;
+  profile_picture: string | null;
+  is_verified: boolean;
+  rating: string;
+  consultation_fee: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UpdateNutritionistProfileData {
+  full_name?: string;
+  bio?: string;
+  specialization?: string;
+  qualification?: string;
+  years_of_experience?: number;
+  consultation_fee?: string;
+}
+
+/**
+ * GET /api/nutritionists/profile/
+ */
+export async function getNutritionistProfile(): Promise<NutritionistProfileResponse> {
+  const response =
+    await apiClient.get<NutritionistProfileResponse>(
+      "/api/nutritionists/profile/"
+    );
+
+  return response.data;
+}
+
+/**
+ * PATCH /api/nutritionists/profile/
+ */
+export async function updateNutritionistProfile(
+  data: UpdateNutritionistProfileData
+): Promise<NutritionistProfileResponse> {
+  const response =
+    await apiClient.patch<NutritionistProfileResponse>(
+      "/api/nutritionists/profile/",
+      data
+    );
+
+  return response.data;
+}
+
 /**
  * Get private notes for a client.
  *
