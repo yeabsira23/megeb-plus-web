@@ -295,6 +295,92 @@ export async function getNutritionistProfile(): Promise<NutritionistProfileRespo
   return response.data;
 }
 
+
+/* =========================================================
+   NUTRITIONIST AVAILABILITY
+========================================================= */
+
+export interface NutritionistAvailability {
+  id: number;
+  nutritionist: number;
+  day_of_week: number;
+  day_name: string;
+  start_time: string;
+  end_time: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateAvailabilityData {
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  is_active: boolean;
+}
+
+export interface UpdateAvailabilityData {
+  start_time?: string;
+  end_time?: string;
+  is_active?: boolean;
+}
+
+/**
+ * GET /api/appointments/availability/
+ */
+export async function getNutritionistAvailability(): Promise<
+  NutritionistAvailability[]
+> {
+  const response =
+    await apiClient.get<NutritionistAvailability[]>(
+      "/api/appointments/availability/"
+    );
+
+  return response.data;
+}
+
+/**
+ * POST /api/appointments/availability/
+ */
+export async function createNutritionistAvailability(
+  data: CreateAvailabilityData
+): Promise<NutritionistAvailability> {
+  const response =
+    await apiClient.post<NutritionistAvailability>(
+      "/api/appointments/availability/",
+      data
+    );
+
+  return response.data;
+}
+
+/**
+ * PATCH /api/appointments/availability/{id}/
+ */
+export async function updateNutritionistAvailability(
+  id: number,
+  data: UpdateAvailabilityData
+): Promise<NutritionistAvailability> {
+  const response =
+    await apiClient.patch<NutritionistAvailability>(
+      `/api/appointments/availability/${id}/`,
+      data
+    );
+
+  return response.data;
+}
+
+/**
+ * DELETE /api/appointments/availability/{id}/
+ */
+export async function deleteNutritionistAvailability(
+  id: number
+): Promise<void> {
+  await apiClient.delete(
+    `/api/appointments/availability/${id}/`
+  );
+}
+
 /**
  * PATCH /api/nutritionists/profile/
  */
