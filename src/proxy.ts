@@ -5,7 +5,12 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
   const session = req.auth;
 
-  // Protect all nutritionist routes
+  // Allow the nutritionist application page publicly
+  if (pathname === "/nutritionist/apply") {
+    return NextResponse.next();
+  }
+
+  // Protect all other nutritionist routes
   if (pathname.startsWith("/nutritionist")) {
     // No authenticated session
     if (!session) {
@@ -21,24 +26,10 @@ export default auth((req) => {
       );
     }
   }
-  // admin protection
-  if (pathname.startsWith("/admin")) {
-  if (!session) {
-    return NextResponse.redirect(
-      new URL("/auth/login", req.url)
-    );
-  }
-
-  if (session.user?.role !== "admin") {
-    return NextResponse.redirect(
-      new URL("/auth/login", req.url)
-    );
-  }
-}
 
   return NextResponse.next();
 });
 
 export const config = {
-  matcher: ["/nutritionist/:path*", "/admin/:path*"],
+  matcher: ["/nutritionist/:path*"],
 };
