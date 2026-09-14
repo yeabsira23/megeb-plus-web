@@ -147,7 +147,9 @@ export default function NutritionistApplication() {
   const [submitError, setSubmitError] = useState("");
 
   const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: ChangeEvent<
+      HTMLInputElement | HTMLSelectElement
+    >
   ) => {
     const { name, value, type } = e.target;
 
@@ -267,7 +269,7 @@ export default function NutritionistApplication() {
 
     // STEP 3 — CREDENTIALS
     if (currentStep === 3) {
-      // State License
+      // STATE LICENSE
       if (!formData.licenseNumber.trim()) {
         setSubmitError(
           "Please enter your license number."
@@ -296,7 +298,7 @@ export default function NutritionistApplication() {
         return false;
       }
 
-      // National Credential
+      // NATIONAL CREDENTIAL
       if (!formData.credentialType) {
         setSubmitError(
           "Please select your credential type."
@@ -318,7 +320,7 @@ export default function NutritionistApplication() {
         return false;
       }
 
-      // Insurance
+      // INSURANCE
       if (!formData.insuranceProvider.trim()) {
         setSubmitError(
           "Please enter your insurance provider."
@@ -354,7 +356,7 @@ export default function NutritionistApplication() {
         return false;
       }
 
-      // Degree
+      // DEGREE
       if (!formData.degree.trim()) {
         setSubmitError(
           "Please enter your degree."
@@ -463,9 +465,42 @@ export default function NutritionistApplication() {
       return;
     }
 
+    // Make sure all required documents exist
+    if (!files.license_document) {
+      setSubmitError(
+        "Please upload your state license document."
+      );
+      return;
+    }
+
+    if (!files.credential_document) {
+      setSubmitError(
+        "Please upload your national credential document."
+      );
+      return;
+    }
+
+    if (!files.insurance_document) {
+      setSubmitError(
+        "Please upload your certificate of insurance."
+      );
+      return;
+    }
+
+    if (!files.degree_document) {
+      setSubmitError(
+        "Please upload your degree or transcript."
+      );
+      return;
+    }
+
     setSubmitting(true);
 
     const fd = new FormData();
+
+    // -------------------------
+    // ACCOUNT / PERSONAL
+    // -------------------------
 
     fd.append(
       "full_name",
@@ -497,94 +532,146 @@ export default function NutritionistApplication() {
       formData.confirmPassword
     );
 
+    // -------------------------
+    // PROFESSIONAL
+    // -------------------------
+
     fd.append(
-      "application_data",
-      JSON.stringify({
-        currentRole:
-          formData.currentRole,
-
-        yearsOfExperience:
-          formData.yearsOfExperience,
-
-        specialization:
-          formData.specialization,
-
-        licenseNumber:
-          formData.licenseNumber,
-
-        licenseState:
-          formData.licenseState,
-
-        licenseExpiration:
-          formData.licenseExpiration,
-
-        credentialType:
-          formData.credentialType,
-
-        credentialNumber:
-          formData.credentialNumber,
-
-        insuranceProvider:
-          formData.insuranceProvider,
-
-        policyNumber:
-          formData.policyNumber,
-
-        insuranceExpiration:
-          formData.insuranceExpiration,
-
-        coverageLimit:
-          formData.coverageLimit,
-
-        degree:
-          formData.degree,
-
-        institution:
-          formData.institution,
-
-        fieldOfStudy:
-          formData.fieldOfStudy,
-
-        graduationYear:
-          formData.graduationYear,
-      })
+      "current_role",
+      formData.currentRole
     );
 
-    if (files.license_document) {
-      fd.append(
-        "license_document",
-        files.license_document
-      );
-    }
+    fd.append(
+      "specialization",
+      formData.specialization
+    );
 
-    if (files.credential_document) {
-      fd.append(
-        "credential_document",
-        files.credential_document
-      );
-    }
+    fd.append(
+      "years_of_experience",
+      formData.yearsOfExperience
+    );
 
-    if (files.insurance_document) {
-      fd.append(
-        "insurance_document",
-        files.insurance_document
-      );
-    }
+    // -------------------------
+    // LICENSE
+    // -------------------------
 
-    if (files.degree_document) {
-      fd.append(
-        "degree_document",
-        files.degree_document
-      );
-    }
+    fd.append(
+      "license_number",
+      formData.licenseNumber
+    );
+
+    fd.append(
+      "license_jurisdiction",
+      formData.licenseState
+    );
+
+    fd.append(
+      "license_expiration_date",
+      formData.licenseExpiration
+    );
+
+    // -------------------------
+    // NATIONAL CREDENTIAL
+    // -------------------------
+
+    fd.append(
+      "credential_type",
+      formData.credentialType
+    );
+
+    fd.append(
+      "credential_number",
+      formData.credentialNumber
+    );
+
+    // -------------------------
+    // INSURANCE
+    // -------------------------
+
+    fd.append(
+      "insurance_provider",
+      formData.insuranceProvider
+    );
+
+    fd.append(
+      "policy_number",
+      formData.policyNumber
+    );
+
+    fd.append(
+      "insurance_expiration_date",
+      formData.insuranceExpiration
+    );
+
+    fd.append(
+      "coverage_limit",
+      formData.coverageLimit
+    );
+
+    // -------------------------
+    // EDUCATION
+    // -------------------------
+
+    fd.append(
+      "degree",
+      formData.degree
+    );
+
+    fd.append(
+      "institution",
+      formData.institution
+    );
+
+    fd.append(
+      "field_of_study",
+      formData.fieldOfStudy
+    );
+
+    fd.append(
+      "graduation_year",
+      formData.graduationYear
+    );
+
+    // -------------------------
+    // DOCUMENTS
+    // -------------------------
+
+    fd.append(
+      "license_document",
+      files.license_document
+    );
+
+    fd.append(
+      "credential_document",
+      files.credential_document
+    );
+
+    fd.append(
+      "insurance_document",
+      files.insurance_document
+    );
+
+    fd.append(
+      "degree_document",
+      files.degree_document
+    );
+
+    // -------------------------
+    // SUBMIT TO DJANGO
+    // -------------------------
 
     try {
-      await axios.post(
+      const response = await axios.post(
         `${API_URL}/api/auth/apply-staff/`,
         fd,
         {
           timeout: 20000,
         }
+      );
+
+      console.log(
+        "APPLICATION SUCCESS:",
+        response.data
       );
 
       setSubmitted(true);
@@ -607,9 +694,7 @@ export default function NutritionistApplication() {
 
           const messages: string[] = [];
 
-          if (
-            typeof data === "string"
-          ) {
+          if (typeof data === "string") {
             messages.push(data);
           } else if (
             typeof data === "object" &&
@@ -619,25 +704,18 @@ export default function NutritionistApplication() {
               ([field, value]) => {
                 if (Array.isArray(value)) {
                   messages.push(
-                    `${field}: ${value.join(
-                      ", "
-                    )}`
+                    `${field}: ${value.join(", ")}`
                   );
                 } else if (
-                  typeof value ===
-                    "object" &&
+                  typeof value === "object" &&
                   value !== null
                 ) {
                   messages.push(
-                    `${field}: ${JSON.stringify(
-                      value
-                    )}`
+                    `${field}: ${JSON.stringify(value)}`
                   );
                 } else {
                   messages.push(
-                    `${field}: ${String(
-                      value
-                    )}`
+                    `${field}: ${String(value)}`
                   );
                 }
               }
@@ -1409,7 +1487,8 @@ export default function NutritionistApplication() {
               <button
                 type="button"
                 onClick={nextStep}
-                className="font-body group inline-flex items-center gap-2 rounded-xl bg-[#3D5A4C] px-6 py-3 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#4E876E] hover:shadow-md"
+                disabled={submitting}
+                className="font-body group inline-flex items-center gap-2 rounded-xl bg-[#3D5A4C] px-6 py-3 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#4E876E] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Continue
 
@@ -1901,3 +1980,4 @@ function ApplicationSubmitted() {
     </main>
   );
 }
+

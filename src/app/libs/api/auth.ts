@@ -23,6 +23,9 @@ export interface User {
   [key: string]: unknown;
 }
 
+/**
+ * Get current authenticated user
+ */
 export async function getMe(): Promise<User> {
   const response = await apiClient.get<User>(
     '/api/auth/me/'
@@ -49,8 +52,6 @@ export async function login(
   return response.data;
 }
 
-
-
 /**
  * Update user profile
  */
@@ -66,7 +67,7 @@ export async function updateProfile(
 }
 
 /**
- * Change password
+ * Change password for an authenticated user
  */
 export async function changePassword(
   currentPassword: string,
@@ -85,6 +86,8 @@ export async function changePassword(
 
 /**
  * Send OTP to phone
+ *
+ * Used for phone verification.
  */
 export async function sendOtp(identifier: string) {
   const response = await apiClient.post(
@@ -117,12 +120,24 @@ export async function verifyOtp(
 
 /**
  * Send email OTP
+ *
+ * Used for:
+ * - Registration
+ * - Password reset
+ *
+ * IMPORTANT:
+ * Password reset MUST use:
+ * purpose: "password_reset"
  */
-export async function sendEmailOtp(email: string) {
+export async function sendEmailOtp(
+  email: string,
+  purpose: 'registration' | 'password_reset' = 'registration'
+) {
   const response = await apiClient.post(
     '/api/auth/send-email-otp/',
     {
       email,
+      purpose,
     }
   );
 
@@ -131,16 +146,25 @@ export async function sendEmailOtp(email: string) {
 
 /**
  * Verify email OTP
+ *
+ * Used for:
+ * - Registration
+ * - Password reset
+ *
+ * The purpose MUST match the purpose used
+ * when the OTP was sent.
  */
 export async function verifyEmailOtp(
   email: string,
-  otp: string
+  otp: string,
+  purpose: 'registration' | 'password_reset' = 'registration'
 ) {
   const response = await apiClient.post(
     '/api/auth/verify-email-otp/',
     {
       email,
       otp,
+      purpose,
     }
   );
 
@@ -149,18 +173,29 @@ export async function verifyEmailOtp(
 
 /**
  * Reset password
+ *
+ * IMPORTANT:
+ * The backend does NOT require the OTP here.
+ *
+ * The OTP must have been successfully verified
+ * using verifyEmailOtp() with:
+ *
+ * purpose: "password_reset"
+ *
+ * The backend then allows the password reset
+ * for 15 minutes.
  */
 export async function resetPassword(
-  identifier: string,
-  otp: string,
-  newPassword: string
+  email: string,
+  newPassword: string,
+  confirmNewPassword: string
 ) {
   const response = await apiClient.post(
     '/api/auth/reset-password/',
     {
-      identifier,
-      otp,
+      email,
       new_password: newPassword,
+      confirm_new_password: confirmNewPassword,
     }
   );
 
