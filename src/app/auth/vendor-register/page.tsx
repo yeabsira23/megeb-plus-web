@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {ArrowLeft, ArrowRight, Check, ChevronLeft, ChevronRight,Loader2,
   Upload, X, Plus, Trash2, FileText, CheckCircle2, UserRound, Store, IdCard, Package, ClipboardCheck,
   ShieldCheck, } from 'lucide-react';
-import { apiFetch } from '@/app/lib/api';
+import { registerVendor } from "@/app/libs/api/admin/vendor";
 
 type VendorProductInput = {
   name: string;
@@ -153,32 +153,51 @@ export default function VendorRegisterPage() {
   const handleSubmit = async () => {
   setSubmitting(true);
   setSubmitError(null);
+
   try {
     const validProducts = products
-      .map((p, i) => ({ ...p, photo: productPhotos[i] ?? undefined }))
-      .filter((p) => p.name.trim());
+      .map((p, i) => ({
+        name: p.name.trim(),
+        description: p.description.trim(),
+        price: p.price,
+        category: p.category,
+        photo: productPhotos[i] ?? undefined,
+      }))
+      .filter((p) => p.name);
 
-    // Backend API will be connected here later.
-    // Likely needs FormData (not JSON) since this submits files:
-    // const formData = new FormData();
-    // formData.append('owner_name', ownerName);
-    // formData.append('email', email);
-    // formData.append('phone', phone);
-    // formData.append('password', password);
-    // formData.append('business_name', businessName);
-    // formData.append('business_address', businessAddress);
-    // formData.append('business_type', businessType);
-    // formData.append('license_number', licenseNumber);
-    // if (licenseFile) formData.append('license_document', licenseFile);
-    // if (foodSafetyCertFile) formData.append('food_safety_certificate', foodSafetyCertFile);
-    // if (ownerIdFile) formData.append('owner_id_document', ownerIdFile);
-    // formData.append('products', JSON.stringify(validProducts));
-    // await apiFetch('/vendors/register', { method: 'POST', data: formData, headers: { 'Content-Type': 'multipart/form-data' } });
+    if (!licenseFile || !foodSafetyCertFile || !ownerIdFile) {
+      throw new Error("Please upload all required documents.");
+    }
+
+    await registerVendor({
+      ownerName,
+      email,
+      phone,
+      password,
+      businessName,
+      businessAddress,
+      businessType,
+      licenseNumber,
+      licenseFile,
+      foodSafetyCertFile,
+      ownerIdFile,
+      products: validProducts.map((product) => ({
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        category: product.category,
+      })),
+    });
 
     setSubmitted(true);
   } catch (err) {
-    console.error('Vendor registration failed:', err);
-    setSubmitError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
+    console.error("Vendor registration failed:", err);
+
+    setSubmitError(
+      err instanceof Error
+        ? err.message
+        : "Registration failed. Please try again."
+    );
   } finally {
     setSubmitting(false);
   }

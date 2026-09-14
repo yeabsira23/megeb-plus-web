@@ -3,25 +3,18 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight, UserCheck } from 'lucide-react';
-import { apiFetch } from '@/app/lib/api';
+import {
+  getVerificationRequests,
+  type VerificationRequest,
+} from '@/app/libs/api/admin/verification';
 import { useRouter } from 'next/navigation';
 
-export type VerificationRequest = {
-  id: string;
-  name: string;
-  specialty: string;
-  submitted: string;
-};
+
 
 type VerificationRequestsProps = {
   requests?: VerificationRequest[];
 };
 
-const DEFAULT_REQUESTS: VerificationRequest[] = [
-  { id: '1', name: 'Dr. Bethlehem Kassa', specialty: 'Clinical Nutrition', submitted: '2 hours ago' },
-  { id: '2', name: 'Dr. Yonatan Haile', specialty: 'Sports Nutrition', submitted: '5 hours ago' },
-  { id: '3', name: 'Dr. Meron Fikru', specialty: 'Pediatric Nutrition', submitted: 'Yesterday' },
-];
 
 function getInitial(name: string): string {
   const cleaned = name.replace(/^(Dr\.|Mr\.|Mrs\.|Ms\.)\s+/i, '');
@@ -29,7 +22,7 @@ function getInitial(name: string): string {
 }
 
 function useVerificationRequests() {
-  const [requests, setRequests] = useState<VerificationRequest[]>(DEFAULT_REQUESTS);
+  const [requests, setRequests] = useState<VerificationRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
    
@@ -40,15 +33,15 @@ function useVerificationRequests() {
       setIsLoading(true);
       setError(null);
       try {
-        // Backend API will be connected here later.
-        // const data = await apiFetch<VerificationRequest[]>('/admin/verification-requests?status=pending');
-        // if (isMounted) setRequests(data);
-        if (isMounted) setRequests(DEFAULT_REQUESTS);
+        
+         const data = await getVerificationRequests();
+         if (isMounted) setRequests(data);
+        
       } catch (err) {
         console.error('Unable to load verification requests:', err);
         if (isMounted) {
           setError('Unable to load verification requests.');
-          setRequests(DEFAULT_REQUESTS);
+          
         }
       } finally {
         if (isMounted) setIsLoading(false);
@@ -117,7 +110,7 @@ export default function VerificationRequests({ requests: requestsProp }: Verific
               </div>
               <button
                 type="button"
-                onClick={() => router.push('/admin/verification-requests')}
+                onClick={() => handleReview(request)}
                 className="flex items-center gap-0.5 rounded-lg border border-[#3D5A4C]/15 px-2.5 py-1.5 text-[10px] font-semibold text-[#3D5A4C] hover:bg-[#E9F0EC]"
               >
                 Review

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Bell, Menu } from 'lucide-react';
-import { apiFetch } from '@/app/lib/api';
+
 
 type TopbarProps = {
   adminName?: string;
@@ -59,14 +59,14 @@ export default function Topbar({ adminName = 'Admin', role = 'System Administrat
 
       <div className="flex items-center gap-4">
         {/* Notification */}
-        <button
+         {/* <button
           type="button"
           className="relative rounded-xl border border-[#2D312E]/[0.07] bg-white p-2.5 text-[#2D312E]/70 transition hover:bg-[#FAF9F6]"
           aria-label={unreadCount > 0 ? `${unreadCount} unread notifications` : 'Notifications'}
         >
           <Bell className="h-[18px] w-[18px]" strokeWidth={1.75} />
           {unreadCount > 0 && <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#DCC48E]" />}
-        </button>
+        </button> */}
 
         {/* Admin */}
         <Link

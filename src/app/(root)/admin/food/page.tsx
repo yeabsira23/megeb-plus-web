@@ -2,21 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { Plus, Search, UtensilsCrossed, X, Upload } from 'lucide-react';
-import { apiFetch } from '@/app/lib/api';
+import {
+  getFoodItems,
+  createFoodItem,
+  type FoodItem,
+  type CreateFoodItem,
+} from '@/app/libs/api/admin/food';
 
-type FoodItem = {
-  id: string;
-  name: string;
-  category: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  servingSize: string;
-  photoUrl: string | null;
-};
 
-type NewFoodItemForm = Omit<FoodItem, 'id' | 'photoUrl'>;
+
+type NewFoodItemForm = CreateFoodItem;
 
 const EMPTY_FORM: NewFoodItemForm = {
   name: '',
@@ -25,16 +20,10 @@ const EMPTY_FORM: NewFoodItemForm = {
   protein: 0,
   carbs: 0,
   fat: 0,
-  servingSize: '',
+   photo: null,
 };
 
-const DEFAULT_FOOD_ITEMS: FoodItem[] = [
-  { id: '1', name: 'Injera', category: 'Grains', calories: 85, protein: 2.6, carbs: 17, fat: 0.5, servingSize: '1 piece (60g)', photoUrl: null },
-  { id: '2', name: 'Shiro Wat', category: 'Legumes', calories: 190, protein: 9, carbs: 22, fat: 8, servingSize: '1 cup (200g)', photoUrl: null },
-  { id: '3', name: 'Doro Wat', category: 'Poultry', calories: 320, protein: 28, carbs: 6, fat: 20, servingSize: '1 serving (250g)', photoUrl: null },
-  { id: '4', name: 'Tibs', category: 'Meat', calories: 280, protein: 24, carbs: 3, fat: 19, servingSize: '1 serving (200g)', photoUrl: null },
-  { id: '5', name: 'Gomen', category: 'Vegetables', calories: 60, protein: 3, carbs: 8, fat: 2, servingSize: '1 cup (150g)', photoUrl: null },
-];
+
 
 function useFoodItems() {
   const [items, setItems] = useState<FoodItem[]>([]);
@@ -47,10 +36,11 @@ function useFoodItems() {
       setIsLoading(true);
       setError(null);
       try {
-        // Backend API will be connected here later.
-        // const data = await apiFetch<FoodItem[]>('/admin/food');
-        // if (isMounted) setItems(data);
-        if (isMounted) setItems(DEFAULT_FOOD_ITEMS); // TEMP: sample data for preview
+        
+         const data = await getFoodItems();
+
+         if (isMounted) setItems(data);
+         
       } catch (err) {
         console.error('Unable to load food items:', err);
         if (isMounted) setError('Unable to load food items.');
@@ -75,12 +65,17 @@ export default function FoodDatabasePage() {
     item.category.toLowerCase().includes(query.toLowerCase())
   );
 
-  function handleAddFoodItem(newItem: FoodItem) {
-    // Backend API will be connected here later.
-    // await apiFetch('/admin/food', { method: 'POST', data: newItem });
-    setItems((previous) => [newItem, ...previous]);
+  async function handleAddFoodItem(newItem: CreateFoodItem) {
+  try {
+    const createdItem = await createFoodItem(newItem);
+
+    setItems((previous) => [createdItem, ...previous]);
     setIsModalOpen(false);
+  } catch (err) {
+    console.error('Unable to add food item:', err);
+    throw err;
   }
+}
 
   return (
     <div className="space-y-5">
@@ -174,7 +169,7 @@ function AddFoodItemModal({
   onSubmit,
 }: {
   onClose: () => void;
-  onSubmit: (item: FoodItem) => void;
+  onSubmit: (item: CreateFoodItem) => Promise<void>;
 }) {
   const [form, setForm] = useState<NewFoodItemForm>(EMPTY_FORM);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -190,19 +185,36 @@ function AddFoodItemModal({
     setPhotoPreview(file ? URL.createObjectURL(file) : null);
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!form.name.trim() || !form.category.trim()) {
-      setFormError('Name and category are required.');
-      return;
-    }
+  async function handleSubmit(
+  e: React.FormEvent<HTMLFormElement>
+) {
+  e.preventDefault();
 
-    onSubmit({
-      id: crypto.randomUUID(),
-      ...form,
-      photoUrl: photoPreview,
-    });
+  if (!form.name.trim() || !form.category.trim()) {
+    setFormError('Name and category are required.');
+    return;
   }
+
+  try {
+    setFormError(null);
+
+    await onSubmit({
+      name: form.name.trim(),
+      category: form.category.trim(),
+      calories: form.calories,
+      protein: form.protein,
+      carbs: form.carbs,
+      fat: form.fat,
+      photo: photoFile,
+    });
+  } catch (err) {
+    console.error('Unable to create food item:', err);
+
+    setFormError(
+      'Unable to add food item. Please check the information and try again.'
+    );
+  }
+}
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2D312E]/50 p-4" onClick={onClose}>
@@ -274,15 +286,7 @@ function AddFoodItemModal({
             </div>
           </div>
 
-          <div>
-            <label className="mb-1.5 block text-[12px] font-semibold text-[#2D312E]/80">Serving Size</label>
-            <input
-              value={form.servingSize}
-              onChange={(e) => updateField('servingSize', e.target.value)}
-              placeholder="e.g. 1 piece (60g)"
-              className="w-full rounded-lg border border-[#2D312E]/12 bg-[#FAF9F6]/60 px-3 py-2.5 text-[13px] text-[#2D312E] outline-none focus:border-[#3D5A4C] focus:bg-white"
-            />
-          </div>
+          
 
           <div className="grid grid-cols-4 gap-3">
             <div>

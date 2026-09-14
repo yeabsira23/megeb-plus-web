@@ -5,26 +5,21 @@ import StatCard from '@/app/components/admin/StatCard';
 import AppointmentsTable from '@/app/components/admin/AppointmentsTable';
 import VerificationRequests from '@/app/components/admin/VerificationRequests';
 import QuickActions from '@/app/components/admin/QuickActions';
-import { apiFetch } from '@/app/lib/api';
 import type { StatIcon } from '@/app/components/admin/StatCard';
+import {
+  getDashboardStats,
+  type DashboardStat,
+} from '@/app/libs/api/admin/dashboard';
 
-type Stat = {
-  title: string;
-  value: string;
-  change: string;
-  description: string;
+
+type Stat = DashboardStat & {
   icon: StatIcon;
 };
 
-const FALLBACK_STATS: Stat[] = [
-  { title: 'Total Users', value: '10', change: '', description: 'registered users', icon: 'users' },
-  { title: 'Nutritionists', value: '3', change: '', description: 'active professionals', icon: 'doctor' },
-  { title: 'Appointments', value: '5', change: '', description: 'this month', icon: 'calendar' },
-  { title: 'Revenue', value: '2500 ETB', change: '', description: 'this month', icon: 'money' },
-];
+
 
 function useDashboardStats() {
-  const [stats, setStats] = useState<Stat[]>(FALLBACK_STATS);
+  const [stats, setStats] = useState<Stat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,15 +29,15 @@ function useDashboardStats() {
       setIsLoading(true);
       setError(null);
       try {
-        // Backend API will be connected here later.
-        // const data = await apiFetch<Stat[]>('/admin/dashboard/stats');
-        // if (isMounted) setStats(data);
-        if (isMounted) setStats(FALLBACK_STATS);
+        
+         const data = await getDashboardStats();
+         if (isMounted) setStats(data);
+        
       } catch (err) {
         console.error('Unable to load dashboard stats:', err);
         if (isMounted) {
           setError('Unable to load dashboard stats.');
-          setStats(FALLBACK_STATS);
+          
         }
       } finally {
         if (isMounted) setIsLoading(false);

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { CalendarDays, ChevronRight, Search, UserRound, Users } from 'lucide-react';
-
+import { getClients } from '@/app/libs/api/admin/clients';
 type ClientStatus = 'Active' | 'Suspended' | 'Inactive';
 
 type Client = {
@@ -11,29 +11,14 @@ type Client = {
   name: string;
   age: number;
   assignedNutritionist: string | null;
-  nextAppointment: string;
+   nextAppointment: {
+    date: string;
+    time: string;
+  };
   status: ClientStatus;
 };
 
-/*
- * Temporary client data
- *
- * Later, we will replace this with data from:
- * /admin/clients
- */
-const TEMPORARY_CLIENTS: Client[] = [
-  { id: '1', name: 'Sara Abebe', age: 28, assignedNutritionist: 'Dr. Hana Bekele', nextAppointment: 'Today, 10:30 AM', status: 'Active' },
-  { id: '2', name: 'Mekdes Tadesse', age: 34, assignedNutritionist: 'Dr. Samuel Alemu', nextAppointment: 'Today, 1:00 PM', status: 'Active' },
-  { id: '3', name: 'Abel Tesfaye', age: 25, assignedNutritionist: null, nextAppointment: 'Not scheduled', status: 'Suspended' },
-  { id: '4', name: 'Rahel Girma', age: 31, assignedNutritionist: 'Dr. Meron Worku', nextAppointment: 'Tomorrow, 3:30 PM', status: 'Active' },
-];
 
-/*
- * Clients data hook
- *
- * Later, when the backend endpoint is ready, this
- * function can be changed to use apiFetch().
- */
 function useClients() {
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,20 +32,14 @@ function useClients() {
       setError(null);
 
       try {
-        /*
-         * TEMPORARY — Backend is not connected yet.
-         *
-         * Later:
-         * const data = await apiFetch<Client[]>('/admin/clients');
-         * if (isMounted) setClients(data);
-         */
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        const data = await getClients();
 
         if (isMounted) {
-          setClients(TEMPORARY_CLIENTS);
+          setClients(data);
         }
       } catch (err) {
         console.error('Unable to load clients:', err);
+
         if (isMounted) {
           setError('Unable to load clients.');
           setClients([]);
@@ -73,11 +52,15 @@ function useClients() {
     }
 
     loadClients();
-    return () => { isMounted = false; };
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return { clients, isLoading, error };
 }
+ 
 
 export default function ClientsPage() {
   const { clients, isLoading, error } = useClients();
@@ -165,7 +148,7 @@ export default function ClientsPage() {
                   <p className="text-[9px] font-bold uppercase tracking-wider text-[#2D312E]/50">Next Appointment</p>
                   <div className="mt-1 flex items-center gap-1.5">
                     <CalendarDays size={12} className="text-[#4E876E]" />
-                    <p className="text-[11px] text-[#2D312E]/75">{client.nextAppointment}</p>
+                    <p className="text-[11px] text-[#2D312E]/75"> {client.nextAppointment.date} {client.nextAppointment.time}</p>
                   </div>
                 </div>
 

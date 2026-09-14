@@ -11,9 +11,6 @@ const API_BASE_URL =
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 /**
@@ -24,7 +21,6 @@ apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     if (typeof window !== "undefined") {
       const session = await getSession();
-
       const accessToken = session?.accessToken;
 
       if (accessToken) {
@@ -70,15 +66,15 @@ apiClient.interceptors.response.use(
       const newAccessToken = session?.accessToken;
 
       if (!newAccessToken) {
-        throw new Error("No authenticated session found.");
+        return Promise.reject(error);
       }
 
       originalRequest.headers.Authorization =
         `Bearer ${newAccessToken}`;
 
       return apiClient(originalRequest);
-    } catch (refreshError) {
-      return Promise.reject(refreshError);
+    } catch {
+      return Promise.reject(error);
     }
   }
 );
