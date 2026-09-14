@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { CheckCircle2, Clock, XCircle, ArrowRight, LucideIcon } from 'lucide-react';
-import { apiFetch } from '@/app/lib/api';
+import { getAppointments } from '@/app/libs/api/admin/appointment';
 
 export type AppointmentStatus = 'Confirmed' | 'Pending' | 'Cancelled';
 
 export type Appointment = {
-  id: string;
+  id: number;
   client: string;
   nutritionist: string;
   date: string;
@@ -31,12 +31,7 @@ const STATUS_CONFIG: Record<AppointmentStatus, StatusConfigEntry> = {
   Cancelled: { icon: XCircle, className: 'bg-red-50 text-red-500' },
 };
 
-const DEFAULT_APPOINTMENTS: Appointment[] = [
-  { id: '1', client: 'Sara Abebe', nutritionist: 'Dr. Hana Bekele', date: 'Today', time: '10:30 AM', status: 'Confirmed' },
-  { id: '2', client: 'Mekdes Tadesse', nutritionist: 'Dr. Samuel Alemu', date: 'Today', time: '1:00 PM', status: 'Pending' },
-  { id: '3', client: 'Abel Tesfaye', nutritionist: 'Dr. Hana Bekele', date: 'Tomorrow', time: '9:00 AM', status: 'Confirmed' },
-  { id: '4', client: 'Rahel Girma', nutritionist: 'Dr. Meron Worku', date: 'Tomorrow', time: '3:30 PM', status: 'Cancelled' },
-];
+
 
 function StatusBadge({ status }: { status: AppointmentStatus }) {
   const config = STATUS_CONFIG[status];
@@ -51,7 +46,7 @@ function StatusBadge({ status }: { status: AppointmentStatus }) {
 }
 
 function useAppointments() {
-  const [appointments, setAppointments] = useState<Appointment[]>(DEFAULT_APPOINTMENTS);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,15 +56,15 @@ function useAppointments() {
       setIsLoading(true);
       setError(null);
       try {
-        // Backend API will be connected here later.
-        // const data = await apiFetch<Appointment[]>('/admin/appointments?limit=10&sort=recent');
-        // if (isMounted) setAppointments(data);
-        if (isMounted) setAppointments(DEFAULT_APPOINTMENTS);
+        
+         const data = await getAppointments();
+         if (isMounted) setAppointments(data);
+        
       } catch (err) {
         console.error('Unable to load appointments:', err);
         if (isMounted) {
           setError('Unable to load appointments.');
-          setAppointments(DEFAULT_APPOINTMENTS);
+          
         }
       } finally {
         if (isMounted) setIsLoading(false);
@@ -126,7 +121,7 @@ export default function AppointmentsTable({ appointments: appointmentsProp }: Ap
             ) : appointments.length === 0 ? (
               <tr><td colSpan={4} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/55">No recent appointments.</td></tr>
             ) : (
-              appointments.map((appointment) => (
+              appointments.slice(0, 5).map((appointment) => (
                 <tr key={appointment.id} className="border-b border-[#2D312E]/[0.04] last:border-0">
                   <td className="px-5 py-4 text-[12px] font-semibold">{appointment.client}</td>
                   <td className="px-3 py-4 text-[11px] text-[#2D312E]/75">{appointment.nutritionist}</td>
@@ -138,7 +133,7 @@ export default function AppointmentsTable({ appointments: appointmentsProp }: Ap
                 </tr>
               ))
             )}
-          </tbody>
+            </tbody>
         </table>
       </div>
     </section>

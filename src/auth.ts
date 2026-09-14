@@ -35,8 +35,15 @@ async function refreshAccessToken(token: {
 }) {
   try {
     if (!token.refreshToken) {
-      throw new Error("No refresh token available.");
+      return {
+        ...token,
+        accessToken: undefined,
+        accessTokenExpires: undefined,
+        error: "RefreshAccessTokenError",
+      };
     }
+
+    
 
     const response = await fetch(
       `${API_BASE_URL}/api/token/refresh/`,
@@ -48,15 +55,36 @@ async function refreshAccessToken(token: {
         body: JSON.stringify({
           refresh: token.refreshToken,
         }),
+        cache: "no-store",
       }
     );
 
-    const refreshedTokens = await response.json();
+    const responseText = await response.text();
 
-    if (!response.ok || !refreshedTokens.access) {
-      throw new Error("Failed to refresh access token.");
+    if (!response.ok) {
+      
+      return {
+        ...token,
+        accessToken: undefined,
+        accessTokenExpires: undefined,
+        error: "RefreshAccessTokenError",
+      };
     }
 
+    const refreshedTokens = JSON.parse(responseText);
+
+    if (!refreshedTokens.access) {
+      
+
+      return {
+        ...token,
+        accessToken: undefined,
+        accessTokenExpires: undefined,
+        error: "RefreshAccessTokenError",
+      };
+    }
+
+    
     return {
       ...token,
       accessToken: refreshedTokens.access,
@@ -65,11 +93,13 @@ async function refreshAccessToken(token: {
       ),
       error: undefined,
     };
-  } catch (error) {
-    console.error("Refresh access token error:", error);
+  } catch  {
+    
 
     return {
       ...token,
+      accessToken: undefined,
+      accessTokenExpires: undefined,
       error: "RefreshAccessTokenError",
     };
   }
@@ -142,11 +172,6 @@ export const {
             refreshToken: data.refresh,
           };
         } catch (error) {
-          console.error(
-            "Django authentication error:",
-            error
-          );
-
           return null;
         }
       },
@@ -230,6 +255,7 @@ export const {
         accessTokenExpires &&
         Date.now() < accessTokenExpires
       ) {
+        
         return {
           ...token,
           accessToken,

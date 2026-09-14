@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { Search, CheckCircle2, Clock, XCircle } from 'lucide-react';
-import { apiFetch } from '@/app/lib/api';
-import type { Appointment, AppointmentStatus } from '@/app/components/admin/AppointmentsTable';
+import type { AppointmentStatus } from '@/app/components/admin/AppointmentsTable';
+import {
+  getAppointments,
+  type AdminAppointment,
+} from '@/app/libs/api/admin/appointment';
 
 const STATUS_CONFIG: Record<AppointmentStatus, { icon: typeof CheckCircle2; className: string }> = {
   Confirmed: { icon: CheckCircle2, className: 'bg-[#E9F0EC] text-[#3D5A4C]' },
@@ -13,15 +16,10 @@ const STATUS_CONFIG: Record<AppointmentStatus, { icon: typeof CheckCircle2; clas
 
 const STATUS_FILTERS: (AppointmentStatus | 'All')[] = ['All', 'Confirmed', 'Pending', 'Cancelled'];
 
-const DEFAULT_APPOINTMENTS: Appointment[] = [
-  { id: '1', client: 'Sara Abebe', nutritionist: 'Dr. Hana Bekele', date: 'Today', time: '10:30 AM', status: 'Confirmed' },
-  { id: '2', client: 'Mekdes Tadesse', nutritionist: 'Dr. Samuel Alemu', date: 'Today', time: '1:00 PM', status: 'Pending' },
-  { id: '3', client: 'Abel Tesfaye', nutritionist: 'Dr. Hana Bekele', date: 'Tomorrow', time: '9:00 AM', status: 'Confirmed' },
-  { id: '4', client: 'Rahel Girma', nutritionist: 'Dr. Meron Worku', date: 'Tomorrow', time: '3:30 PM', status: 'Cancelled' },
-];
+
 
 function useAllAppointments() {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointments, setAppointments] = useState<AdminAppointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,10 +29,10 @@ function useAllAppointments() {
       setIsLoading(true);
       setError(null);
       try {
-        // Backend API will be connected here later.
-        // const data = await apiFetch<Appointment[]>('/admin/appointments');
-        // if (isMounted) setAppointments(data);
-        if (isMounted) setAppointments(DEFAULT_APPOINTMENTS); // TEMP: sample data for preview
+        
+         const data = await getAppointments();
+         if (isMounted) setAppointments(data);
+        
       } catch (err) {
         console.error('Unable to load appointments:', err);
         if (isMounted) setError('Unable to load appointments.');

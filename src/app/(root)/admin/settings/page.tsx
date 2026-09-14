@@ -1,14 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { apiFetch } from '@/app/lib/api';
 
-type PlatformSettings = {
-  platformName: string;
-  supportEmail: string;
-  maintenanceMode: boolean;
-  emailNotifications: boolean;
-};
+
+import {
+  getSettings,
+  updateSettings,
+  type PlatformSettings,
+} from '@/app/libs/api/admin/settings';
+
+
 
 const DEFAULT_SETTINGS: PlatformSettings = {
   platformName: 'Megeb+',
@@ -30,10 +31,10 @@ function useSettings() {
       setIsLoading(true);
       setError(null);
       try {
-        // Backend API will be connected here later.
-        // const data = await apiFetch<PlatformSettings>('/admin/settings');
-        // if (isMounted) setSettings(data);
-        if (isMounted) setSettings(DEFAULT_SETTINGS);
+        
+         const data = await getSettings();
+         if (isMounted) setSettings(data);
+        
       } catch (err) {
         console.error('Unable to load settings:', err);
         if (isMounted) setError('Unable to load settings.');
@@ -50,8 +51,10 @@ function useSettings() {
     setSaved(false);
     setError(null);
     try {
-      // Backend API will be connected here later.
-      // await apiFetch('/admin/settings', { method: 'PUT', data: settings });
+      
+       const data = await updateSettings(settings);
+
+      setSettings(data);
       setSaved(true);
     } catch (err) {
       console.error('Unable to save settings:', err);
@@ -98,7 +101,7 @@ export default function SettingsPage() {
           <input
             id="platformName"
             name="platformName"
-            value={settings.platformName}
+            value={settings.platformName ?? ''}
             onChange={handleChange}
             disabled={isLoading}
             className="w-full rounded-xl border border-[#2D312E]/12 bg-[#FAF9F6]/60 px-4 py-3 text-[13px] outline-none focus:border-[#3D5A4C] focus:bg-white"
@@ -113,7 +116,7 @@ export default function SettingsPage() {
             id="supportEmail"
             name="supportEmail"
             type="email"
-            value={settings.supportEmail}
+            value={settings.supportEmail ?? ''}
             onChange={handleChange}
             disabled={isLoading}
             placeholder="support@megeb.com"
@@ -126,7 +129,7 @@ export default function SettingsPage() {
           <input
             type="checkbox"
             name="maintenanceMode"
-            checked={settings.maintenanceMode}
+            checked={settings.maintenanceMode ?? false}
             onChange={handleChange}
             disabled={isLoading}
             className="h-4 w-4 accent-[#3D5A4C]"
@@ -138,7 +141,7 @@ export default function SettingsPage() {
           <input
             type="checkbox"
             name="emailNotifications"
-            checked={settings.emailNotifications}
+            checked={settings.emailNotifications ?? false}
             onChange={handleChange}
             disabled={isLoading}
             className="h-4 w-4 accent-[#3D5A4C]"

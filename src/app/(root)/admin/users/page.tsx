@@ -2,54 +2,57 @@
 
 import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
-import { apiFetch } from '@/app/lib/api';
-
-type UserStatus = 'Active' | 'Suspended';
-
-type PlatformUser = {
-  id: string;
-  name: string;
-  email: string;
-  status: UserStatus;
-  joinedDate: string;
-};
-
-const DEFAULT_USERS: PlatformUser[] = [
-  { id: '1', name: 'Sara Abebe', email: 'sara.abebe@example.com', status: 'Active', joinedDate: 'Jan 12, 2026' },
-  { id: '2', name: 'Mekdes Tadesse', email: 'mekdes.t@example.com', status: 'Active', joinedDate: 'Feb 3, 2026' },
-  { id: '3', name: 'Abel Tesfaye', email: 'abel.tesfaye@example.com', status: 'Suspended', joinedDate: 'Feb 20, 2026' },
-  { id: '4', name: 'Rahel Girma', email: 'rahel.girma@example.com', status: 'Active', joinedDate: 'Mar 8, 2026' },
-  { id: '5', name: 'Yonas Bekele', email: 'yonas.bekele@example.com', status: 'Active', joinedDate: 'Apr 15, 2026' },
-];
-
-function useUsers() {
-  const [users, setUsers] = useState<PlatformUser[]>([]);
+import {
+  getUsers,
+  updateUserStatus,
+  type AdminUser,
+  type UserStatus,
+} from '@/app/libs/api/admin/user';
+ function useUsers() {
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
+
     async function fetchUsers() {
       setIsLoading(true);
       setError(null);
+
       try {
-        // Backend API will be connected here later.
-        // const data = await apiFetch<PlatformUser[]>('/admin/users');
-        // if (isMounted) setUsers(data);
-        if (isMounted) setUsers(DEFAULT_USERS); // TEMP: sample data for preview
+        const data = await getUsers();
+
+        if (isMounted) {
+          setUsers(data);
+        }
       } catch (err) {
         console.error('Unable to load users:', err);
-        if (isMounted) setError('Unable to load users.');
+
+        if (isMounted) {
+          setError('Unable to load users.');
+        }
       } finally {
-        if (isMounted) setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     }
+
     fetchUsers();
-    return () => { isMounted = false; };
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return { users, isLoading, error, setUsers };
 }
+
+
+
+
+
 function ToggleSwitch({
   checked,
   onChange,
@@ -79,27 +82,47 @@ function ToggleSwitch({
   );
 }
 export default function UsersPage() {
-  const { users, isLoading, error, setUsers } = useUsers();
+  const { users, isLoading, error:loadError, setUsers, } = useUsers();
   const [query, setQuery] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [updatingUserId, setUpdatingUserId] = useState<number | null>(null);
+  
 
-  const filtered = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(query.toLowerCase()) ||
-      user.email.toLowerCase().includes(query.toLowerCase())
+  const filteredUsers = users.filter((user) => {
+  const searchQuery = query.toLowerCase();
+
+  const name = (user.name ?? "").toLowerCase();
+  const email = (user.email ?? "").toLowerCase();
+
+  return (
+    name.includes(searchQuery) ||
+    email.includes(searchQuery)
   );
+});
 
-  async function toggleStatus(id: string) {
-    const target = users.find((user) => user.id === id);
-    if (!target) return;
-    const newStatus: UserStatus = target.status === 'Active' ? 'Suspended' : 'Active';
+ async function toggleStatus(id: number) {
+  const target = users.find((user) => user.id === id);
 
-    // Backend API will be connected here later.
-    // await apiFetch(`/admin/users/${id}`, { method: 'PATCH', data: { status: newStatus } });
+  if (!target) return;
+
+  const newStatus: UserStatus =
+    target.status === 'Active' ? 'Suspended' : 'Active';
+
+  try {
+    const updatedUser = await updateUserStatus(id, newStatus);
 
     setUsers((previous) =>
-      previous.map((user) => (user.id === id ? { ...user, status: newStatus } : user))
+      previous.map((user) =>
+        user.id === id ? updatedUser : user
+      )
     );
+  } catch (err) {
+    console.error('Unable to update user status:', err);
+    setError('Unable to update user status.');
+  } finally {
+      setUpdatingUserId(null);
   }
+}
 
   return (
     <div className="space-y-5">
@@ -119,7 +142,7 @@ export default function UsersPage() {
         />
       </div>
 
-      {error && <p className="text-[12px] font-medium text-red-600">{error}</p>}
+      {(loadError || error) && <p className="text-[12px] font-medium text-red-600">{error || loadError}</p>}
 
       <section className="overflow-hidden rounded-2xl border border-[#2D312E]/[0.06] bg-white shadow-sm">
         <div className="overflow-x-auto">
@@ -136,10 +159,10 @@ export default function UsersPage() {
             <tbody>
               {isLoading ? (
                 <tr><td colSpan={5} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/55">Loading users…</td></tr>
-              ) : filtered.length === 0 ? (
+              ) : filteredUsers.length === 0 ? (
                 <tr><td colSpan={5} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/55">No users found.</td></tr>
               ) : (
-                filtered.map((user) => (
+                filteredUsers.map((user) => (
                   <tr key={user.id} className="border-b border-[#2D312E]/[0.04] last:border-0">
                     <td className="px-5 py-4 text-[12px] font-semibold">{user.name}</td>
                     <td className="px-3 py-4 text-[11px] text-[#2D312E]/75">{user.email}</td>

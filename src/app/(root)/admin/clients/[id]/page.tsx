@@ -23,7 +23,10 @@ import {
   Utensils,
   Weight,
 } from 'lucide-react';
-
+import {
+  getClient,
+  updateClientStatus,
+} from '@/app/libs/api/admin/clients';
 type ClientStatus = 'Active' | 'Suspended' | 'Inactive';
 
 type Appointment = {
@@ -203,25 +206,27 @@ const TEMPORARY_CLIENT_DETAILS: ClientDetails[] = [
 function useClient(clientId: string) {
   const [client, setClient] = useState<ClientDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
 
     async function loadClient() {
       setIsLoading(true);
-      try {
-        /*
-         * TEMPORARY — Backend is not connected yet.
-         *
-         * Later:
-         * const data = await apiFetch<ClientDetails>(`/admin/clients/${clientId}`);
-         * if (isMounted) setClient(data);
-         */
-        await new Promise((resolve) => setTimeout(resolve, 300));
+      setError(null);
 
-        const foundClient = TEMPORARY_CLIENT_DETAILS.find((item) => item.id === clientId);
+      try {
+        const data = await getClient(clientId);
+
         if (isMounted) {
-          setClient(foundClient ?? null);
+          setClient(data);
+        }
+      } catch (err) {
+        console.error('Unable to load client:', err);
+
+        if (isMounted) {
+          setClient(null);
+          setError('Unable to load client.');
         }
       } finally {
         if (isMounted) {
@@ -234,23 +239,51 @@ function useClient(clientId: string) {
       loadClient();
     }
 
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [clientId]);
 
-  return { client, isLoading };
+  return { client, setClient, isLoading, error };
 }
 
 export default function ClientDetailPage() {
   const params = useParams();
   const clientId = String(params.id);
-  const { client, isLoading } = useClient(clientId);
+  const {
+  client,
+  setClient,
+  isLoading,
+  error,
+} = useClient(clientId);
+const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+const [statusError, setStatusError] = useState<string | null>(null);
+  async function toggleSuspend() {
+  if (!client || isUpdatingStatus) return;
 
-  function toggleSuspend() {
-    if (!client) return;
-    // Backend API will be connected here later.
-    // await apiFetch(`/admin/clients/${client.id}`, { method: 'PATCH', data: { status: newStatus } });
-    console.log('Toggle suspend for', client.id);
+  const newStatus =
+    client.status === 'Suspended'
+      ? 'Active'
+      : 'Suspended';
+
+  setIsUpdatingStatus(true);
+  setStatusError(null);
+
+  try {
+    const updatedClient = await updateClientStatus(
+      client.id,
+      newStatus
+    );
+
+    setClient(updatedClient);
+  } catch (err) {
+    console.error('Unable to update client status:', err);
+
+    setStatusError('Unable to update client status.');
+  } finally {
+    setIsUpdatingStatus(false);
   }
+}
 
   if (isLoading) {
     return (
@@ -375,8 +408,13 @@ export default function ClientDetailPage() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E9F0EC] text-[#3D5A4C]"><CalendarDays size={17} /></div>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#2D312E]/50">Next Visit</span>
           </div>
-          <p className="font-display mt-4 text-[17px] text-[#2D312E]">{client.nextAppointment.date}</p>
-          <p className="mt-1 text-[10px] text-[#2D312E]/60">{client.nextAppointment.time || 'No appointment scheduled'}</p>
+         <p className="font-display mt-4 text-[17px] text-[#2D312E]">
+  {client.nextAppointment?.date || 'No appointment scheduled'}
+</p>
+
+<p className="mt-1 text-[10px] text-[#2D312E]/60">
+  {client.nextAppointment?.time || ''}
+</p>
         </div>
       </section>
 

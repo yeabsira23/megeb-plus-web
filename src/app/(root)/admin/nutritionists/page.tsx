@@ -1,173 +1,98 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Search, ChevronRight, Mail, Phone } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { SubmittedDocument } from '@/app/components/admin/DocumentPreviewModal';
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Search, ChevronRight, Mail, Phone } from "lucide-react";
 
-export type NutritionistStatus = 'Pending' | 'Approved' | 'Rejected';
+import {
+  getNutritionists,
+  type NutritionistApplication,
+} from "@/app/libs/api/admin/nutritionist";
 
-export type NutritionistApplication = {
-  id: string;
-  fullName: string;
-  email: string;
-  phone: string;
-  currentRole: string;
-  yearsOfExperience: string;
-  specialization: string;
-  licenseNumber: string;
-  licenseState: string;
-  licenseExpiration: string;
-  credentialType: string;
-  credentialNumber: string;
-  insuranceProvider: string;
-  policyNumber: string;
-  insuranceExpiration: string;
-  coverageLimit: string;
-  degree: string;
-  institution: string;
-  fieldOfStudy: string;
-  graduationYear: string;
-  submitted: string;
-  status: NutritionistStatus;
-  documents: SubmittedDocument[];
-};
+type NutritionistStatus = "Pending" | "Approved" | "Rejected";
 
-const STORAGE_KEY = 'megeb_admin_nutritionist_applications';
-
-const DEFAULT_APPLICATIONS: NutritionistApplication[] = [
-  {
-    id: '1',
-    fullName: 'Bethlehem Kassa',
-    email: 'bethlehem.kassa@example.com',
-    phone: '+251 91 234 5678',
-    currentRole: 'Clinical Nutritionist',
-    yearsOfExperience: '6',
-    specialization: 'Clinical nutrition, diabetes management',
-    licenseNumber: 'LDN-4821',
-    licenseState: 'Addis Ababa',
-    licenseExpiration: '2027-04-30',
-    credentialType: 'RDN',
-    credentialNumber: 'RDN-77291',
-    insuranceProvider: 'Nyala Insurance',
-    policyNumber: 'POL-55043',
-    insuranceExpiration: '2027-01-15',
-    coverageLimit: '$1,000,000',
-    degree: 'BSc Nutrition',
-    institution: 'Addis Ababa University',
-    fieldOfStudy: 'Nutrition and Dietetics',
-    graduationYear: '2018',
-    submitted: '2 hours ago',
-    status: 'Pending',
-    documents: [
-      { label: 'State License', fileName: 'state_license.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 19, 2026' },
-      { label: 'National Credential', fileName: 'credential_document.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 19, 2026' },
-      { label: 'Certificate of Insurance', fileName: 'insurance_document.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 19, 2026' },
-      { label: 'Degree / Transcript', fileName: 'degree_document.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 19, 2026' },
-    ],
-  },
-  {
-    id: '2',
-    fullName: 'Yonatan Haile',
-    email: 'yonatan.haile@example.com',
-    phone: '+251 92 345 6789',
-    currentRole: 'Sports Nutrition Consultant',
-    yearsOfExperience: '4',
-    specialization: 'Sports nutrition, athletic performance',
-    licenseNumber: 'LDN-2237',
-    licenseState: 'Oromia',
-    licenseExpiration: '2026-11-20',
-    credentialType: 'CNS',
-    credentialNumber: 'CNS-40218',
-    insuranceProvider: 'Awash Insurance',
-    policyNumber: 'POL-19087',
-    insuranceExpiration: '2026-09-10',
-    coverageLimit: '$750,000',
-    degree: 'MSc Sports Nutrition',
-    institution: 'Jimma University',
-    fieldOfStudy: 'Sports Science',
-    graduationYear: '2021',
-    submitted: '5 hours ago',
-    status: 'Pending',
-    documents: [
-      { label: 'State License', fileName: 'state_license.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 19, 2026' },
-      { label: 'National Credential', fileName: 'credential_document.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 19, 2026' },
-      { label: 'Certificate of Insurance', fileName: 'insurance_document.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 19, 2026' },
-      { label: 'Degree / Transcript', fileName: 'degree_document.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 19, 2026' },
-    ],
-  },
-  {
-    id: '3',
-    fullName: 'Meron Fikru',
-    email: 'meron.fikru@example.com',
-    phone: '+251 93 456 7890',
-    currentRole: 'Pediatric Dietitian',
-    yearsOfExperience: '8',
-    specialization: 'Pediatric nutrition, growth monitoring',
-    licenseNumber: 'LDN-9013',
-    licenseState: 'Amhara',
-    licenseExpiration: '2027-06-05',
-    credentialType: 'RDN',
-    credentialNumber: 'RDN-30982',
-    insuranceProvider: 'Nib Insurance',
-    policyNumber: 'POL-77654',
-    insuranceExpiration: '2027-03-01',
-    coverageLimit: '$1,200,000',
-    degree: 'BSc Nutrition and Dietetics',
-    institution: 'Bahir Dar University',
-    fieldOfStudy: 'Pediatric Nutrition',
-    graduationYear: '2016',
-    submitted: 'Yesterday',
-    status: 'Approved',
-    documents: [
-      { label: 'State License', fileName: 'state_license.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 18, 2026' },
-      { label: 'National Credential', fileName: 'credential_document.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 18, 2026' },
-      { label: 'Certificate of Insurance', fileName: 'insurance_document.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 18, 2026' },
-      { label: 'Degree / Transcript', fileName: 'degree_document.pdf', fileType: 'pdf', fileUrl: '', uploadedDate: 'Aug 18, 2026' },
-    ],
-  },
+const STATUS_FILTERS: (NutritionistStatus | "All")[] = [
+  "All",
+  "Pending",
+  "Approved",
+  "Rejected",
 ];
 
-function loadApplications(): NutritionistApplication[] {
-  if (typeof window === 'undefined') return DEFAULT_APPLICATIONS;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as NutritionistApplication[];
-  } catch (err) {
-    console.error('Unable to read cached applications:', err);
-  }
-  return DEFAULT_APPLICATIONS;
-}
-
-function saveApplications(applications: NutritionistApplication[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
-  } catch (err) {
-    console.error('Unable to cache applications:', err);
-  }
-}
-
-const STATUS_FILTERS: (NutritionistStatus | 'All')[] = ['All', 'Pending', 'Approved', 'Rejected'];
-
-export default function NutritionistsPage() {
+function NutritionistsContent() {
   const router = useRouter();
-  const [applications, setApplications] = useState<NutritionistApplication[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<NutritionistStatus | 'All'>('All');
-  const [query, setQuery] = useState('');
+  const searchParams = useSearchParams();
 
+  const [applications, setApplications] = useState<
+    NutritionistApplication[]
+  >([]);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const initialStatus = searchParams.get("status");
+
+  const capitalized = initialStatus
+    ? initialStatus.charAt(0).toUpperCase() + initialStatus.slice(1)
+    : "All";
+
+  const [statusFilter, setStatusFilter] = useState<
+    NutritionistStatus | "All"
+  >(
+    (["Pending", "Approved", "Rejected"].includes(capitalized)
+      ? capitalized
+      : "All") as NutritionistStatus | "All"
+  );
+
+  const [query, setQuery] = useState(
+    searchParams.get("search") ?? ""
+  );
+
+  // Load nutritionists from backend
   useEffect(() => {
-    // Backend API will be connected here later.
-    // const data = await apiFetch<NutritionistApplication[]>('/admin/nutritionists');
-    const data = loadApplications();
-    setApplications(data);
-    saveApplications(data); // ensure the key exists on first load
-    setIsLoading(false);
+    let isMounted = true;
+
+    async function fetchNutritionists() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const data = await getNutritionists();
+
+        if (isMounted) {
+          setApplications(data);
+        }
+      } catch (err) {
+        console.error("Unable to load nutritionists:", err);
+
+        if (isMounted) {
+          setError("Unable to load nutritionists.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    fetchNutritionists();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const filtered = applications.filter((app) => {
-    const matchesStatus = statusFilter === 'All' || app.status === statusFilter;
-    const matchesQuery = app.fullName.toLowerCase().includes(query.toLowerCase());
+    const matchesStatus =
+      statusFilter === "All" || app.status === statusFilter;
+
+    const searchText = query.toLowerCase().trim();
+
+    const matchesQuery =
+      !searchText ||
+      app.fullName?.toLowerCase().includes(searchText) ||
+      app.email?.toLowerCase().includes(searchText) ||
+      app.specialization?.toLowerCase().includes(searchText);
+
     return matchesStatus && matchesQuery;
   });
 
@@ -176,18 +101,27 @@ export default function NutritionistsPage() {
       status: app.status.toLowerCase(),
       search: app.fullName,
     });
-    router.push(`/admin/verification-requests?${params.toString()}`);
+
+    router.push(
+      `/admin/verification-requests?${params.toString()}`
+    );
   }
 
   return (
     <div className="space-y-5">
+      {/* Header */}
       <div>
-        <h1 className="font-display text-[23px] text-[#2D312E]">Nutritionists</h1>
+        <h1 className="font-display text-[23px] text-[#2D312E]">
+          Nutritionists
+        </h1>
+
         <p className="mt-1 text-[12px] text-[#2D312E]/70">
-          All nutritionist applications on the platform. Review credentials and documents on the Verification Requests page.
+          All nutritionist applications on the platform. Review
+          credentials and documents on the Verification Requests page.
         </p>
       </div>
 
+      {/* Filters + Search */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-2">
           {STATUS_FILTERS.map((status) => (
@@ -197,16 +131,18 @@ export default function NutritionistsPage() {
               onClick={() => setStatusFilter(status)}
               className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition ${
                 statusFilter === status
-                  ? 'bg-[#3D5A4C] text-white'
-                  : 'bg-white text-[#2D312E]/70 border border-[#2D312E]/10 hover:bg-[#FAF9F6]'
+                  ? "bg-[#3D5A4C] text-white"
+                  : "border border-[#2D312E]/10 bg-white text-[#2D312E]/70 hover:bg-[#FAF9F6]"
               }`}
             >
               {status}
             </button>
           ))}
         </div>
+
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#2D312E]/40" />
+
           <input
             type="text"
             value={query}
@@ -217,66 +153,149 @@ export default function NutritionistsPage() {
         </div>
       </div>
 
+      {/* Error */}
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[12px] text-red-600">
+          {error}
+        </div>
+      )}
+
+      {/* Table */}
       <section className="overflow-hidden rounded-2xl border border-[#2D312E]/[0.06] bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px]">
             <thead>
               <tr className="border-b border-[#2D312E]/[0.05] text-left">
-                <th className="px-5 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Nutritionist</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Role & Specialty</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Experience</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Credential</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">License</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Applied</th>
-                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">Status</th>
+                <th className="px-5 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">
+                  Nutritionist
+                </th>
+
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">
+                  Role & Specialty
+                </th>
+
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">
+                  Experience
+                </th>
+
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">
+                  Credential
+                </th>
+
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">
+                  License
+                </th>
+
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">
+                  Applied
+                </th>
+
+                <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55">
+                  Status
+                </th>
+
                 <th className="px-3 py-3 text-[10px] uppercase tracking-wider text-[#2D312E]/55"></th>
               </tr>
             </thead>
+
             <tbody>
+              {/* Loading */}
               {isLoading ? (
-                <tr><td colSpan={8} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/50">Loading applications…</td></tr>
+                <tr>
+                  <td
+                    colSpan={8}
+                    className="px-5 py-10 text-center text-[12px] text-[#2D312E]/50"
+                  >
+                    Loading nutritionists...
+                  </td>
+                </tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={8} className="px-5 py-8 text-center text-[12px] text-[#2D312E]/50">No applications found.</td></tr>
+                /* Empty */
+                <tr>
+                  <td
+                    colSpan={8}
+                    className="px-5 py-10 text-center text-[12px] text-[#2D312E]/50"
+                  >
+                    No nutritionists found.
+                  </td>
+                </tr>
               ) : (
                 filtered.map((app) => (
-                  <tr key={app.id} className="border-b border-[#2D312E]/[0.04] last:border-0">
+                  <tr
+                    key={app.id}
+                    className="border-b border-[#2D312E]/[0.04] last:border-0"
+                  >
+                    {/* Nutritionist */}
                     <td className="px-5 py-4">
-                      <p className="text-[12.5px] font-semibold text-[#2D312E]">{app.fullName}</p>
+                      <p className="text-[12.5px] font-semibold text-[#2D312E]">
+                        {app.fullName}
+                      </p>
+
                       <div className="mt-1 flex flex-col gap-0.5">
                         <span className="flex items-center gap-1 text-[10px] text-[#2D312E]/60">
-                          <Mail className="h-2.5 w-2.5" /> {app.email}
+                          <Mail className="h-2.5 w-2.5" />
+                          {app.email}
                         </span>
+
                         <span className="flex items-center gap-1 text-[10px] text-[#2D312E]/60">
-                          <Phone className="h-2.5 w-2.5" /> {app.phone}
+                          <Phone className="h-2.5 w-2.5" />
+                          {app.phone}
                         </span>
                       </div>
                     </td>
+
+                    {/* Role & Specialty */}
                     <td className="px-3 py-4">
-                      <p className="text-[11.5px] font-medium text-[#2D312E]/85">{app.currentRole}</p>
-                      <p className="text-[10.5px] text-[#2D312E]/60">{app.specialization}</p>
+                      <p className="text-[11.5px] font-medium text-[#2D312E]/85">
+                        {app.currentRole}
+                      </p>
+
+                      <p className="text-[10.5px] text-[#2D312E]/60">
+                        {app.specialization}
+                      </p>
                     </td>
-                    <td className="px-3 py-4 text-[11.5px] text-[#2D312E]/75">{app.yearsOfExperience} years</td>
+
+                    {/* Experience */}
                     <td className="px-3 py-4 text-[11.5px] text-[#2D312E]/75">
-                      {app.credentialType} · {app.credentialNumber}
+                      {app.yearsOfExperience} years
                     </td>
+
+                    {/* Credential */}
+                    <td className="px-3 py-4 text-[11.5px] text-[#2D312E]/75">
+                      {app.credentialType} ·{" "}
+                      {app.credentialNumber}
+                    </td>
+
+                    {/* License */}
                     <td className="px-3 py-4 text-[11.5px] text-[#2D312E]/75">
                       {app.licenseNumber}
-                      <span className="block text-[10px] text-[#2D312E]/55">{app.licenseState}</span>
+
+                      <span className="block text-[10px] text-[#2D312E]/55">
+                        {app.licenseState}
+                      </span>
                     </td>
-                    <td className="px-3 py-4 text-[11.5px] text-[#2D312E]/75">{app.submitted}</td>
+
+                    {/* Applied */}
+                    <td className="px-3 py-4 text-[11.5px] text-[#2D312E]/75">
+                      {app.submitted || app.appliedDate}
+                    </td>
+
+                    {/* Status */}
                     <td className="px-3 py-4">
                       <span
                         className={`rounded-full px-2.5 py-1 text-[9px] font-semibold ${
-                          app.status === 'Approved'
-                            ? 'bg-[#E9F0EC] text-[#3D5A4C]'
-                            : app.status === 'Rejected'
-                            ? 'bg-red-50 text-red-500'
-                            : 'bg-[#F7EFD9] text-[#8A6D2D]'
+                          app.status === "Approved"
+                            ? "bg-[#E9F0EC] text-[#3D5A4C]"
+                            : app.status === "Rejected"
+                            ? "bg-red-50 text-red-500"
+                            : "bg-[#F7EFD9] text-[#8A6D2D]"
                         }`}
                       >
                         {app.status}
                       </span>
                     </td>
+
+                    {/* Review */}
                     <td className="px-3 py-4">
                       <button
                         type="button"
@@ -284,7 +303,11 @@ export default function NutritionistsPage() {
                         className="flex items-center gap-0.5 rounded-lg border border-[#3D5A4C]/15 px-2.5 py-1.5 text-[10px] font-semibold text-[#3D5A4C] hover:bg-[#E9F0EC]"
                       >
                         Review
-                        <ChevronRight className="h-3 w-3" strokeWidth={2.5} />
+
+                        <ChevronRight
+                          className="h-3 w-3"
+                          strokeWidth={2.5}
+                        />
                       </button>
                     </td>
                   </tr>
@@ -295,5 +318,19 @@ export default function NutritionistsPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function NutritionistsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="px-5 py-8 text-center text-[12px] text-[#2D312E]/50">
+          Loading applications…
+        </div>
+      }
+    >
+      <NutritionistsContent />
+    </Suspense>
   );
 }

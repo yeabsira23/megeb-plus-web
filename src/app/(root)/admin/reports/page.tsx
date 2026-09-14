@@ -1,33 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { apiFetch } from '@/app/lib/api';
-
-type ReportMetric = {
-  label: string;
-  value: string;
-  change: string;
-};
-
-type MonthlyPoint = {
-  month: string;
-  value: number;
-};
-const DEFAULT_METRICS: ReportMetric[] = [
-  { label: 'New Users', value: '186', change: '+14.2% vs last month' },
-  { label: 'Appointments Booked', value: '324', change: '+8.6% vs last month' },
-  { label: 'Revenue', value: 'ETB 84,650', change: '+18.4% vs last month' },
-  { label: 'Avg. Rating', value: '4.7 / 5', change: '+0.2 vs last month' },
-];
-
-const DEFAULT_MONTHLY_SIGNUPS: MonthlyPoint[] = [
-  { month: 'Mar', value: 62 },
-  { month: 'Apr', value: 78 },
-  { month: 'May', value: 91 },
-  { month: 'Jun', value: 105 },
-  { month: 'Jul', value: 140 },
-  { month: 'Aug', value: 186 },
-];
+import {
+  getReportsOverview,
+  type ReportMetric,
+  type MonthlyPoint,
+} from '@/app/libs/api/admin/reports';
 
 function useReportData() {
   const [metrics, setMetrics] = useState<ReportMetric[]>([]);
@@ -37,29 +15,46 @@ function useReportData() {
 
   useEffect(() => {
     let isMounted = true;
+
     async function fetchReportData() {
       setIsLoading(true);
       setError(null);
+
       try {
-        // Backend API will be connected here later.
-        // const data = await apiFetch<{ metrics: ReportMetric[]; monthlySignups: MonthlyPoint[] }>('/admin/reports/overview');
-        // if (isMounted) { setMetrics(data.metrics); setMonthlySignups(data.monthlySignups); }
+        const data = await getReportsOverview();
+
         if (isMounted) {
-          setMetrics(DEFAULT_METRICS); // TEMP: sample data for preview
-          setMonthlySignups(DEFAULT_MONTHLY_SIGNUPS); // TEMP: sample data for preview
+          setMetrics(data.metrics);
+          setMonthlySignups(data.monthlySignups);
         }
       } catch (err) {
         console.error('Unable to load report data:', err);
-        if (isMounted) setError('Unable to load report data.');
+
+        if (isMounted) {
+          setError('Unable to load report data.');
+          setMetrics([]);
+          setMonthlySignups([]);
+        }
       } finally {
-        if (isMounted) setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     }
+
     fetchReportData();
-    return () => { isMounted = false; };
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  return { metrics, monthlySignups, isLoading, error };
+  return {
+    metrics,
+    monthlySignups,
+    isLoading,
+    error,
+  };
 }
 
 export default function ReportsPage() {
