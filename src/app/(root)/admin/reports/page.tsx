@@ -92,18 +92,47 @@ export default function ReportsPage() {
         <h3 className="font-display text-[17px] text-[#2D312E]">Monthly sign-ups</h3>
         <p className="mt-1 text-[11px] text-[#2D312E]/65">New users per month</p>
 
-        <div className="mt-6 flex h-40 items-end gap-3">
-          {monthlySignups.length === 0 ? (
-            <p className="text-[12px] text-[#2D312E]/55">No data yet.</p>
-          ) : (
-            monthlySignups.map((point) => (
-              <div key={point.month} className="flex flex-1 flex-col items-center gap-2">
-                <div className="w-full rounded-t-md bg-[#3D5A4C]" style={{ height: `${(point.value / maxValue) * 100}%` }} />
-                <span className="text-[9px] text-[#2D312E]/55">{point.month}</span>
-              </div>
-            ))
-          )}
-        </div>
+        <div className="mt-6 h-48">
+  {monthlySignups.length === 0 ? (
+    <div className="flex h-full items-center justify-center">
+      <p className="text-[12px] text-[#2D312E]/55">No data yet.</p>
+    </div>
+  ) : (
+    <div className="flex h-full items-end gap-3 border-b border-[#2D312E]/10">
+      {monthlySignups.map((point) => {
+        const barHeight = Math.max(
+          point.value > 0 ? 8 : 0,
+          (point.value / maxValue) * 100
+        );
+
+        return (
+          <div
+            key={point.month}
+            className="flex h-full flex-1 flex-col items-center justify-end"
+          >
+            {/* Value */}
+            <span className="mb-2 text-[10px] font-semibold text-[#2D312E]">
+              {point.value}
+            </span>
+
+            {/* Bar */}
+            <div
+              className="w-full max-w-12 rounded-t-md bg-[#3D5A4C] transition-all"
+              style={{
+                height: `${barHeight}%`,
+              }}
+            />
+
+            {/* Month */}
+            <span className="mt-2 text-[9px] font-medium text-[#2D312E]/60">
+              {point.month}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  )}
+</div>
       </section>
     </div>
   );

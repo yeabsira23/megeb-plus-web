@@ -97,15 +97,16 @@ function NutritionistsContent() {
   });
 
   function handleReview(app: NutritionistApplication) {
-    const params = new URLSearchParams({
-      status: app.status.toLowerCase(),
-      search: app.fullName,
-    });
+  const params = new URLSearchParams({
+    status: app.status.toLowerCase(),
+    id: String(app.id),
+    search: app.fullName,
+  });
 
-    router.push(
-      `/admin/verification-requests?${params.toString()}`
-    );
-  }
+  router.push(
+    `/admin/verification-requests?${params.toString()}`
+  );
+}
 
   return (
     <div className="space-y-5">

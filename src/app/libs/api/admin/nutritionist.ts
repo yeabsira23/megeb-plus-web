@@ -5,10 +5,20 @@ export type NutritionistStatus =
   | "Approved"
   | "Rejected";
 
+export interface NutritionistDocument {
+  type?: string;
+  name?: string;
+  fileName?: string;
+  fileUrl?: string;
+  label?: string;
+}
+
 export interface NutritionistApplication {
   id: number;
+
   fullName: string;
   name?: string;
+
   email: string;
   phone: string;
 
@@ -26,6 +36,13 @@ export interface NutritionistApplication {
   credentialType: string;
   credentialNumber: string;
 
+  // Insurance
+  insuranceProvider?: string;
+  policyNumber?: string;
+  insuranceExpiration?: string;
+  coverageLimit?: string;
+
+  // Education
   degree?: string;
   institution?: string;
   fieldOfStudy?: string;
@@ -38,7 +55,7 @@ export interface NutritionistApplication {
 
   rejectionReason?: string | null;
 
-  documents?: unknown[];
+  documents?: NutritionistDocument[];
 
   aiStatus?: string;
   aiScore?: string;
@@ -53,6 +70,7 @@ export async function getNutritionists(): Promise<
 
   return response.data;
 }
+
 export async function updateNutritionistStatus(
   id: number,
   status: NutritionistStatus
@@ -60,7 +78,7 @@ export async function updateNutritionistStatus(
   const response = await apiClient.patch<NutritionistApplication>(
     `/api/auth/admin/nutritionists/${id}`,
     {
-      status: status,
+      status,
     }
   );
 

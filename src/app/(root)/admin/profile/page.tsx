@@ -53,7 +53,7 @@ function useAdminProfile() {
 
         if (isMounted) {
           setProfile({
-            fullName: data.fullName || '',
+            fullName: data.full_name || '',
             email: data.email || '',
             phone: data.phone || '',
             role: data.role || 'System Administrator',
@@ -93,7 +93,7 @@ function useAdminProfile() {
       });
 
       setProfile({
-        fullName: updated.fullName || '',
+        fullName: updated.full_name || '',
         email: updated.email || '',
         phone: updated.phone || '',
         role: updated.role || profile.role,

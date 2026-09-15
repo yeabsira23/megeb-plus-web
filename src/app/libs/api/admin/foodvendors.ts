@@ -64,7 +64,7 @@ export async function updateFoodVendorStatus(
   const response = await apiClient.patch<FoodVendorApplication>(
     `/api/auth/admin/food-vendors/${applicationId}`,
     {
-      status: status.toLowerCase(),
+      status,
     }
   );
 

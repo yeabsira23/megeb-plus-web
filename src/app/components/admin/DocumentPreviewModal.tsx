@@ -6,7 +6,7 @@ export type SubmittedDocument = {
   label: string;
   fileName: string;
   fileType: 'pdf' | 'image';
-  fileUrl: string; // Empty until the backend serves real uploaded files.
+  fileUrl?: string;
   uploadedDate: string;
 };
 
@@ -18,7 +18,7 @@ type DocumentPreviewModalProps = {
 export default function DocumentPreviewModal({ document, onClose }: DocumentPreviewModalProps) {
   if (!document) return null;
 
-  const hasRealFile = document.fileUrl.trim().length > 0;
+  const hasRealFile = Boolean(document.fileUrl?.trim());
 
   return (
     <div
