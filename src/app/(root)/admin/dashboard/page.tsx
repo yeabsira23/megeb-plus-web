@@ -10,7 +10,7 @@ import {
   getDashboardStats,
   type DashboardStat,
 } from '@/app/libs/api/admin/dashboard';
-
+import { getAdminProfile } from "@/app/libs/api/admin/profile";
 
 type Stat = DashboardStat & {
   icon: StatIcon;
@@ -33,8 +33,8 @@ function useDashboardStats() {
          const data = await getDashboardStats();
          if (isMounted) setStats(data);
         
-      } catch (err) {
-        console.error('Unable to load dashboard stats:', err);
+      } catch  {
+        
         if (isMounted) {
           setError('Unable to load dashboard stats.');
           
@@ -49,21 +49,24 @@ function useDashboardStats() {
 
   return { stats, isLoading, error };
 }
-
 function useAdminFirstName() {
   const [firstName, setFirstName] = useState('Administrator');
+
   useEffect(() => {
-    try {
-      const user = localStorage.getItem('user');
-      if (user) {
-        const parsed = JSON.parse(user);
-        const fullName = parsed.full_name || parsed.name || 'Administrator';
+    async function loadAdminProfile() {
+      try {
+        const profile = await getAdminProfile();
+
+        const fullName = profile.full_name?.trim() || 'Administrator';
         setFirstName(fullName.split(' ')[0]);
+      } catch {
+        // Keep the default fallback name
       }
-    } catch (err) {
-      console.error('Unable to read user data:', err);
     }
+
+    loadAdminProfile();
   }, []);
+
   return firstName;
 }
 

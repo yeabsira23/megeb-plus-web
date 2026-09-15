@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+
 import {
   Search,
   Check,
@@ -9,6 +10,7 @@ import {
   UserCheck,
   FileText,
   Mail,
+  Phone,
   BriefcaseBusiness,
   IdCard,
   Award,
@@ -21,21 +23,22 @@ import DocumentPreviewModal, {
 } from "@/app/components/admin/DocumentPreviewModal";
 
 import {
-  getVerificationRequests,
-  type VerificationRequest,
-  type VerificationRequestStatus,
-} from "@/app/libs/api/admin/verificationRequests";
+  getNutritionists,
+  updateNutritionistStatus,
+  type NutritionistApplication,
+  type NutritionistStatus,
+} from "@/app/libs/api/admin/nutritionist";
 
-import { updateNutritionistStatus } from "@/app/libs/api/admin/nutritionist";
-
-const STATUS_FILTERS: (
-  | VerificationRequestStatus
-  | "All"
-)[] = ["All", "Pending", "Approved", "Rejected"];
+const STATUS_FILTERS: (NutritionistStatus | "All")[] = [
+  "All",
+  "Pending",
+  "Approved",
+  "Rejected",
+];
 
 function isRequestStatus(
   value: string | null
-): value is VerificationRequestStatus {
+): value is NutritionistStatus {
   return (
     value === "Pending" ||
     value === "Approved" ||
@@ -50,28 +53,13 @@ function getInitial(name: string): string {
 function VerificationRequestsContent() {
   const searchParams = useSearchParams();
 
-  const [requests, setRequests] = useState<VerificationRequest[]>([]);
+  const [requests, setRequests] = useState<
+    NutritionistApplication[]
+  >([]);
+
   const [isLoading, setIsLoading] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
-
-  const rawStatus = searchParams.get("status");
-
-  const capitalizedStatus = rawStatus
-    ? rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1)
-    : null;
-
-  const initialStatus: VerificationRequestStatus | "All" =
-    isRequestStatus(capitalizedStatus)
-      ? capitalizedStatus
-      : "Pending";
-
-  const initialSearch = searchParams.get("search") ?? "";
-
-  const [statusFilter, setStatusFilter] = useState<
-    VerificationRequestStatus | "All"
-  >(initialStatus);
-
-  const [query, setQuery] = useState(initialSearch);
 
   const [expandedId, setExpandedId] = useState<number | null>(
     null
@@ -84,23 +72,58 @@ function VerificationRequestsContent() {
     null
   );
 
-  // Load real verification requests
+  /*
+   * Read the selected nutritionist from the URL.
+   *
+   * Example:
+   * /admin/verification-requests?id=20&status=pending
+   */
+  const selectedId = searchParams.get("id");
+
+  const rawStatus = searchParams.get("status");
+
+  const capitalizedStatus = rawStatus
+    ? rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1)
+    : null;
+
+  const initialStatus: NutritionistStatus | "All" =
+    isRequestStatus(capitalizedStatus)
+      ? capitalizedStatus
+      : "Pending";
+
+  const initialSearch =
+    searchParams.get("search") ?? "";
+
+  const [statusFilter, setStatusFilter] = useState<
+    NutritionistStatus | "All"
+  >(initialStatus);
+
+  const [query, setQuery] = useState(initialSearch);
+
+  /*
+   * Load all nutritionists.
+   *
+   * IMPORTANT:
+   * We use the nutritionists endpoint instead of the old
+   * verification-request endpoint so that Approved and
+   * Rejected nutritionists still contain their documents.
+   */
   useEffect(() => {
     let isMounted = true;
 
-    async function fetchRequests() {
+    async function fetchNutritionists() {
       try {
         setIsLoading(true);
         setError(null);
 
-        const data = await getVerificationRequests();
+        const data = await getNutritionists();
 
         if (isMounted) {
           setRequests(data);
         }
       } catch (err) {
         console.error(
-          "Unable to load verification requests:",
+          "Unable to load nutritionists:",
           err
         );
 
@@ -116,43 +139,81 @@ function VerificationRequestsContent() {
       }
     }
 
-    fetchRequests();
+    fetchNutritionists();
 
     return () => {
       isMounted = false;
     };
   }, []);
 
- const filteredRequests = requests.filter((request) => {
-  const matchesStatus =
-    statusFilter === "All" || request.status === statusFilter;
+  /*
+   * Automatically expand the nutritionist selected
+   * from the Nutritionists page.
+   */
+  useEffect(() => {
+    if (!selectedId || requests.length === 0) {
+      return;
+    }
 
-  const searchText = query.trim().toLowerCase();
+    const nutritionistId = Number(selectedId);
 
-  const matchesSearch =
-    !searchText ||
-    request.name.toLowerCase().includes(searchText) ||
-    request.specialty.toLowerCase().includes(searchText);
+    const exists = requests.some(
+      (request) => request.id === nutritionistId
+    );
 
-  return matchesStatus && matchesSearch;
-});
+    if (exists) {
+      setExpandedId(nutritionistId);
+    }
+  }, [selectedId, requests]);
 
+  /*
+   * Filter by status + search.
+   */
+  const filteredRequests = requests.filter((request) => {
+    const matchesStatus =
+      statusFilter === "All" ||
+      request.status === statusFilter;
+
+    const searchText = query.trim().toLowerCase();
+
+    const matchesSearch =
+      !searchText ||
+      request.fullName
+        ?.toLowerCase()
+        .includes(searchText) ||
+      request.email
+        ?.toLowerCase()
+        .includes(searchText) ||
+      request.specialization
+        ?.toLowerCase()
+        .includes(searchText) ||
+      request.specialty
+        ?.toLowerCase()
+        .includes(searchText);
+
+    return matchesStatus && matchesSearch;
+  });
+
+  /*
+   * Pending count.
+   */
   const pendingCount = requests.filter(
     (request) => request.status === "Pending"
   ).length;
 
+  /*
+   * Approve / Reject.
+   */
   async function updateStatus(
     id: number,
-    status: VerificationRequestStatus
+    status: NutritionistStatus
   ) {
     try {
       setUpdatingId(id);
       setError(null);
 
-      const updated = await updateNutritionistStatus(
-        id,
-        status
-      );
+      const updated =
+        await updateNutritionistStatus(id, status);
 
       setRequests((previous) =>
         previous.map((request) =>
@@ -199,6 +260,7 @@ function VerificationRequestsContent() {
               className="h-3 w-3"
               strokeWidth={2.5}
             />
+
             {pendingCount} pending
           </span>
         )}
@@ -229,7 +291,9 @@ function VerificationRequestsContent() {
           <input
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) =>
+              setQuery(e.target.value)
+            }
             placeholder="Search by name"
             className="w-full rounded-xl border border-[#2D312E]/10 bg-white py-2 pl-9 pr-3 text-[12px] text-[#2D312E] outline-none focus:border-[#3D5A4C]"
           />
@@ -269,33 +333,44 @@ function VerificationRequestsContent() {
                     type="button"
                     onClick={() =>
                       setExpandedId(
-                        isExpanded ? null : request.id
+                        isExpanded
+                          ? null
+                          : request.id
                       )
                     }
                     className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left hover:bg-[#FAF9F6]"
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E9F0EC] font-semibold text-[#3D5A4C]">
-                        {getInitial(request.name)}
+                        {getInitial(
+                          request.fullName
+                        )}
                       </div>
 
                       <div>
                         <p className="text-[12.5px] font-semibold text-[#2D312E]">
-                          {request.name}
+                          {request.fullName}
                         </p>
 
                         <p className="text-[10.5px] text-[#2D312E]/65">
-                          {request.specialty || "Nutritionist"} · Submitted{" "}
-  {request.submitted || "N/A"}
+                          {request.specialization ||
+                            request.specialty ||
+                            "Nutritionist"}{" "}
+                          · Submitted{" "}
+                          {request.submitted ||
+                            request.appliedDate ||
+                            "N/A"}
                         </p>
                       </div>
                     </div>
 
                     <span
                       className={`shrink-0 rounded-full px-2.5 py-1 text-[9px] font-semibold ${
-                        request.status === "Approved"
+                        request.status ===
+                        "Approved"
                           ? "bg-[#E9F0EC] text-[#3D5A4C]"
-                          : request.status === "Rejected"
+                          : request.status ===
+                            "Rejected"
                           ? "bg-red-50 text-red-500"
                           : "bg-[#F7EFD9] text-[#8A6D2D]"
                       }`}
@@ -316,12 +391,16 @@ function VerificationRequestsContent() {
                       >
                         <DetailField
                           label="Email"
-                          value={request.email}
+                          value={
+                            request.email
+                          }
                         />
 
                         <DetailField
                           label="Phone"
-                          value={request.phone}
+                          value={
+                            request.phone
+                          }
                         />
                       </DetailGroup>
 
@@ -334,12 +413,19 @@ function VerificationRequestsContent() {
                       >
                         <DetailField
                           label="Current Role"
-                          value={request.currentRole}
+                          value={
+                            request.currentRole
+                          }
                         />
 
                         <DetailField
                           label="Years of Experience"
-                          value={`${request.yearsOfExperience} years`}
+                          value={
+                            request.yearsOfExperience !==
+                            undefined
+                              ? `${request.yearsOfExperience} years`
+                              : ""
+                          }
                         />
 
                         <DetailField
@@ -361,18 +447,23 @@ function VerificationRequestsContent() {
                       >
                         <DetailField
                           label="License Number"
-                          value={request.licenseNumber}
+                          value={
+                            request.licenseNumber
+                          }
                         />
 
                         <DetailField
                           label="State / Jurisdiction"
-                          value={request.licenseState}
+                          value={
+                            request.licenseState
+                          }
                         />
 
                         <DetailField
                           label="Expiration Date"
                           value={
-                            request.licenseExpiration || ""
+                            request.licenseExpiration ||
+                            ""
                           }
                         />
                       </DetailGroup>
@@ -386,12 +477,16 @@ function VerificationRequestsContent() {
                       >
                         <DetailField
                           label="Credential Type"
-                          value={request.credentialType}
+                          value={
+                            request.credentialType
+                          }
                         />
 
                         <DetailField
                           label="Credential Number"
-                          value={request.credentialNumber}
+                          value={
+                            request.credentialNumber
+                          }
                         />
                       </DetailGroup>
 
@@ -405,14 +500,16 @@ function VerificationRequestsContent() {
                         <DetailField
                           label="Provider"
                           value={
-                            request.insuranceProvider || ""
+                            request.insuranceProvider ||
+                            ""
                           }
                         />
 
                         <DetailField
                           label="Policy Number"
                           value={
-                            request.policyNumber || ""
+                            request.policyNumber ||
+                            ""
                           }
                         />
 
@@ -427,7 +524,8 @@ function VerificationRequestsContent() {
                         <DetailField
                           label="Coverage Limit"
                           value={
-                            request.coverageLimit || ""
+                            request.coverageLimit ||
+                            ""
                           }
                         />
                       </DetailGroup>
@@ -441,25 +539,33 @@ function VerificationRequestsContent() {
                       >
                         <DetailField
                           label="Degree"
-                          value={request.degree || ""}
+                          value={
+                            request.degree ||
+                            ""
+                          }
                         />
 
                         <DetailField
                           label="Institution"
-                          value={request.institution || ""}
+                          value={
+                            request.institution ||
+                            ""
+                          }
                         />
 
                         <DetailField
                           label="Field of Study"
                           value={
-                            request.fieldOfStudy || ""
+                            request.fieldOfStudy ||
+                            ""
                           }
                         />
 
                         <DetailField
                           label="Graduation Year"
                           value={
-                            request.graduationYear
+                            request.graduationYear !==
+                            undefined
                               ? String(
                                   request.graduationYear
                                 )
@@ -475,7 +581,9 @@ function VerificationRequestsContent() {
                           Submitted Documents
                         </p>
 
-                        {request.documents?.length ? (
+                        {request.documents &&
+                        request.documents.length >
+                          0 ? (
                           <div className="grid gap-2 sm:grid-cols-2">
                             {request.documents.map(
                               (doc, index) => {
@@ -484,7 +592,7 @@ function VerificationRequestsContent() {
 
                                 return (
                                   <button
-                                    key={`${doc.label}-${index}`}
+                                    key={`${doc.fileName || doc.name || doc.label || "document"}-${index}`}
                                     type="button"
                                     onClick={() =>
                                       setPreviewDoc(
@@ -497,11 +605,16 @@ function VerificationRequestsContent() {
 
                                     <div className="min-w-0">
                                       <p className="truncate text-[11px] font-semibold text-[#2D312E]">
-                                        {doc.label}
+                                        {doc.label ||
+                                          doc.type ||
+                                          doc.name ||
+                                          "Document"}
                                       </p>
 
                                       <p className="truncate text-[9.5px] text-[#2D312E]/55">
-                                        {doc.fileName}
+                                        {doc.fileName ||
+                                          doc.name ||
+                                          "Submitted document"}
                                       </p>
                                     </div>
                                   </button>
@@ -517,7 +630,8 @@ function VerificationRequestsContent() {
                       </div>
 
                       {/* Approve / Reject */}
-                      {request.status === "Pending" && (
+                      {request.status ===
+                        "Pending" && (
                         <div className="flex items-center gap-2 pt-1">
                           <button
                             type="button"
@@ -571,9 +685,12 @@ function VerificationRequestsContent() {
         )}
       </section>
 
+      {/* Document Preview */}
       <DocumentPreviewModal
         document={previewDoc}
-        onClose={() => setPreviewDoc(null)}
+        onClose={() =>
+          setPreviewDoc(null)
+        }
       />
     </div>
   );
@@ -607,7 +724,7 @@ function DetailField({
   value,
 }: {
   label: string;
-  value: string;
+  value?: string | number | null;
 }) {
   return (
     <div>
@@ -616,7 +733,11 @@ function DetailField({
       </p>
 
       <p className="mt-0.5 text-[12px] text-[#2D312E]">
-        {value || "Not provided"}
+        {value !== undefined &&
+        value !== null &&
+        String(value).trim() !== ""
+          ? String(value)
+          : "Not provided"}
       </p>
     </div>
   );
